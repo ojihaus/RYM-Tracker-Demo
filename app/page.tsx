@@ -466,15 +466,36 @@ function SongCard({ song, compact = false, comparedSong = null, out = false, lan
         </div>
         {!compact && (
           <>
-            {embedUrl && (
-              <button type="button" className={"rym-preview-button" + (spotifyActive ? " is-active" : "")}
-                onClick={() => onToggleSpotify?.(song.spotify_url || "")}
-                aria-expanded={spotifyActive}
-                aria-label={spotifyActive
-                  ? (language === "ko" ? "재생바 닫기" : "Close player")
-                  : (language === "ko" ? "재생" : "Play")}>
-                <span className={spotifyActive ? "rym-preview-pause" : "rym-preview-play"} aria-hidden="true" />
-              </button>
+            {(embedUrl || song.rym_url) && (
+              <div className="rym-song-actions">
+                {embedUrl && (
+                  <button type="button" className={"rym-preview-button" + (spotifyActive ? " is-active" : "")}
+                    onClick={() => onToggleSpotify?.(song.spotify_url || "")}
+                    aria-expanded={spotifyActive}
+                    aria-label={spotifyActive
+                      ? (language === "ko" ? "재생바 닫기" : "Close player")
+                      : (language === "ko" ? "재생" : "Play")}>
+                    <span className={spotifyActive ? "rym-preview-pause" : "rym-preview-play"} aria-hidden="true" />
+                  </button>
+                )}
+                {song.rym_url && (
+                  <a
+                    className="rym-rym-button"
+                    href={song.rym_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={language === "ko" ? `${song.title} RYM 페이지 새 탭에서 열기` : `Open ${song.title} on RYM in a new tab`}
+                    title={language === "ko" ? "RYM에서 열기" : "Open on RYM"}
+                  >
+                    <img
+                      className="rym-rym-logo-image"
+                      src="data:image/png;base64,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"
+                      alt=""
+                      aria-hidden="true"
+                    />
+                  </a>
+                )}
+              </div>
             )}
             {embedUrl && (
               <div
@@ -865,20 +886,86 @@ export default function Home() {
   const [language, setLanguage] = useState<Language>("en");
   const [activeSpotifyUrl, setActiveSpotifyUrl] = useState("");
   const [urlStateReady, setUrlStateReady] = useState(false);
+  const [hasComparisonUrlState, setHasComparisonUrlState] = useState(false);
+  const [adminPassword, setAdminPassword] = useState("");
+  const [adminModalOpen, setAdminModalOpen] = useState(false);
+  const [adminAction, setAdminAction] = useState<"IMPORT" | "LIBRARY" | null>(null);
+  const [adminPin, setAdminPin] = useState("");
+  const [adminPinError, setAdminPinError] = useState("");
+  const [adminVerifying, setAdminVerifying] = useState(false);
+  const [pinChangeOpen, setPinChangeOpen] = useState(false);
+  const [currentPin, setCurrentPin] = useState("");
+  const [newPin, setNewPin] = useState("");
+  const [confirmPin, setConfirmPin] = useState("");
+  const [pinChangeError, setPinChangeError] = useState("");
+  const [pinChanging, setPinChanging] = useState(false);
+  const importInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+    let cancelled = false;
 
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        setRecords(sanitizeSnapshotList(parsed));
+    async function loadInitialSnapshots() {
+      let savedSnapshots: Snapshot[] = [];
+
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) savedSnapshots = sanitizeSnapshotList(JSON.parse(saved));
+      } catch {
+        // Ignore broken local data.
       }
-    } catch {
-      // Ignore broken local data.
-    } finally {
+
+      let publicFiles: string[] = [];
+
+      try {
+        const manifestResponse = await fetch("/api/chart-files", { cache: "no-store" });
+        if (manifestResponse.ok) {
+          const manifest = await manifestResponse.json();
+          if (Array.isArray(manifest?.files)) {
+            publicFiles = manifest.files
+              .filter((file: unknown): file is string => typeof file === "string")
+              .map((file: string) => (file.startsWith("/") ? file : `/${file}`));
+          }
+        }
+      } catch {
+        // Fall back to the original demo files if the manifest route is unavailable.
+      }
+
+      if (publicFiles.length === 0) {
+        publicFiles = [
+          "/2020s-0902.json",
+          "/2020s-0909.json",
+          "/2026-0902.json",
+          "/2026-0909.json",
+        ];
+      }
+
+      const publicSnapshots = (
+        await Promise.all(
+          publicFiles.map(async (url) => {
+            try {
+              const response = await fetch(url, { cache: "no-store" });
+              if (!response.ok) return null;
+              return sanitizeSnapshot(await response.json());
+            } catch {
+              return null;
+            }
+          })
+        )
+      ).filter((snapshot): snapshot is Snapshot => snapshot !== null);
+
+      if (cancelled) return;
+
+      // Public demo records are always available to every visitor.
+      // Locally imported records are kept as additional personal records.
+      setRecords(sanitizeSnapshotList([...savedSnapshots, ...publicSnapshots]));
       setLoaded(true);
     }
+
+    loadInitialSnapshots();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -899,6 +986,8 @@ export default function Home() {
     const rightChart = params.get("rc");
     const leftRecord = params.get("lr");
     const rightRecord = params.get("rr");
+
+    setHasComparisonUrlState(Boolean(leftChart || rightChart || leftRecord || rightRecord));
     const filter = params.get("filter");
     const query = params.get("q");
     const urlLanguage = params.get("lang");
@@ -991,12 +1080,18 @@ export default function Home() {
       return;
     }
 
+    // Prefer the 2020s chart as the demo's default comparison chart.
+    const defaultChart =
+      charts.find((chart) => /\/charts\/top\/song\/2020s\/?$/i.test(chart.sourceUrl)) ??
+      charts.find((chart) => /between\s+2000\s+and\s+2029/i.test(chart.title)) ??
+      charts[0];
+
     if (
       !charts.some(
         (chart) => chart.sourceUrl === leftChartUrl
       )
     ) {
-      setLeftChartUrl(charts[0].sourceUrl);
+      setLeftChartUrl(defaultChart.sourceUrl);
     }
 
     if (
@@ -1004,11 +1099,9 @@ export default function Home() {
         (chart) => chart.sourceUrl === rightChartUrl
       )
     ) {
-      setRightChartUrl(
-        charts.length > 1
-          ? charts[1].sourceUrl
-          : charts[0].sourceUrl
-      );
+      // Same 2020s chart on both sides; the left pane uses the earliest
+      // snapshot and the right pane uses the latest snapshot.
+      setRightChartUrl(defaultChart.sourceUrl);
     }
   }, [charts, leftChartUrl, rightChartUrl, loaded, urlStateReady]);
 
@@ -1026,11 +1119,16 @@ export default function Home() {
     );
 
     if (!valid) {
-      setLeftSnapshotKey(
-        snapshotKey(leftChart.snapshots[0])
-      );
+      // Fresh visits default to the snapshot immediately before the latest one.
+      // If the URL explicitly names a record, preserve that shared/manual selection.
+      const previousIndex = Math.max(0, leftChart.snapshots.length - 2);
+      const defaultLeft = hasComparisonUrlState
+        ? leftChart.snapshots[0]
+        : leftChart.snapshots[previousIndex];
+
+      setLeftSnapshotKey(snapshotKey(defaultLeft));
     }
-  }, [leftChart, leftSnapshotKey, loaded, urlStateReady]);
+  }, [leftChart, leftSnapshotKey, loaded, urlStateReady, hasComparisonUrlState]);
 
   useEffect(() => {
     if (!loaded || !urlStateReady) return;
@@ -1157,14 +1255,183 @@ export default function Home() {
     };
   }, [leftSnapshot, rightSnapshot]);
 
+  async function verifyAdminPassword(password: string) {
+    try {
+      const response = await fetch("/api/admin-auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+      return response.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  function requestAdminAccess(action: "IMPORT" | "LIBRARY") {
+    if (action === "LIBRARY" && libraryOpen) {
+      setLibraryOpen(false);
+      return;
+    }
+
+    setAdminAction(action);
+    setAdminPin("");
+    setAdminPinError("");
+    setAdminModalOpen(true);
+  }
+
+  function closeAdminModal() {
+    if (adminVerifying) return;
+    setAdminModalOpen(false);
+    setAdminAction(null);
+    setAdminPin("");
+    setAdminPinError("");
+  }
+
+  async function submitAdminPin() {
+    if (!/^\d{4}$/.test(adminPin)) {
+      setAdminPinError(
+        language === "ko"
+          ? "4자리 숫자 비밀번호를 입력해주세요."
+          : "Enter the 4-digit PIN."
+      );
+      return;
+    }
+
+    setAdminVerifying(true);
+    setAdminPinError("");
+
+    const valid = await verifyAdminPassword(adminPin);
+
+    if (!valid) {
+      setAdminVerifying(false);
+      setAdminPinError(
+        language === "ko"
+          ? "비밀번호가 올바르지 않습니다."
+          : "Incorrect PIN."
+      );
+      setAdminPin("");
+      return;
+    }
+
+    const action = adminAction;
+    const verifiedPin = adminPin;
+
+    setAdminPassword(verifiedPin);
+    setAdminVerifying(false);
+    setAdminModalOpen(false);
+    setAdminAction(null);
+    setAdminPin("");
+    setAdminPinError("");
+
+    if (action === "LIBRARY") {
+      setLibraryOpen(true);
+    } else if (action === "IMPORT") {
+      window.setTimeout(() => importInputRef.current?.click(), 0);
+    }
+  }
+
+  function openLibraryWithPassword() {
+    requestAdminAccess("LIBRARY");
+  }
+
+  function openImportWithPassword() {
+    requestAdminAccess("IMPORT");
+  }
+
+  function openPinChange() {
+    setCurrentPin("");
+    setNewPin("");
+    setConfirmPin("");
+    setPinChangeError("");
+    setPinChangeOpen(true);
+  }
+
+  function closePinChange() {
+    if (pinChanging) return;
+    setPinChangeOpen(false);
+    setCurrentPin("");
+    setNewPin("");
+    setConfirmPin("");
+    setPinChangeError("");
+  }
+
+  async function submitPinChange() {
+    if (!/^\d{4}$/.test(currentPin) || !/^\d{4}$/.test(newPin)) {
+      setPinChangeError(
+        language === "ko"
+          ? "현재 비밀번호와 새 비밀번호를 각각 4자리 숫자로 입력해주세요."
+          : "Current and new PINs must both be 4 digits."
+      );
+      return;
+    }
+
+    if (newPin !== confirmPin) {
+      setPinChangeError(
+        language === "ko"
+          ? "새 비밀번호가 서로 일치하지 않습니다."
+          : "The new PINs do not match."
+      );
+      return;
+    }
+
+    setPinChanging(true);
+    setPinChangeError("");
+
+    try {
+      const response = await fetch("/api/admin-auth", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          currentPassword: currentPin,
+          newPassword: newPin,
+        }),
+      });
+
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(
+          result?.error ||
+            (language === "ko" ? "비밀번호를 변경할 수 없습니다." : "Could not change the PIN.")
+        );
+      }
+
+      setAdminPassword(newPin);
+      setPinChangeOpen(false);
+      setCurrentPin("");
+      setNewPin("");
+      setConfirmPin("");
+      setPinChangeError("");
+
+      window.alert(
+        language === "ko"
+          ? "관리자 비밀번호가 변경되었습니다."
+          : "Administrator PIN changed."
+      );
+    } catch (error) {
+      setPinChangeError(
+        error instanceof Error
+          ? error.message
+          : (language === "ko" ? "비밀번호를 변경할 수 없습니다." : "Could not change the PIN.")
+      );
+    } finally {
+      setPinChanging(false);
+    }
+  }
+
   async function importSnapshot(
     event: React.ChangeEvent<HTMLInputElement>
   ) {
     const file = event.target.files?.[0];
-
     if (!file) return;
 
     try {
+      const password = adminPassword;
+      if (!password) {
+        throw new Error("Admin authentication required");
+      }
+
       const text = await file.text();
       const data = sanitizeSnapshot(JSON.parse(text));
 
@@ -1172,26 +1439,41 @@ export default function Home() {
         throw new Error("Invalid chart record");
       }
 
+      const uploadResponse = await fetch("/api/chart-files", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password, snapshot: data }),
+      });
+
+      const uploadResult = await uploadResponse.json().catch(() => ({}));
+      if (!uploadResponse.ok) {
+        if (uploadResponse.status === 401) setAdminPassword("");
+        throw new Error(uploadResult?.error || "Upload failed");
+      }
+
       setRecords((current) => {
         const key = snapshotKey(data);
-
-        const exists = current.some(
-          (snapshot) =>
-            snapshotKey(snapshot) === key
-        );
-
-        if (exists) return current;
-
-        return [...current, data];
+        const withoutDuplicate = current.filter((snapshot) => snapshotKey(snapshot) !== key);
+        return [...withoutDuplicate, data];
       });
 
       setRightChartUrl(data.source_url);
       setRightSnapshotKey(snapshotKey(data));
       setError("");
-    } catch {
-      setError(language === "ko" ? "이 JSON 차트 기록을 불러올 수 없습니다." : "Could not import this JSON chart record.");
+
+      window.alert(
+        language === "ko"
+          ? `${uploadResult.filename || "JSON"} 파일을 GitHub public 폴더에 올렸습니다. Vercel 재배포 후 모든 방문자에게 반영됩니다.`
+          : `${uploadResult.filename || "JSON"} was committed to the GitHub public folder. It will be visible to everyone after Vercel redeploys.`
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "";
+      setError(
+        language === "ko"
+          ? `JSON 차트 기록을 공개 업로드할 수 없습니다.${message ? ` (${message})` : ""}`
+          : `Could not publish this JSON chart record.${message ? ` (${message})` : ""}`
+      );
     } finally {
-      // Allows selecting the same file again after an error or duplicate import.
       event.target.value = "";
     }
   }
@@ -1292,6 +1574,835 @@ export default function Home() {
   return (
     <main className="rym-app">
       <style>{RYM_STYLES}</style>
+      <style>{`
+/* Fine-tune admin PIN visibility + restore Delete All color */
+.rym-app .rym-admin-dots span {
+  background: #e4e7ec !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(84, 92, 105, .08),
+    inset 0 1px 2px rgba(0,0,0,.03) !important;
+}
+
+.rym-app .rym-admin-dots span.is-filled {
+  background: #dfe9f7 !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(52,120,246,.10),
+    inset 0 1px 2px rgba(0,0,0,.025) !important;
+}
+
+.rym-app .rym-admin-pin {
+  background: transparent !important;
+}
+
+.rym-app .rym-pin-change-form input {
+  background: #e4e7ec !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(84, 92, 105, .08),
+    inset 0 1px 2px rgba(0,0,0,.03) !important;
+}
+
+.rym-app .rym-pin-change-form input:focus {
+  background: #fff !important;
+  box-shadow:
+    0 0 0 2px rgba(52,120,246,.50),
+    0 4px 12px rgba(52,120,246,.08) !important;
+}
+
+/* Restore the original darker red, but remove the raised/stroked look */
+.rym-app .rym-button--danger,
+.rym-app button.rym-button--danger,
+.rym-app .rym-library-actions .rym-button--danger {
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  background: #b54843 !important;
+  background-image: none !important;
+  color: #fff !important;
+}
+
+.rym-app .rym-button--danger:hover:not(:disabled) {
+  background: #a33f3b !important;
+}
+`}</style>
+      <style>{`
+/* Apple-like admin UI v2 */
+.rym-app .rym-admin-backdrop {
+  background: rgba(28, 32, 39, .22) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(145%) !important;
+  backdrop-filter: blur(22px) saturate(145%) !important;
+}
+
+.rym-app .rym-admin-modal {
+  width: min(88vw, 360px) !important;
+  padding: 30px 26px 24px !important;
+  border: 0 !important;
+  border-radius: 26px !important;
+  background: rgba(250, 250, 252, .92) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(170%) !important;
+  backdrop-filter: blur(32px) saturate(170%) !important;
+  box-shadow:
+    0 30px 70px rgba(0,0,0,.20),
+    0 8px 22px rgba(0,0,0,.10) !important;
+}
+
+.rym-app .rym-admin-modal h2 {
+  margin: 4px 0 7px !important;
+  font-size: 1.08rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -.025em !important;
+  color: #111318 !important;
+}
+
+.rym-app .rym-admin-modal > p {
+  margin: 0 0 22px !important;
+  font-size: .88rem !important;
+  line-height: 1.45 !important;
+  color: #7a7f87 !important;
+}
+
+.rym-app .rym-admin-close {
+  top: 14px !important;
+  right: 14px !important;
+  width: 30px !important;
+  height: 30px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: #eceef2 !important;
+  color: #7c828b !important;
+  box-shadow: none !important;
+}
+
+.rym-app .rym-admin-modal form {
+  margin-top: 0 !important;
+}
+
+.rym-app .rym-admin-dots {
+  grid-template-columns: repeat(4, 56px) !important;
+  gap: 10px !important;
+  margin-bottom: 18px !important;
+}
+
+.rym-app .rym-admin-dots span {
+  width: 56px !important;
+  height: 58px !important;
+  border: 0 !important;
+  border-radius: 16px !important;
+  background: #eef0f4 !important;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.025) !important;
+}
+
+.rym-app .rym-admin-dots span.is-filled {
+  background: #e8f0fb !important;
+}
+
+.rym-app .rym-admin-dots span.is-filled::after {
+  width: 10px !important;
+  height: 10px !important;
+  background: #3978d4 !important;
+}
+
+.rym-app .rym-admin-pin {
+  width: 254px !important;
+  height: 58px !important;
+  border-radius: 16px !important;
+}
+
+.rym-app .rym-admin-error {
+  margin-top: 0 !important;
+  min-height: 18px !important;
+}
+
+.rym-app .rym-admin-submit {
+  min-height: 48px !important;
+  margin-top: 4px !important;
+  border: 0 !important;
+  border-radius: 14px !important;
+  background: #3478f6 !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+  box-shadow: none !important;
+}
+
+.rym-app .rym-admin-submit:disabled {
+  background: #9db6d9 !important;
+  opacity: 1 !important;
+}
+
+/* PIN change sheet */
+.rym-app .rym-pin-change-modal {
+  width: min(90vw, 390px) !important;
+}
+
+.rym-app .rym-pin-change-form {
+  gap: 13px !important;
+  margin-top: 16px !important;
+}
+
+.rym-app .rym-pin-change-form label {
+  gap: 6px !important;
+}
+
+.rym-app .rym-pin-change-form label > span {
+  padding-left: 2px !important;
+  font-size: .76rem !important;
+  font-weight: 600 !important;
+  color: #6f757e !important;
+}
+
+.rym-app .rym-pin-change-form input {
+  min-height: 50px !important;
+  padding: 0 14px !important;
+  border: 0 !important;
+  border-radius: 14px !important;
+  outline: 0 !important;
+  background: #eef0f4 !important;
+  box-shadow: none !important;
+}
+
+.rym-app .rym-pin-change-form input:focus {
+  background: #fff !important;
+  box-shadow: 0 0 0 2px rgba(52,120,246,.45) !important;
+}
+
+/* Fully solid destructive buttons */
+.rym-app .rym-button--danger,
+.rym-app button.rym-button--danger,
+.rym-app .rym-library-actions .rym-button--danger {
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  background: #ff3b30 !important;
+  color: #fff !important;
+  background-image: none !important;
+}
+
+.rym-app .rym-button--danger:hover:not(:disabled) {
+  background: #e9342b !important;
+}
+
+.rym-app .rym-button--danger:disabled {
+  border: 0 !important;
+  box-shadow: none !important;
+}
+`}</style>
+      <style>{`\n/* Apple-inspired admin modal refresh */
+.rym-app .rym-admin-backdrop {
+  background: rgba(20, 28, 38, .28);
+  -webkit-backdrop-filter: blur(18px) saturate(135%);
+  backdrop-filter: blur(18px) saturate(135%);
+}
+
+.rym-app .rym-admin-modal {
+  width: min(92vw, 390px);
+  padding: 28px 28px 24px;
+  border: 0 !important;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, .92);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  backdrop-filter: blur(28px) saturate(160%);
+  box-shadow:
+    0 28px 70px rgba(15, 23, 42, .22),
+    0 8px 24px rgba(15, 23, 42, .12);
+}
+
+.rym-app .rym-admin-modal h2 {
+  margin: 8px 0 8px;
+  font-size: 1.16rem;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -.02em;
+  color: #111827;
+}
+
+.rym-app .rym-admin-modal p {
+  margin: 0 0 20px;
+  color: #7a828d;
+  font-size: .9rem;
+  line-height: 1.45;
+}
+
+.rym-app .rym-admin-close {
+  top: 14px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  border: 0 !important;
+  border-radius: 999px;
+  background: rgba(120, 128, 140, .10);
+  color: #7f8790;
+  font-size: 1.25rem;
+  line-height: 1;
+  box-shadow: none !important;
+}
+
+.rym-app .rym-admin-close:hover {
+  background: rgba(120, 128, 140, .16);
+}
+
+.rym-app .rym-pin-digits {
+  gap: 10px;
+  margin: 8px 0 22px;
+}
+
+.rym-app .rym-pin-box,
+.rym-app .rym-pin-digit {
+  width: 58px;
+  height: 58px;
+  border: 0 !important;
+  border-radius: 16px;
+  background: #f2f4f7;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0);
+}
+
+.rym-app .rym-pin-box.is-active,
+.rym-app .rym-pin-digit.is-active {
+  background: #fff;
+  box-shadow:
+    0 0 0 2px #6ea8ff,
+    0 6px 16px rgba(79, 137, 230, .14);
+}
+
+.rym-app .rym-admin-submit {
+  min-height: 50px;
+  border: 0 !important;
+  border-radius: 15px;
+  background: linear-gradient(180deg, #6ea8ff 0%, #5b95ec 100%);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 8px 18px rgba(75, 131, 216, .18);
+}
+
+.rym-app .rym-admin-submit:hover:not(:disabled) {
+  filter: brightness(1.02);
+}
+
+.rym-app .rym-admin-submit:disabled {
+  background: #a9bdd9;
+  color: rgba(255,255,255,.9);
+  box-shadow: none;
+}
+
+.rym-app .rym-pin-change-modal {
+  width: min(92vw, 420px);
+}
+
+.rym-app .rym-pin-change-form {
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.rym-app .rym-pin-change-form label > span {
+  font-size: .78rem;
+  font-weight: 600;
+  color: #6f7782;
+}
+
+.rym-app .rym-pin-change-form input {
+  min-height: 50px;
+  border: 0 !important;
+  border-radius: 14px;
+  background: #f2f4f7;
+  box-shadow: none !important;
+}
+
+.rym-app .rym-pin-change-form input:focus {
+  background: #fff;
+  box-shadow: 0 0 0 2px #6ea8ff !important;
+}
+
+/* Solid destructive button: no stroke */
+.rym-app .rym-button--danger,
+.rym-app button.rym-button--danger,
+.rym-app .rym-library-actions .rym-button--danger {
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  background: #ff3b30 !important;
+  color: #fff !important;
+}
+
+.rym-app .rym-button--danger:hover {
+  background: #e9342b !important;
+}
+
+.rym-app .rym-button--danger:active {
+  transform: scale(.98);
+}
+\n`}</style>
+
+      <style>{`
+/* FINAL visual corrections */
+.rym-app .rym-admin-dots span {
+  background: #d5d9e0 !important;
+  border: 0 !important;
+  box-shadow:
+    inset 0 1px 2px rgba(0, 0, 0, .08),
+    0 1px 0 rgba(255,255,255,.65) !important;
+  opacity: 1 !important;
+}
+
+.rym-app .rym-admin-dots span.is-filled {
+  background: #cbd8ea !important;
+}
+
+.rym-app .rym-admin-dots span.is-filled::after {
+  background: #2f6fcb !important;
+}
+
+/* Change-PIN fields: visible even before typing */
+.rym-app .rym-pin-change-form input {
+  background: #d5d9e0 !important;
+  border: 0 !important;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.08) !important;
+  opacity: 1 !important;
+}
+
+/* Original muted Delete All red, flat/no stroke */
+.rym-app .rym-button--danger,
+.rym-app button.rym-button--danger,
+.rym-app .rym-library-actions .rym-button--danger {
+  background: #b84b46 !important;
+  background-image: none !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  color: #ffffff !important;
+}
+
+.rym-app .rym-button--danger:hover:not(:disabled) {
+  background: #aa433f !important;
+}
+`}</style>
+
+      <style>{`
+/* Glassmorphism modal: keep page sharp, glass only on the popup */
+.rym-app .rym-admin-backdrop {
+  background: rgba(10, 18, 28, .10) !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.rym-app .rym-admin-modal {
+  background: rgba(255, 255, 255, .58) !important;
+  -webkit-backdrop-filter: blur(26px) saturate(170%) !important;
+  backdrop-filter: blur(26px) saturate(170%) !important;
+  border: 1px solid rgba(255,255,255,.62) !important;
+  box-shadow:
+    0 28px 70px rgba(15, 23, 42, .20),
+    inset 0 1px 0 rgba(255,255,255,.72) !important;
+}
+
+.rym-app .rym-pin-change-modal {
+  background: rgba(255, 255, 255, .58) !important;
+  -webkit-backdrop-filter: blur(26px) saturate(170%) !important;
+  backdrop-filter: blur(26px) saturate(170%) !important;
+  border: 1px solid rgba(255,255,255,.62) !important;
+  box-shadow:
+    0 28px 70px rgba(15, 23, 42, .20),
+    inset 0 1px 0 rgba(255,255,255,.72) !important;
+}
+`}</style>
+
+      <style>{`
+/* FINAL admin modal style: no backdrop effect, white card + strong refined shadow */
+.rym-app .rym-admin-backdrop {
+  background: transparent !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.rym-app .rym-admin-modal,
+.rym-app .rym-pin-change-modal {
+  background: #ffffff !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  border: 0 !important;
+  box-shadow:
+    0 32px 70px rgba(15, 23, 42, .24),
+    0 14px 32px rgba(15, 23, 42, .16),
+    0 3px 10px rgba(15, 23, 42, .08) !important;
+}
+
+/* Keep PIN boxes clearly visible before typing */
+.rym-app .rym-admin-dots span {
+  background: #d9dde4 !important;
+  border: 0 !important;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.08) !important;
+  opacity: 1 !important;
+}
+
+.rym-app .rym-admin-dots span.is-filled {
+  background: #cddcf0 !important;
+}
+
+.rym-app .rym-pin-change-form input {
+  background: #e1e4e9 !important;
+  border: 0 !important;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.07) !important;
+}
+
+.rym-app .rym-pin-change-form input:focus {
+  background: #ffffff !important;
+  box-shadow: 0 0 0 2px rgba(52,120,246,.48) !important;
+}
+
+/* Keep Delete All muted/dark red, flat, no stroke */
+.rym-app .rym-button--danger,
+.rym-app button.rym-button--danger,
+.rym-app .rym-library-actions .rym-button--danger {
+  background: #b84b46 !important;
+  background-image: none !important;
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  color: #fff !important;
+}
+
+.rym-app .rym-button--danger:hover:not(:disabled) {
+  background: #aa433f !important;
+}
+`}</style>
+
+      <style>{`
+/* Match admin confirmation buttons to the site's primary navy blue */
+.rym-app .rym-admin-submit {
+  background: #315f9d !important;
+  background-image: none !important;
+  border: 0 !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.rym-app .rym-admin-submit:hover:not(:disabled) {
+  background: #294f84 !important;
+}
+
+.rym-app .rym-admin-submit:disabled {
+  background: #9db2cf !important;
+  color: rgba(255,255,255,.95) !important;
+}
+`}</style>
+
+      <style>{`
+/* Refined lighter modal shadow */
+.rym-app .rym-admin-modal,
+.rym-app .rym-pin-change-modal {
+  box-shadow:
+    0 22px 48px rgba(15, 23, 42, .16),
+    0 8px 20px rgba(15, 23, 42, .09),
+    0 2px 6px rgba(15, 23, 42, .05) !important;
+}
+`}</style>
+
+      <style>{`
+/* RYM-native admin modal */
+.rym-app .rym-admin-backdrop {
+  background: transparent !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.rym-app .rym-admin-modal,
+.rym-app .rym-pin-change-modal {
+  width: min(88vw, 360px) !important;
+  padding: 24px 24px 20px !important;
+  border: 1px solid #d8dde5 !important;
+  border-radius: 14px !important;
+  background: #ffffff !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  box-shadow:
+    0 14px 30px rgba(32, 45, 61, .10),
+    0 4px 10px rgba(32, 45, 61, .06) !important;
+}
+
+.rym-app .rym-admin-modal h2 {
+  margin: 4px 0 6px !important;
+  font-size: 1.02rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -.01em !important;
+  color: #1f2f43 !important;
+}
+
+.rym-app .rym-admin-modal > p {
+  margin: 0 0 18px !important;
+  font-size: .86rem !important;
+  line-height: 1.4 !important;
+  color: #6f7884 !important;
+}
+
+.rym-app .rym-admin-close {
+  top: 12px !important;
+  right: 12px !important;
+  width: 28px !important;
+  height: 28px !important;
+  border: 1px solid #e1e5ea !important;
+  border-radius: 999px !important;
+  background: #f4f6f8 !important;
+  color: #7b8490 !important;
+  box-shadow: none !important;
+}
+
+.rym-app .rym-admin-dots {
+  gap: 9px !important;
+  margin: 4px 0 16px !important;
+}
+
+.rym-app .rym-admin-dots span {
+  width: 54px !important;
+  height: 54px !important;
+  border: 1px solid #cfd6df !important;
+  border-radius: 10px !important;
+  background: #eef1f4 !important;
+  box-shadow: none !important;
+}
+
+.rym-app .rym-admin-dots span.is-filled {
+  background: #e1eaf5 !important;
+  border-color: #b8c9df !important;
+}
+
+.rym-app .rym-admin-dots span.is-filled::after {
+  background: #315f9d !important;
+}
+
+.rym-app .rym-admin-submit {
+  min-height: 46px !important;
+  border: 0 !important;
+  border-radius: 9px !important;
+  background: #315f9d !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  box-shadow: none !important;
+}
+
+.rym-app .rym-admin-submit:hover:not(:disabled) {
+  background: #294f84 !important;
+}
+
+.rym-app .rym-admin-submit:disabled {
+  background: #9fb2cc !important;
+  color: rgba(255,255,255,.95) !important;
+}
+
+.rym-app .rym-pin-change-modal {
+  width: min(90vw, 390px) !important;
+}
+
+.rym-app .rym-pin-change-form {
+  gap: 12px !important;
+  margin-top: 14px !important;
+}
+
+.rym-app .rym-pin-change-form label > span {
+  color: #5f6873 !important;
+  font-size: .76rem !important;
+  font-weight: 600 !important;
+}
+
+.rym-app .rym-pin-change-form input {
+  min-height: 46px !important;
+  border: 1px solid #cfd6df !important;
+  border-radius: 9px !important;
+  background: #f5f7f9 !important;
+  box-shadow: none !important;
+}
+
+.rym-app .rym-pin-change-form input:focus {
+  background: #ffffff !important;
+  border-color: #9eb6d3 !important;
+  box-shadow: 0 0 0 2px rgba(49,95,157,.10) !important;
+}
+`}</style>
+
+      {adminModalOpen && (
+        <div
+          className="rym-admin-backdrop"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) closeAdminModal();
+          }}
+        >
+          <section
+            className="rym-admin-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="rym-admin-title"
+          >
+            <button
+              type="button"
+              className="rym-admin-close"
+              onClick={closeAdminModal}
+              aria-label={language === "ko" ? "닫기" : "Close"}
+            >
+              ×
+            </button>
+
+            <h2 id="rym-admin-title">
+              {language === "ko" ? "관리자 전용 기능입니다." : "Administrator access"}
+            </h2>
+            <p>
+              {language === "ko"
+                ? "비밀번호를 입력해주세요."
+                : "Enter the 4-digit administrator PIN."}
+            </p>
+
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                void submitAdminPin();
+              }}
+            >
+              <input
+                className="rym-admin-pin"
+                type="password"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={4}
+                autoFocus
+                autoComplete="off"
+                value={adminPin}
+                onChange={(event) => {
+                  const digits = event.target.value.replace(/\D/g, "").slice(0, 4);
+                  setAdminPin(digits);
+                  setAdminPinError("");
+                }}
+                aria-label={language === "ko" ? "4자리 관리자 비밀번호" : "4-digit administrator PIN"}
+              />
+
+              <div className="rym-admin-dots" aria-hidden="true">
+                {[0, 1, 2, 3].map((index) => (
+                  <span key={index} className={index < adminPin.length ? "is-filled" : ""} />
+                ))}
+              </div>
+
+              <div className="rym-admin-error" role="alert">
+                {adminPinError}
+              </div>
+
+              <button
+                type="submit"
+                className="rym-admin-submit"
+                disabled={adminVerifying || adminPin.length !== 4}
+              >
+                {adminVerifying
+                  ? (language === "ko" ? "확인 중…" : "Checking…")
+                  : (language === "ko" ? "확인" : "Continue")}
+              </button>
+            </form>
+          </section>
+        </div>
+      )}
+      {pinChangeOpen && (
+        <div
+          className="rym-admin-backdrop"
+          role="presentation"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) closePinChange();
+          }}
+        >
+          <section
+            className="rym-admin-modal rym-pin-change-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="rym-pin-change-title"
+          >
+            <button
+              type="button"
+              className="rym-admin-close"
+              onClick={closePinChange}
+              aria-label={language === "ko" ? "닫기" : "Close"}
+            >
+              ×
+            </button>
+
+            <h2 id="rym-pin-change-title">
+              {language === "ko" ? "관리자 비밀번호 변경" : "Change administrator PIN"}
+            </h2>
+            <p>
+              {language === "ko"
+                ? "현재 비밀번호를 확인한 뒤 새 4자리 비밀번호로 변경합니다."
+                : "Confirm the current PIN, then choose a new 4-digit PIN."}
+            </p>
+
+            <form
+              className="rym-pin-change-form"
+              onSubmit={(event) => {
+                event.preventDefault();
+                void submitPinChange();
+              }}
+            >
+              <label>
+                <span>{language === "ko" ? "현재 비밀번호" : "Current PIN"}</span>
+                <input
+                  type="password"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={4}
+                  autoComplete="off"
+                  value={currentPin}
+                  onChange={(event) => {
+                    setCurrentPin(event.target.value.replace(/\D/g, "").slice(0, 4));
+                    setPinChangeError("");
+                  }}
+                />
+              </label>
+
+              <label>
+                <span>{language === "ko" ? "새 비밀번호" : "New PIN"}</span>
+                <input
+                  type="password"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={4}
+                  autoComplete="new-password"
+                  value={newPin}
+                  onChange={(event) => {
+                    setNewPin(event.target.value.replace(/\D/g, "").slice(0, 4));
+                    setPinChangeError("");
+                  }}
+                />
+              </label>
+
+              <label>
+                <span>{language === "ko" ? "새 비밀번호 확인" : "Confirm new PIN"}</span>
+                <input
+                  type="password"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={4}
+                  autoComplete="new-password"
+                  value={confirmPin}
+                  onChange={(event) => {
+                    setConfirmPin(event.target.value.replace(/\D/g, "").slice(0, 4));
+                    setPinChangeError("");
+                  }}
+                />
+              </label>
+
+              <div className="rym-admin-error" role="alert">
+                {pinChangeError}
+              </div>
+
+              <button
+                type="submit"
+                className="rym-admin-submit"
+                disabled={
+                  pinChanging ||
+                  currentPin.length !== 4 ||
+                  newPin.length !== 4 ||
+                  confirmPin.length !== 4
+                }
+              >
+                {pinChanging
+                  ? (language === "ko" ? "변경 중…" : "Changing…")
+                  : (language === "ko" ? "비밀번호 변경" : "Change PIN")}
+              </button>
+            </form>
+          </section>
+        </div>
+      )}
+
       <header className="rym-topbar">
         <div className="rym-topbar-inner">
           <h1 className="rym-brand"><span className="rym-brand-rym">RYM</span><span className="rym-brand-tracker">Tracker</span></h1>
@@ -1307,16 +2418,17 @@ export default function Home() {
                 <RymIcon name="swap" /><span>{language === "ko" ? "좌우 바꾸기" : "Swap Left / Right"}</span>
               </button>
             )}
-            <button type="button" onClick={() => setLibraryOpen((value) => !value)}
+            <button type="button" onClick={openLibraryWithPassword}
               className={"rym-button rym-button--secondary" + (libraryOpen ? " is-active" : "")}
               aria-expanded={libraryOpen} aria-controls="rym-library">
               <RymIcon name="library" /><span>{language === "ko" ? "라이브러리 관리" : "Manage Library"}</span>
             </button>
-            <label className="rym-button rym-button--primary rym-file-button">
+            <button type="button" onClick={openImportWithPassword}
+              className="rym-button rym-button--primary rym-file-button">
               <RymIcon name="upload" /><span>{language === "ko" ? "차트 기록 불러오기" : "Import Record"}</span>
-              <input type="file" accept=".json,application/json" onChange={importSnapshot}
-                className="rym-file-input" aria-label={language === "ko" ? "차트 기록 JSON 파일 불러오기" : "Import chart record JSON file"} />
-            </label>
+            </button>
+            <input ref={importInputRef} type="file" accept=".json,application/json" onChange={importSnapshot}
+              className="rym-file-input" aria-label={language === "ko" ? "차트 기록 JSON 파일 불러오기" : "Import chart record JSON file"} />
           </div>
         </div>
       </header>
@@ -1338,6 +2450,9 @@ export default function Home() {
                 <p>{snapshots.length}{language === "ko" ? "개 저장됨" : " saved records"}</p>
               </div>
               <div className="rym-library-actions">
+                <button type="button" onClick={openPinChange} className="rym-button rym-button--secondary">
+                  {language === "ko" ? "비밀번호 변경" : "Change PIN"}
+                </button>
                 <button type="button" onClick={selectAllForDelete} className="rym-button rym-button--secondary">{language === "ko" ? "전체 선택" : "Select All"}</button>
                 <button type="button" onClick={clearDeleteSelection} className="rym-button rym-button--secondary">{language === "ko" ? "선택 해제" : "Clear Selection"}</button>
                 <button type="button" onClick={deleteSelected} disabled={selectedForDelete.length === 0}
@@ -1373,11 +2488,10 @@ export default function Home() {
           <section className="rym-empty">
             <h2>{language === "ko" ? "내 곡 차트" : "Your song charts"}</h2>
             <p>{language === "ko" ? "RYM 곡 차트에서 저장한 JSON 차트 기록을 불러와 곡을 확인하고 순위 변화를 비교할 수 있습니다." : "Import a JSON chart record saved from a RYM song chart to view your songs and compare rankings."}</p>
-            <label className="rym-button rym-button--primary rym-file-button">
+            <button type="button" onClick={openImportWithPassword}
+              className="rym-button rym-button--primary rym-file-button">
               <RymIcon name="upload" /><span>{language === "ko" ? "차트 기록 불러오기" : "Import Record"}</span>
-              <input type="file" accept=".json,application/json" onChange={importSnapshot}
-                className="rym-file-input" aria-label={language === "ko" ? "첫 차트 기록 JSON 파일 불러오기" : "Import your first chart record JSON file"} />
-            </label>
+            </button>
           </section>
         )}
         {charts.length > 0 && (
@@ -1529,6 +2643,199 @@ body:has(.rym-app) { display: block; min-height: 100vh; min-height: 100dvh; }
 }
 .rym-app .rym-icon { width: 1.0625rem; height: 1.0625rem; flex: 0 0 auto; vertical-align: middle; }
 
+
+/* Administrator PIN modal */
+.rym-app .rym-admin-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  padding: 1.25rem;
+  background: rgba(18, 22, 28, .44);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+.rym-app .rym-admin-modal {
+  position: relative;
+  width: min(23rem, 100%);
+  padding: 2rem 1.5rem 1.5rem;
+  border: 0;
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow:
+    0 2rem 5rem rgba(15, 23, 42, .34),
+    0 .75rem 1.75rem rgba(15, 23, 42, .22);
+  text-align: center;
+}
+.rym-app .rym-admin-close {
+  position: absolute;
+  top: .65rem;
+  right: .75rem;
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #7a808a;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+.rym-app .rym-admin-close:hover { background: #f0f2f5; color: #343941; }
+.rym-app .rym-admin-modal h2 {
+  color: #1f2328;
+  font-size: 1.08rem;
+  font-weight: 750;
+  letter-spacing: -.01em;
+}
+.rym-app .rym-admin-modal > p {
+  margin-top: .4rem;
+  color: #767c86;
+  font-size: .9rem;
+}
+.rym-app .rym-admin-modal form { position: relative; margin-top: 1.25rem; }
+.rym-app .rym-admin-pin {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: 50%;
+  width: 14.45rem;
+  height: 3.45rem;
+  transform: translateX(-50%);
+  border: 0;
+  border-radius: .7rem;
+  opacity: .01;
+  background: transparent;
+  color: transparent;
+  caret-color: transparent;
+  cursor: text;
+}
+.rym-app .rym-admin-dots {
+  display: grid;
+  grid-template-columns: repeat(4, 3.2rem);
+  justify-content: center;
+  gap: .55rem;
+}
+.rym-app .rym-admin-dots span {
+  display: grid;
+  place-items: center;
+  width: 3.2rem;
+  height: 3.45rem;
+  border: 0;
+  border-radius: .7rem;
+  background: #f3f5f8;
+  box-shadow: inset 0 1px 2px rgba(25, 33, 45, .04);
+}
+.rym-app .rym-admin-dots span::after {
+  content: "";
+  width: .58rem;
+  height: .58rem;
+  border-radius: 50%;
+  background: transparent;
+  transform: scale(.5);
+  transition: transform .12s ease, background .12s ease;
+}
+.rym-app .rym-admin-dots span.is-filled {
+  background: #eef4fb;
+}
+.rym-app .rym-admin-dots span.is-filled::after {
+  background: #294f82;
+  transform: scale(1);
+}
+.rym-app .rym-admin-error {
+  min-height: 1.25rem;
+  margin-top: .65rem;
+  color: #b44742;
+  font-size: .8rem;
+}
+.rym-app .rym-admin-submit {
+  width: 100%;
+  margin-top: .3rem;
+  min-height: 2.75rem;
+  border: 0;
+  border-radius: .65rem;
+  background: #2f5591;
+  color: #fff;
+  font-weight: 700;
+}
+.rym-app .rym-admin-submit:hover:not(:disabled) { background: #274a7f; }
+.rym-app .rym-admin-submit:disabled { opacity: .45; }
+
+
+.rym-app .rym-pin-change-form {
+  position: static;
+  display: grid;
+  gap: .85rem;
+  margin-top: 1.25rem;
+  text-align: left;
+}
+.rym-app .rym-pin-change-form label {
+  display: grid;
+  gap: .38rem;
+}
+.rym-app .rym-pin-change-form label > span {
+  color: #555d68;
+  font-size: .78rem;
+  font-weight: 650;
+}
+.rym-app .rym-pin-change-form input {
+  width: 100%;
+  min-height: 2.8rem;
+  padding: 0 .9rem;
+  border: 0;
+  border-radius: .65rem;
+  outline: none;
+  background: #f2f4f7;
+  color: #1f2328;
+  font: inherit;
+  letter-spacing: .22em;
+}
+.rym-app .rym-pin-change-form input:focus {
+  background: #eaf1f9;
+  box-shadow: 0 0 0 2px rgba(47, 85, 145, .14);
+}
+.rym-app .rym-song-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: .42rem;
+  margin-top: .48rem;
+}
+.rym-app .rym-song-actions .rym-preview-button {
+  margin-top: 0;
+}
+.rym-app .rym-rym-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.8rem;
+  height: 1.8rem;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  text-decoration: none;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform .14s ease, box-shadow .14s ease;
+}
+.rym-app .rym-rym-button:hover {
+  box-shadow: 0 .18rem .55rem rgba(31, 43, 59, .16);
+}
+.rym-app .rym-rym-button:active {
+  transform: scale(.96);
+}
+.rym-app .rym-rym-logo-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+@media (max-width: 680px) {
+  .rym-app .rym-song-actions {
+    margin-top: .42rem;
+  }
+}
+
 /* Header: keep RYM hierarchy, tighten the chrome. */
 .rym-app .rym-topbar { background: rgba(255,255,255,.98); border-bottom: 1px solid var(--rym-border); box-shadow: 0 1px 2px #00000008; }
 .rym-app .rym-topbar-inner, .rym-app .rym-subbar-inner {
@@ -1567,7 +2874,7 @@ body:has(.rym-app) { display: block; min-height: 100vh; min-height: 100dvh; }
 .rym-app .rym-button--danger:hover:not(:disabled) { background: #963935; }
 .rym-app .rym-file-button { cursor: pointer; overflow: hidden; }
 .rym-app .rym-file-button:focus-within { outline: 2px solid #6f98ca; outline-offset: 2px; }
-.rym-app .rym-file-input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.rym-app .rym-file-input { display: none !important; }
 .rym-app 
 .rym-language-button {
   min-width: 72px;
@@ -2512,3 +3819,4 @@ body:has(.rym-app) { display: block; min-height: 100vh; min-height: 100dvh; }
 }
 
 `;
+

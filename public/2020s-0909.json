@@ -1,5 +1,6 @@
 {
-  "captured_at": "2026-09-16T12:02:28.302Z",
+  "schema_version": 2,
+  "captured_at": "2026-09-09T06:28:15.541Z",
   "source_url": "https://rateyourmusic.com/charts/top/song/2020s/",
   "page_title": "Best songs of the 2020s - Rate Your Music",
   "visible_item_count": 100,
@@ -14,6 +15,7 @@
       "primary_genres": [
         "Progressive Pop"
       ],
+      "secondary_genres": [],
       "average_rating": "4.64",
       "number_of_ratings": "/\n\n                              \n                                 9k",
       "rym_url": "https://rateyourmusic.com/song/black-country-new-road/the-place-where-he-inserted-the-blade/",
@@ -30,6 +32,7 @@
       "primary_genres": [
         "Indie Folk"
       ],
+      "secondary_genres": [],
       "average_rating": "4.66",
       "number_of_ratings": "/\n\n                              \n                                 3k",
       "rym_url": "https://rateyourmusic.com/song/big-thief/simulation-swarm/",
@@ -46,6 +49,7 @@
       "primary_genres": [
         "Progressive Rock"
       ],
+      "secondary_genres": [],
       "average_rating": "4.63",
       "number_of_ratings": "/\n\n                              \n                                 6k",
       "rym_url": "https://rateyourmusic.com/song/geordie-greep/holy-holy/",
@@ -62,7 +66,8 @@
       "primary_genres": [
         "Conscious Hip Hop"
       ],
-      "average_rating": "4.62",
+      "secondary_genres": [],
+      "average_rating": "4.61",
       "number_of_ratings": "/\n\n                              \n                                 2k",
       "rym_url": "https://rateyourmusic.com/song/rxknephew/american-tterroristt/",
       "album_art_url": "https://e.snmc.io/i/300/w/24d389fcd4593e3b83549cad53de0804/9075033/RXKNephew%20-%20Crack%20Therapy%203%2C%20Cover%20art.webp",
@@ -78,6 +83,7 @@
       "primary_genres": [
         "Hardcore Hip Hop"
       ],
+      "secondary_genres": [],
       "average_rating": "4.60",
       "number_of_ratings": "/\n\n                              \n                                 4k",
       "rym_url": "https://rateyourmusic.com/song/jpegmafia/hazard-duty-pay/",
@@ -94,6 +100,7 @@
       "primary_genres": [
         "Soft Rock"
       ],
+      "secondary_genres": [],
       "average_rating": "4.61",
       "number_of_ratings": "/\n\n                              \n                                 3k",
       "rym_url": "https://rateyourmusic.com/song/cameron-winter/love-takes-miles/",
@@ -110,6 +117,7 @@
       "primary_genres": [
         "Emo"
       ],
+      "secondary_genres": [],
       "average_rating": "4.60",
       "number_of_ratings": "/\n\n                              \n                                 1k",
       "rym_url": "https://rateyourmusic.com/song/willy-rodriguez/wetdream/",
@@ -127,6 +135,7 @@
       "primary_genres": [
         "Conscious Hip Hop"
       ],
+      "secondary_genres": [],
       "average_rating": "4.59",
       "number_of_ratings": "/\n\n                              \n                                 1k",
       "rym_url": "https://rateyourmusic.com/song/rx-papi-gud/12-stout-street/",
@@ -143,6 +152,7 @@
       "primary_genres": [
         "Conscious Hip Hop"
       ],
+      "secondary_genres": [],
       "average_rating": "4.58",
       "number_of_ratings": "/\n\n                              \n                                 3k",
       "rym_url": "https://rateyourmusic.com/song/denzel-curry/walkin/",
@@ -159,6 +169,7 @@
       "primary_genres": [
         "Shoegaze"
       ],
+      "secondary_genres": [],
       "average_rating": "4.58",
       "number_of_ratings": "/\n\n                              \n                                 3k",
       "rym_url": "https://rateyourmusic.com/song/lil-ugly-mane/headboard/",
@@ -167,22 +178,6 @@
     },
     {
       "rank": 11,
-      "title": "Anything",
-      "artists": [
-        "Adrianne Lenker"
-      ],
-      "release_date": "2 September 2020",
-      "primary_genres": [
-        "Indie Folk"
-      ],
-      "average_rating": "4.58",
-      "number_of_ratings": "/\n\n                              \n                                 2k",
-      "rym_url": "https://rateyourmusic.com/song/adrianne-lenker/anything/",
-      "album_art_url": "https://e.snmc.io/i/300/w/03252fe4ab434fa972eb9999b0b42919/10091012/Adrianne%20Lenker%20-%20Songs%2C%20Cover%20art.webp",
-      "spotify_url": "https://open.spotify.com/track/4PwWESSlTwzvw9B7bmtTLS"
-    },
-    {
-      "rank": 12,
       "title": "Doves",
       "artists": [
         "Armand Hammer"
@@ -191,11 +186,29 @@
       "primary_genres": [
         "Experimental"
       ],
+      "secondary_genres": [],
       "average_rating": "4.59",
-      "number_of_ratings": "/\n\n                              \n                                 641",
+      "number_of_ratings": "/\n\n                              \n                                 646",
       "rym_url": "https://rateyourmusic.com/song/armand-hammer/doves/",
       "album_art_url": "https://e.snmc.io/i/300/w/42bdb320299cef862704149317f4ee5a/11966350/Armand%20Hammer%20-%20Doves%2C%20Cover%20art.webp",
       "spotify_url": "https://open.spotify.com/track/0o0SKkZM0grFa8sY3N9GIT"
+    },
+    {
+      "rank": 12,
+      "title": "Anything",
+      "artists": [
+        "Adrianne Lenker"
+      ],
+      "release_date": "2 September 2020",
+      "primary_genres": [
+        "Indie Folk"
+      ],
+      "secondary_genres": [],
+      "average_rating": "4.58",
+      "number_of_ratings": "/\n\n                              \n                                 2k",
+      "rym_url": "https://rateyourmusic.com/song/adrianne-lenker/anything/",
+      "album_art_url": "https://e.snmc.io/i/300/w/03252fe4ab434fa972eb9999b0b42919/10091012/Adrianne%20Lenker%20-%20Songs%2C%20Cover%20art.webp",
+      "spotify_url": "https://open.spotify.com/track/4PwWESSlTwzvw9B7bmtTLS"
     },
     {
       "rank": 13,
@@ -207,6 +220,7 @@
       "primary_genres": [
         "Pop Rock"
       ],
+      "secondary_genres": [],
       "average_rating": "4.55",
       "number_of_ratings": "/\n\n                              \n                                 8k",
       "rym_url": "https://rateyourmusic.com/song/magdalena-bay/death-and-romance/",
@@ -223,7 +237,8 @@
       "primary_genres": [
         "Post-Rock"
       ],
-      "average_rating": "4.53",
+      "secondary_genres": [],
+      "average_rating": "4.52",
       "number_of_ratings": "/\n\n                              \n                                 9k",
       "rym_url": "https://rateyourmusic.com/song/black-country-new-road/basketball-shoes/",
       "album_art_url": "https://e.snmc.io/i/300/w/962f3c52f37cf69d7f25f75f939c85e4/9391518/Black%20Country%2C%20New%20Road%20-%20Ants%20From%20Up%20There%2C%20Cover%20art.webp",
@@ -231,22 +246,6 @@
     },
     {
       "rank": 15,
-      "title": "Sugar / Tzu",
-      "artists": [
-        "black midi"
-      ],
-      "release_date": "12 July 2022",
-      "primary_genres": [
-        "Jazz-Rock"
-      ],
-      "average_rating": "4.55",
-      "number_of_ratings": "/\n\n                              \n                                 5k",
-      "rym_url": "https://rateyourmusic.com/song/black-midi/sugar-tzu/",
-      "album_art_url": "https://e.snmc.io/i/300/w/168e41c16f28e127260b10307ee03d84/9932087/black%20midi%20-%20Hellfire%2C%20Cover%20art.webp",
-      "spotify_url": "https://open.spotify.com/track/0DkazfLyVRaMvSkwycyyfT"
-    },
-    {
-      "rank": 16,
       "title": "Porcelain Slightly",
       "artists": [
         "Lil Ugly Mane"
@@ -255,11 +254,29 @@
       "primary_genres": [
         "Neo-Psychedelia"
       ],
+      "secondary_genres": [],
       "average_rating": "4.57",
       "number_of_ratings": "/\n\n                              \n                                 2k",
       "rym_url": "https://rateyourmusic.com/song/lil-ugly-mane/porcelain-slightly/",
       "album_art_url": "https://e.snmc.io/i/300/w/8e1a563d9e888beac8bddfb679b4bb00/9420650/Lil%20Ugly%20Mane%20-%20Volcanic%20Bird%20Enemy%20and%20the%20Voiced%20Concern%2C%20Cover%20art.webp",
       "spotify_url": "https://open.spotify.com/track/7EMVQKBomkx9uUKGfpigOf"
+    },
+    {
+      "rank": 16,
+      "title": "Sugar / Tzu",
+      "artists": [
+        "black midi"
+      ],
+      "release_date": "12 July 2022",
+      "primary_genres": [
+        "Jazz-Rock"
+      ],
+      "secondary_genres": [],
+      "average_rating": "4.55",
+      "number_of_ratings": "/\n\n                              \n                                 5k",
+      "rym_url": "https://rateyourmusic.com/song/black-midi/sugar-tzu/",
+      "album_art_url": "https://e.snmc.io/i/300/w/168e41c16f28e127260b10307ee03d84/9932087/black%20midi%20-%20Hellfire%2C%20Cover%20art.webp",
+      "spotify_url": "https://open.spotify.com/track/0DkazfLyVRaMvSkwycyyfT"
     },
     {
       "rank": 17,
@@ -271,6 +288,7 @@
       "primary_genres": [
         "Synthpop"
       ],
+      "secondary_genres": [],
       "average_rating": "4.53",
       "number_of_ratings": "/\n\n                              \n                                 8k",
       "rym_url": "https://rateyourmusic.com/song/magdalena-bay/image/",
@@ -287,8 +305,9 @@
       "primary_genres": [
         "Experimental Hip Hop"
       ],
+      "secondary_genres": [],
       "average_rating": "4.56",
-      "number_of_ratings": "/\n\n                              \n                                 574",
+      "number_of_ratings": "/\n\n                              \n                                 581",
       "rym_url": "https://rateyourmusic.com/song/cities-aviv/power-approaches/",
       "album_art_url": "https://e.snmc.io/i/300/w/3332f64eeae9880d2b856dd51750d6f1/10448087/Cities%20Aviv%20-%20GUM%2C%20Cover%20art.webp",
       "spotify_url": "https://open.spotify.com/track/7aZ779H8cpx3aiIdmBX39N"
@@ -303,6 +322,7 @@
       "primary_genres": [
         "Brutal Prog"
       ],
+      "secondary_genres": [],
       "average_rating": "4.54",
       "number_of_ratings": "/\n\n                              \n                                 5k",
       "rym_url": "https://rateyourmusic.com/song/black-midi/welcome-to-hell/",
@@ -319,6 +339,7 @@
       "primary_genres": [
         "Trance"
       ],
+      "secondary_genres": [],
       "average_rating": "4.56",
       "number_of_ratings": "/\n\n                              \n                                 1k",
       "rym_url": "https://rateyourmusic.com/song/sewerslvt/goodbye/",
@@ -335,6 +356,7 @@
       "primary_genres": [
         "Euro-Disco"
       ],
+      "secondary_genres": [],
       "average_rating": "4.53",
       "number_of_ratings": "/\n\n                              \n                                 7k",
       "rym_url": "https://rateyourmusic.com/song/magdalena-bay/cry-for-me/",
@@ -351,6 +373,7 @@
       "primary_genres": [
         "Post-Punk Revival"
       ],
+      "secondary_genres": [],
       "average_rating": "4.54",
       "number_of_ratings": "/\n\n                              \n                                 5k",
       "rym_url": "https://rateyourmusic.com/song/the-strokes/the-adults-are-talking/",
@@ -367,6 +390,7 @@
       "primary_genres": [
         "Alternative R&B"
       ],
+      "secondary_genres": [],
       "average_rating": "4.56",
       "number_of_ratings": "/\n\n                              \n                                 2k",
       "rym_url": "https://rateyourmusic.com/song/lucy-bedroque/how-to-pretend/",
@@ -375,22 +399,6 @@
     },
     {
       "rank": 24,
-      "title": "Good News",
-      "artists": [
-        "Mac Miller"
-      ],
-      "release_date": "9 January 2020",
-      "primary_genres": [
-        "Neo-Soul"
-      ],
-      "average_rating": "4.55",
-      "number_of_ratings": "/\n\n                              \n                                 3k",
-      "rym_url": "https://rateyourmusic.com/song/mac-miller/good-news/",
-      "album_art_url": "https://e.snmc.io/i/300/w/bbbb413c8206850f62a4dcb39a363d49/7934252/Mac%20Miller%20-%20Circles%2C%20Cover%20art.webp",
-      "spotify_url": "https://open.spotify.com/track/1DWZUa5Mzf2BwzpHtgbHPY"
-    },
-    {
-      "rank": 25,
       "title": "Knees",
       "artists": [
         "Injury Reserve"
@@ -399,11 +407,29 @@
       "primary_genres": [
         "Experimental Hip Hop"
       ],
+      "secondary_genres": [],
       "average_rating": "4.53",
       "number_of_ratings": "/\n\n                              \n                                 4k",
       "rym_url": "https://rateyourmusic.com/song/injury-reserve/knees/",
       "album_art_url": "https://e.snmc.io/i/300/w/75e7e2497e8214a279d92e287e9797ab/9233236/Injury%20Reserve%20-%20By%20the%20Time%20I%20Get%20to%20Phoenix%2C%20Cover%20art.webp",
       "spotify_url": "https://open.spotify.com/track/4XoN5kQ4eIRPwCqMQ3U6iN"
+    },
+    {
+      "rank": 25,
+      "title": "Good News",
+      "artists": [
+        "Mac Miller"
+      ],
+      "release_date": "9 January 2020",
+      "primary_genres": [
+        "Neo-Soul"
+      ],
+      "secondary_genres": [],
+      "average_rating": "4.54",
+      "number_of_ratings": "/\n\n                              \n                                 3k",
+      "rym_url": "https://rateyourmusic.com/song/mac-miller/good-news/",
+      "album_art_url": "https://e.snmc.io/i/300/w/bbbb413c8206850f62a4dcb39a363d49/7934252/Mac%20Miller%20-%20Circles%2C%20Cover%20art.webp",
+      "spotify_url": "https://open.spotify.com/track/1DWZUa5Mzf2BwzpHtgbHPY"
     },
     {
       "rank": 26,
@@ -415,10 +441,12 @@
       "primary_genres": [
         "Post-Rock"
       ],
+      "secondary_genres": [],
       "average_rating": "4.54",
       "number_of_ratings": "/\n\n                              \n                                 2k",
       "rym_url": "https://rateyourmusic.com/song/godspeed-you-black-emperor/babys-in-a-thundercloud/",
-      "album_art_url": "https://e.snmc.io/i/300/w/5bbb7f74528026fb04952b7474c59039/12454310/Godspeed%20You!%20Black%20Emperor%20-%20%22No%20Title%20as%20of%2013%20February%202024%2028%2C340%20Dead%22%2C%20Cover%20art.webp"
+      "album_art_url": "https://e.snmc.io/i/300/w/5bbb7f74528026fb04952b7474c59039/12454310/Godspeed%20You!%20Black%20Emperor%20-%20%22No%20Title%20as%20of%2013%20February%202024%2028%2C340%20Dead%22%2C%20Cover%20art.webp",
+      "spotify_url": ""
     },
     {
       "rank": 27,
@@ -431,10 +459,12 @@
       "primary_genres": [
         "Abstract Hip Hop"
       ],
+      "secondary_genres": [],
       "average_rating": "4.55",
       "number_of_ratings": "/\n\n                              \n                                 2k",
       "rym_url": "https://rateyourmusic.com/song/danger-mouse-black-thought/aquamarine/",
-      "album_art_url": "https://e.snmc.io/i/300/w/9da530459cd58938ee9cedb53c6865f9/12851980/Danger%20Mouse%20%26%20Black%20Thought%20-%20Cheat%20Codes%2C%20Cover%20art.webp"
+      "album_art_url": "https://e.snmc.io/i/300/w/9da530459cd58938ee9cedb53c6865f9/12851980/Danger%20Mouse%20%26%20Black%20Thought%20-%20Cheat%20Codes%2C%20Cover%20art.webp",
+      "spotify_url": ""
     },
     {
       "rank": 28,
@@ -446,6 +476,7 @@
       "primary_genres": [
         "Conscious Hip Hop"
       ],
+      "secondary_genres": [],
       "average_rating": "4.53",
       "number_of_ratings": "/\n\n                              \n                                 3k",
       "rym_url": "https://rateyourmusic.com/song/little-simz/introvert/",
@@ -462,6 +493,7 @@
       "primary_genres": [
         "Singer-Songwriter"
       ],
+      "secondary_genres": [],
       "average_rating": "4.53",
       "number_of_ratings": "/\n\n                              \n                                 3k",
       "rym_url": "https://rateyourmusic.com/song/phoebe-bridgers/i-know-the-end/",
@@ -470,22 +502,6 @@
     },
     {
       "rank": 30,
-      "title": "I Been Young",
-      "artists": [
-        "George Clanton"
-      ],
-      "release_date": "7 April 2023",
-      "primary_genres": [
-        "Baggy"
-      ],
-      "average_rating": "4.53",
-      "number_of_ratings": "/\n\n                              \n                                 2k",
-      "rym_url": "https://rateyourmusic.com/song/george-clanton/i-been-young/",
-      "album_art_url": "https://e.snmc.io/i/300/w/e321849cdbb71ffe225f61847e009941/11181125/George%20Clanton%20-%20Ooh%20Rap%20I%20Ya%2C%20Cover%20art.webp",
-      "spotify_url": "https://open.spotify.com/track/1gRDj5L77TVphFS2AT0nh3"
-    },
-    {
-      "rank": 31,
       "title": "The Dripping Tap",
       "artists": [
         "King Gizzard and The Lizard Wizard"
@@ -494,11 +510,29 @@
       "primary_genres": [
         "Acid Rock"
       ],
+      "secondary_genres": [],
       "average_rating": "4.54",
       "number_of_ratings": "/\n\n                              \n                                 1k",
       "rym_url": "https://rateyourmusic.com/song/king-gizzard-and-the-lizard-wizard/the-dripping-tap-1/",
       "album_art_url": "https://e.snmc.io/i/300/w/d856d1bcc60804c7651fdeeebfe7bca4/9781107/King%20Gizzard%20and%20The%20Lizard%20Wizard%20-%20Omnium%20Gatherum%2C%20Cover%20art.webp",
       "spotify_url": "https://open.spotify.com/track/0o6rOggbaLEvtwUHNztuD2"
+    },
+    {
+      "rank": 31,
+      "title": "I Been Young",
+      "artists": [
+        "George Clanton"
+      ],
+      "release_date": "7 April 2023",
+      "primary_genres": [
+        "Baggy"
+      ],
+      "secondary_genres": [],
+      "average_rating": "4.53",
+      "number_of_ratings": "/\n\n                              \n                                 2k",
+      "rym_url": "https://rateyourmusic.com/song/george-clanton/i-been-young/",
+      "album_art_url": "https://e.snmc.io/i/300/w/e321849cdbb71ffe225f61847e009941/11181125/George%20Clanton%20-%20Ooh%20Rap%20I%20Ya%2C%20Cover%20art.webp",
+      "spotify_url": "https://open.spotify.com/track/1gRDj5L77TVphFS2AT0nh3"
     },
     {
       "rank": 32,
@@ -510,6 +544,7 @@
       "primary_genres": [
         "Chamber Folk"
       ],
+      "secondary_genres": [],
       "average_rating": "4.53",
       "number_of_ratings": "/\n\n                              \n                                 2k",
       "rym_url": "https://rateyourmusic.com/song/%E9%9D%92%E8%91%89%E5%B8%82%E5%AD%90/dawn-in-the-adan-1/",
@@ -526,6 +561,7 @@
       "primary_genres": [
         "Singer-Songwriter"
       ],
+      "secondary_genres": [],
       "average_rating": "4.51",
       "number_of_ratings": "/\n\n                              \n                                 3k",
       "rym_url": "https://rateyourmusic.com/song/cameron-winter/_0/",
@@ -542,6 +578,7 @@
       "primary_genres": [
         "Dance-Pop"
       ],
+      "secondary_genres": [],
       "average_rating": "4.51",
       "number_of_ratings": "/\n\n                              \n                                 3k",
       "rym_url": "https://rateyourmusic.com/song/jessie-ware/spotlight/",
@@ -550,68 +587,6 @@
     },
     {
       "rank": 35,
-      "title": "Shit Talk",
-      "artists": [
-        "Sufjan Stevens"
-      ],
-      "release_date": "6 October 2023",
-      "primary_genres": [
-        "Indie Folk"
-      ],
-      "average_rating": "4.51",
-      "number_of_ratings": "/\n\n                              \n                                 2k",
-      "rym_url": "https://rateyourmusic.com/song/sufjan-stevens/shit-talk/",
-      "album_art_url": "https://e.snmc.io/i/300/w/2fe402ebfa9b113a6d3d03fa4fe659e4/11229386/Sufjan%20Stevens%20-%20Javelin%2C%20Cover%20art.webp",
-      "spotify_url": "https://open.spotify.com/track/6t8aRTXXIcx9JVRD8IRZKR"
-    },
-    {
-      "rank": 36,
-      "title": "Concorde",
-      "artists": [
-        "Black Country, New Road"
-      ],
-      "release_date": "30 November 2021",
-      "primary_genres": [
-        "Indie Rock"
-      ],
-      "average_rating": "4.46",
-      "number_of_ratings": "/\n\n                              \n                                 9k",
-      "rym_url": "https://rateyourmusic.com/song/black-country-new-road/concorde/",
-      "album_art_url": "https://e.snmc.io/i/300/w/962f3c52f37cf69d7f25f75f939c85e4/9391518/Black%20Country%2C%20New%20Road%20-%20Ants%20From%20Up%20There%2C%20Cover%20art.webp",
-      "spotify_url": "https://open.spotify.com/track/0y5akbuW5mCnnUe71xATpe"
-    },
-    {
-      "rank": 37,
-      "title": "河北墨麒麟",
-      "artists": [
-        "Omnipotent Youth Society 万能青年旅店"
-      ],
-      "release_date": "22 December 2020",
-      "primary_genres": [
-        "Progressive Rock"
-      ],
-      "average_rating": "4.53",
-      "number_of_ratings": "/\n\n                              \n                                 795",
-      "rym_url": "https://rateyourmusic.com/song/%E4%B8%87%E8%83%BD%E9%9D%92%E5%B9%B4%E6%97%85%E5%BA%97/%E6%B2%B3%E5%8C%97%E5%A2%A8%E9%BA%92%E9%BA%9F/",
-      "album_art_url": "https://e.snmc.io/i/300/w/8070234dbaaceb45e7515ca3e3ccad76/8656170/%E4%B8%87%E8%83%BD%E9%9D%92%E5%B9%B4%E6%97%85%E5%BA%97%20%5BOmnipotent%20Youth%20Society%5D%20-%20%E5%86%80%E8%A5%BF%E5%8D%97%E6%9E%97%E8%B7%AF%E8%A1%8C%20%5BInside%20the%20Cable%20Temple%5D%2C%20Cover%20art.webp"
-    },
-    {
-      "rank": 38,
-      "title": "Hardstyle Drill 2009 Nokia Angelz مسدسات مجمدة 1.6",
-      "artists": [
-        "Yabujin"
-      ],
-      "release_date": "17 March 2020",
-      "primary_genres": [
-        "Experimental Hip Hop"
-      ],
-      "average_rating": "4.53",
-      "number_of_ratings": "/\n\n                              \n                                 353",
-      "rym_url": "https://rateyourmusic.com/song/yabujin/hardstyle-drill-2009-nokia-angelz-%D9%85%D8%B3%D8%AF%D8%B3%D8%A7%D8%AA-%D9%85%D8%AC%D9%85%D8%AF%D8%A9-1_6/",
-      "album_art_url": "https://e.snmc.io/i/300/w/8a47f039bb8aa18e3c2032c2218973a8/9589181/Yabujin%20-%20Hardstyle%20Drill%202009%20Nokia%20Angelz%20%D9%85%D8%B3%D8%AF%D8%B3%D8%A7%D8%AA%20%D9%85%D8%AC%D9%85%D8%AF%D8%A9%201_6%2C%20Cover%20art.webp"
-    },
-    {
-      "rank": 39,
       "title": "The Real Lil Reese",
       "artists": [
         "RXKNephew"
@@ -620,30 +595,83 @@
       "primary_genres": [
         "Cloud Rap"
       ],
+      "secondary_genres": [],
       "average_rating": "4.52",
-      "number_of_ratings": "/\n\n                              \n                                 299",
+      "number_of_ratings": "/\n\n                              \n                                 302",
       "rym_url": "https://rateyourmusic.com/song/rxknephew/the-real-lil-reese/",
       "album_art_url": "https://e.snmc.io/i/300/w/d3fab1b3fa271f8798132c5dffa49b4d/9551783/RXKNephew%20-%20Shawty%20RXK%20Too%202%2C%20Cover%20art.webp",
       "spotify_url": "https://open.spotify.com/track/6Nlwl2F0VDDweiRcQd4cfh"
     },
     {
-      "rank": 40,
-      "title": "Funny Papers",
+      "rank": 36,
+      "title": "Shit Talk",
       "artists": [
-        "Mac Miller"
+        "Sufjan Stevens"
       ],
-      "release_date": "17 January 2025",
+      "release_date": "6 October 2023",
       "primary_genres": [
-        "Jazz Rap"
+        "Indie Folk"
       ],
-      "average_rating": "4.50",
+      "secondary_genres": [],
+      "average_rating": "4.51",
       "number_of_ratings": "/\n\n                              \n                                 2k",
-      "rym_url": "https://rateyourmusic.com/song/mac-miller/funny-papers/",
-      "album_art_url": "https://e.snmc.io/i/300/w/0f65fd9c2e9088ae66d3474dca3d9422/12740749/Mac%20Miller%20-%20Balloonerism%2C%20Cover%20art.webp",
-      "spotify_url": "https://open.spotify.com/track/4pu58kqegTnOxPNJpY3kr9"
+      "rym_url": "https://rateyourmusic.com/song/sufjan-stevens/shit-talk/",
+      "album_art_url": "https://e.snmc.io/i/300/w/2fe402ebfa9b113a6d3d03fa4fe659e4/11229386/Sufjan%20Stevens%20-%20Javelin%2C%20Cover%20art.webp",
+      "spotify_url": "https://open.spotify.com/track/6t8aRTXXIcx9JVRD8IRZKR"
     },
     {
-      "rank": 41,
+      "rank": 37,
+      "title": "Concorde",
+      "artists": [
+        "Black Country, New Road"
+      ],
+      "release_date": "30 November 2021",
+      "primary_genres": [
+        "Indie Rock"
+      ],
+      "secondary_genres": [],
+      "average_rating": "4.47",
+      "number_of_ratings": "/\n\n                              \n                                 9k",
+      "rym_url": "https://rateyourmusic.com/song/black-country-new-road/concorde/",
+      "album_art_url": "https://e.snmc.io/i/300/w/962f3c52f37cf69d7f25f75f939c85e4/9391518/Black%20Country%2C%20New%20Road%20-%20Ants%20From%20Up%20There%2C%20Cover%20art.webp",
+      "spotify_url": "https://open.spotify.com/track/0y5akbuW5mCnnUe71xATpe"
+    },
+    {
+      "rank": 38,
+      "title": "河北墨麒麟",
+      "artists": [
+        "Omnipotent Youth Society 万能青年旅店"
+      ],
+      "release_date": "22 December 2020",
+      "primary_genres": [
+        "Progressive Rock"
+      ],
+      "secondary_genres": [],
+      "average_rating": "4.53",
+      "number_of_ratings": "/\n\n                              \n                                 801",
+      "rym_url": "https://rateyourmusic.com/song/%E4%B8%87%E8%83%BD%E9%9D%92%E5%B9%B4%E6%97%85%E5%BA%97/%E6%B2%B3%E5%8C%97%E5%A2%A8%E9%BA%92%E9%BA%9F/",
+      "album_art_url": "https://e.snmc.io/i/300/w/8070234dbaaceb45e7515ca3e3ccad76/8656170/%E4%B8%87%E8%83%BD%E9%9D%92%E5%B9%B4%E6%97%85%E5%BA%97%20%5BOmnipotent%20Youth%20Society%5D%20-%20%E5%86%80%E8%A5%BF%E5%8D%97%E6%9E%97%E8%B7%AF%E8%A1%8C%20%5BInside%20the%20Cable%20Temple%5D%2C%20Cover%20art.webp",
+      "spotify_url": ""
+    },
+    {
+      "rank": 39,
+      "title": "Hardstyle Drill 2009 Nokia Angelz مسدسات مجمدة 1.6",
+      "artists": [
+        "Yabujin"
+      ],
+      "release_date": "17 March 2020",
+      "primary_genres": [
+        "Experimental Hip Hop"
+      ],
+      "secondary_genres": [],
+      "average_rating": "4.53",
+      "number_of_ratings": "/\n\n                              \n                                 354",
+      "rym_url": "https://rateyourmusic.com/song/yabujin/hardstyle-drill-2009-nokia-angelz-%D9%85%D8%B3%D8%AF%D8%B3%D8%A7%D8%AA-%D9%85%D8%AC%D9%85%D8%AF%D8%A9-1_6/",
+      "album_art_url": "https://e.snmc.io/i/300/w/8a47f039bb8aa18e3c2032c2218973a8/9589181/Yabujin%20-%20Hardstyle%20Drill%202009%20Nokia%20Angelz%20%D9%85%D8%B3%D8%AF%D8%B3%D8%A7%D8%AA%20%D9%85%D8%AC%D9%85%D8%AF%D8%A9%201_6%2C%20Cover%20art.webp",
+      "spotify_url": ""
+    },
+    {
+      "rank": 40,
       "title": "United in Grief",
       "artists": [
         "Kendrick Lamar"
@@ -652,6 +680,7 @@
       "primary_genres": [
         "Experimental Hip Hop"
       ],
+      "secondary_genres": [],
       "average_rating": "4.48",
       "number_of_ratings": "/\n\n                              \n                                 6k",
       "rym_url": "https://rateyourmusic.com/song/kendrick-lamar/united-in-grief/",
@@ -659,23 +688,24 @@
       "spotify_url": "https://open.spotify.com/track/05zd5Nv0e02ZqrlC8A2cwx"
     },
     {
-      "rank": 42,
-      "title": "I Walk",
+      "rank": 41,
+      "title": "Funny Papers",
       "artists": [
-        "Mount Eerie"
+        "Mac Miller"
       ],
-      "release_date": "3 September 2024",
+      "release_date": "17 January 2025",
       "primary_genres": [
-        "Slacker Rock"
+        "Jazz Rap"
       ],
-      "average_rating": "4.51",
-      "number_of_ratings": "/\n\n                              \n                                 1k",
-      "rym_url": "https://rateyourmusic.com/song/mount-eerie/i-walk/",
-      "album_art_url": "https://e.snmc.io/i/300/w/d01e357bfcd77e984877888de3187202/12478983/Mount%20Eerie%20-%20Night%20Palace%2C%20Cover%20art.webp",
-      "spotify_url": "https://open.spotify.com/track/7AFzpZBgZUXK4rZOcSq90S"
+      "secondary_genres": [],
+      "average_rating": "4.50",
+      "number_of_ratings": "/\n\n                              \n                                 2k",
+      "rym_url": "https://rateyourmusic.com/song/mac-miller/funny-papers/",
+      "album_art_url": "https://e.snmc.io/i/300/w/0f65fd9c2e9088ae66d3474dca3d9422/12740749/Mac%20Miller%20-%20Balloonerism%2C%20Cover%20art.webp",
+      "spotify_url": "https://open.spotify.com/track/4pu58kqegTnOxPNJpY3kr9"
     },
     {
-      "rank": 43,
+      "rank": 42,
       "title": "Narrator",
       "artists": [
         "Squid"
@@ -684,6 +714,7 @@
       "primary_genres": [
         "Post-Punk"
       ],
+      "secondary_genres": [],
       "average_rating": "4.49",
       "number_of_ratings": "/\n\n                              \n                                 2k",
       "rym_url": "https://rateyourmusic.com/song/squid/narrator/",
@@ -691,55 +722,24 @@
       "spotify_url": "https://open.spotify.com/track/7huadpt8KliYzrj38MXTp6"
     },
     {
+      "rank": 43,
+      "title": "I Walk",
+      "artists": [
+        "Mount Eerie"
+      ],
+      "release_date": "3 September 2024",
+      "primary_genres": [
+        "Slacker Rock"
+      ],
+      "secondary_genres": [],
+      "average_rating": "4.50",
+      "number_of_ratings": "/\n\n                              \n                                 1k",
+      "rym_url": "https://rateyourmusic.com/song/mount-eerie/i-walk/",
+      "album_art_url": "https://e.snmc.io/i/300/w/d01e357bfcd77e984877888de3187202/12478983/Mount%20Eerie%20-%20Night%20Palace%2C%20Cover%20art.webp",
+      "spotify_url": "https://open.spotify.com/track/7AFzpZBgZUXK4rZOcSq90S"
+    },
+    {
       "rank": 44,
-      "title": "M.O.B.",
-      "artists": [
-        "SpaceGhostPurrp"
-      ],
-      "release_date": "19 November 2023",
-      "primary_genres": [
-        "Cloud Rap"
-      ],
-      "average_rating": "4.52",
-      "number_of_ratings": "/\n\n                              \n                                 485",
-      "rym_url": "https://rateyourmusic.com/song/spaceghostpurrp/m_o_b/",
-      "album_art_url": "https://e.snmc.io/i/300/w/682814f3a34798a04da2feba1251cddc/14129644/SpaceGhostPurrp%20-%20Dark%20Angels%2C%20Cover%20art.webp",
-      "spotify_url": "https://open.spotify.com/track/1UFzbBcu4yBVIkAQe90Eej"
-    },
-    {
-      "rank": 45,
-      "title": "365",
-      "artists": [
-        "Charli xcx"
-      ],
-      "release_date": "11 October 2024",
-      "primary_genres": [
-        "Bubblegum Bass"
-      ],
-      "average_rating": "4.52",
-      "number_of_ratings": "/\n\n                              \n                                 368",
-      "rym_url": "https://rateyourmusic.com/song/charli-xcx/365-2/",
-      "album_art_url": "https://e.snmc.io/i/300/w/b5bae2cdb4480986a5d6ed561c9d954c/12505962/Charli%20xcx%20-%20Brat%20and%20It's%20Completely%20Different%20but%20Also%20Still%20Brat%2C%20Cover%20art.webp",
-      "spotify_url": "https://open.spotify.com/track/4eGHZhYq1ekdQZ8oehyXrQ"
-    },
-    {
-      "rank": 46,
-      "title": "The Magician",
-      "artists": [
-        "Geordie Greep"
-      ],
-      "release_date": "4 October 2024",
-      "primary_genres": [
-        "Progressive Rock"
-      ],
-      "average_rating": "4.47",
-      "number_of_ratings": "/\n\n                              \n                                 5k",
-      "rym_url": "https://rateyourmusic.com/song/geordie-greep/the-magician/",
-      "album_art_url": "https://e.snmc.io/i/300/w/2df4d331f294aadb67b3a37f976251cd/12430773/Geordie%20Greep%20-%20The%20New%20Sound%2C%20Cover%20art.webp",
-      "spotify_url": "https://open.spotify.com/track/0Bmip7yBDtbDEQLJZm2WbN"
-    },
-    {
-      "rank": 47,
       "title": "Second Sleep",
       "artists": [
         "Magdalena Bay"
@@ -748,6 +748,7 @@
       "primary_genres": [
         "Progressive Pop"
       ],
+      "secondary_genres": [],
       "average_rating": "4.50",
       "number_of_ratings": "/\n\n                              \n                                 1k",
       "rym_url": "https://rateyourmusic.com/song/magdalena-bay/second-sleep/",
@@ -755,23 +756,58 @@
       "spotify_url": "https://open.spotify.com/track/47N21fn8V8IN392MGlicT5"
     },
     {
-      "rank": 48,
-      "title": "Caught in a Jam",
+      "rank": 45,
+      "title": "The Magician",
       "artists": [
-        "Portraits of Tracy"
+        "Geordie Greep"
       ],
-      "release_date": "24 June 2026",
+      "release_date": "4 October 2024",
       "primary_genres": [
-        "New Rave"
+        "Progressive Rock"
       ],
-      "average_rating": "4.52",
-      "number_of_ratings": "/\n\n                              \n                                 446",
-      "rym_url": "https://rateyourmusic.com/song/portraits-of-tracy/caught-in-a-jam/",
-      "album_art_url": "https://e.snmc.io/i/300/w/a1e890e07a0857a9ee5a10c39cd3007d/14859923/Portraits%20of%20Tracy%20-%20Q%3A%20From%20Where%20Do%20Our%20Primal%20Instincts%20Originate%3F%20A%3A%20MTV!%2C%20Cover%20art.webp",
-      "spotify_url": "https://open.spotify.com/track/7dxizz58rFUUPFSnnpNN1C"
+      "secondary_genres": [],
+      "average_rating": "4.47",
+      "number_of_ratings": "/\n\n                              \n                                 5k",
+      "rym_url": "https://rateyourmusic.com/song/geordie-greep/the-magician/",
+      "album_art_url": "https://e.snmc.io/i/300/w/2df4d331f294aadb67b3a37f976251cd/12430773/Geordie%20Greep%20-%20The%20New%20Sound%2C%20Cover%20art.webp",
+      "spotify_url": "https://open.spotify.com/track/0Bmip7yBDtbDEQLJZm2WbN"
     },
     {
-      "rank": 49,
+      "rank": 46,
+      "title": "M.O.B.",
+      "artists": [
+        "SpaceGhostPurrp"
+      ],
+      "release_date": "19 November 2023",
+      "primary_genres": [
+        "Cloud Rap"
+      ],
+      "secondary_genres": [],
+      "average_rating": "4.52",
+      "number_of_ratings": "/\n\n                              \n                                 491",
+      "rym_url": "https://rateyourmusic.com/song/spaceghostpurrp/m_o_b/",
+      "album_art_url": "https://e.snmc.io/i/300/w/682814f3a34798a04da2feba1251cddc/14129644/SpaceGhostPurrp%20-%20Dark%20Angels%2C%20Cover%20art.webp",
+      "spotify_url": "https://open.spotify.com/track/1UFzbBcu4yBVIkAQe90Eej"
+    },
+    {
+      "rank": 47,
+      "title": "365",
+      "artists": [
+        "Charli xcx"
+      ],
+      "release_date": "11 October 2024",
+      "primary_genres": [
+        "Bubblegum Bass"
+      ],
+      "secondary_genres": [],
+      "average_rating": "4.52",
+      "number_of_ratings": "/\n\n                              \n                                 365",
+      "rym_url": "https://rateyourmusic.com/song/charli-xcx/365-2/",
+      "album_art_url": "https://e.snmc.io/i/300/w/b5bae2cdb4480986a5d6ed561c9d954c/12505962/Charli%20xcx%20-%20Brat%20and%20It's%20Completely%20Different%20but%20Also%20Still%20Brat%2C%20Cover%20art.webp",
+      "spotify_url": "https://open.spotify.com/track/4eGHZhYq1ekdQZ8oehyXrQ"
+    },
+    {
+      "rank": 48,
       "title": "Girl, So Confusing",
       "artists": [
         "Charli xcx"
@@ -780,11 +816,29 @@
       "primary_genres": [
         "Electropop"
       ],
+      "secondary_genres": [],
       "average_rating": "4.48",
       "number_of_ratings": "/\n\n                              \n                                 2k",
       "rym_url": "https://rateyourmusic.com/song/charli-xcx/girl-so-confusing-1/",
       "album_art_url": "https://e.snmc.io/i/300/w/b5bae2cdb4480986a5d6ed561c9d954c/12505962/Charli%20xcx%20-%20Brat%20and%20It's%20Completely%20Different%20but%20Also%20Still%20Brat%2C%20Cover%20art.webp",
       "spotify_url": "https://open.spotify.com/track/5pzpqKAC5dR7xwsNMWazRI"
+    },
+    {
+      "rank": 49,
+      "title": "Drinking Age",
+      "artists": [
+        "Cameron Winter"
+      ],
+      "release_date": "6 December 2024",
+      "primary_genres": [
+        "Singer-Songwriter"
+      ],
+      "secondary_genres": [],
+      "average_rating": "4.48",
+      "number_of_ratings": "/\n\n                              \n                                 3k",
+      "rym_url": "https://rateyourmusic.com/song/cameron-winter/drinking-age/",
+      "album_art_url": "https://e.snmc.io/i/300/w/7d7c9e61282ed4df55603109bac700d2/13814960/Cameron%20Winter%20-%20Heavy%20Metal%2C%20Cover%20art.webp",
+      "spotify_url": "https://open.spotify.com/track/6nUPcVDYjCrnNMaXAJ9eO3"
     },
     {
       "rank": 50,
@@ -797,6 +851,7 @@
       "primary_genres": [
         "Abstract Hip Hop"
       ],
+      "secondary_genres": [],
       "average_rating": "4.50",
       "number_of_ratings": "/\n\n                              \n                                 1k",
       "rym_url": "https://rateyourmusic.com/song/armand-hammer-the-alchemist/falling-out-the-sky/",
@@ -813,6 +868,7 @@
       "primary_genres": [
         "Conscious Hip Hop"
       ],
+      "secondary_genres": [],
       "average_rating": "4.46",
       "number_of_ratings": "/\n\n                              \n                                 6k",
       "rym_url": "https://rateyourmusic.com/song/kendrick-lamar/father-time/",
@@ -821,19 +877,20 @@
     },
     {
       "rank": 52,
-      "title": "Drinking Age",
+      "title": "You Lose!",
       "artists": [
-        "Cameron Winter"
+        "Magdalena Bay"
       ],
-      "release_date": "6 December 2024",
+      "release_date": "15 September 2021",
       "primary_genres": [
-        "Singer-Songwriter"
+        "Noise Pop"
       ],
-      "average_rating": "4.48",
-      "number_of_ratings": "/\n\n                              \n                                 3k",
-      "rym_url": "https://rateyourmusic.com/song/cameron-winter/drinking-age/",
-      "album_art_url": "https://e.snmc.io/i/300/w/7d7c9e61282ed4df55603109bac700d2/13814960/Cameron%20Winter%20-%20Heavy%20Metal%2C%20Cover%20art.webp",
-      "spotify_url": "https://open.spotify.com/track/6nUPcVDYjCrnNMaXAJ9eO3"
+      "secondary_genres": [],
+      "average_rating": "4.47",
+      "number_of_ratings": "/\n\n                              \n                                 4k",
+      "rym_url": "https://rateyourmusic.com/song/magdalena-bay/you-lose/",
+      "album_art_url": "https://e.snmc.io/i/300/w/03018d61ce7ef8c114d5cec72e2c4ec1/9335918/Magdalena%20Bay%20-%20Mercurial%20World%2C%20Cover%20art.webp",
+      "spotify_url": "https://open.spotify.com/track/0tP8FKhJsar5y4JcOH4Rjp"
     },
     {
       "rank": 53,
@@ -845,6 +902,7 @@
       "primary_genres": [
         "Glitch Pop"
       ],
+      "secondary_genres": [],
       "average_rating": "4.48",
       "number_of_ratings": "/\n\n                              \n                                 2k",
       "rym_url": "https://rateyourmusic.com/song/jane-remover/kodak-moment/",
@@ -862,45 +920,15 @@
       "primary_genres": [
         "Abstract Hip Hop"
       ],
-      "average_rating": "4.49",
+      "secondary_genres": [],
+      "average_rating": "4.48",
       "number_of_ratings": "/\n\n                              \n                                 2k",
       "rym_url": "https://rateyourmusic.com/song/danger-mouse-black-thought/belize/",
-      "album_art_url": "https://e.snmc.io/i/300/w/9da530459cd58938ee9cedb53c6865f9/12851980/Danger%20Mouse%20%26%20Black%20Thought%20-%20Cheat%20Codes%2C%20Cover%20art.webp"
+      "album_art_url": "https://e.snmc.io/i/300/w/9da530459cd58938ee9cedb53c6865f9/12851980/Danger%20Mouse%20%26%20Black%20Thought%20-%20Cheat%20Codes%2C%20Cover%20art.webp",
+      "spotify_url": ""
     },
     {
       "rank": 55,
-      "title": "You Lose!",
-      "artists": [
-        "Magdalena Bay"
-      ],
-      "release_date": "15 September 2021",
-      "primary_genres": [
-        "Noise Pop"
-      ],
-      "average_rating": "4.47",
-      "number_of_ratings": "/\n\n                              \n                                 4k",
-      "rym_url": "https://rateyourmusic.com/song/magdalena-bay/you-lose/",
-      "album_art_url": "https://e.snmc.io/i/300/w/03018d61ce7ef8c114d5cec72e2c4ec1/9335918/Magdalena%20Bay%20-%20Mercurial%20World%2C%20Cover%20art.webp",
-      "spotify_url": "https://open.spotify.com/track/0tP8FKhJsar5y4JcOH4Rjp"
-    },
-    {
-      "rank": 56,
-      "title": "The Heart Part 5",
-      "artists": [
-        "Kendrick Lamar"
-      ],
-      "release_date": "8 May 2022",
-      "primary_genres": [
-        "Conscious Hip Hop"
-      ],
-      "average_rating": "4.49",
-      "number_of_ratings": "/\n\n                              \n                                 778",
-      "rym_url": "https://rateyourmusic.com/song/kendrick-lamar/the-heart-part-5/",
-      "album_art_url": "https://e.snmc.io/i/300/w/59264d11bca0bef71046d358534a58dd/9930488/Kendrick%20Lamar%20-%20The%20Heart%20Part%205%2C%20Cover%20art.webp",
-      "spotify_url": "https://open.spotify.com/track/5MMW4CZsZiZt2iuqAXzzWC"
-    },
-    {
-      "rank": 57,
       "title": "Southern Style Lemon Peppers",
       "artists": [
         "The Sidepeices"
@@ -909,14 +937,15 @@
       "primary_genres": [
         "Deconstructed Club"
       ],
-      "average_rating": "4.47",
-      "number_of_ratings": "/\n\n                              \n                                 666",
+      "secondary_genres": [],
+      "average_rating": "4.48",
+      "number_of_ratings": "/\n\n                              \n                                 672",
       "rym_url": "https://rateyourmusic.com/song/the-sidepeices/southern-style-lemon-peppers/",
       "album_art_url": "https://e.snmc.io/i/300/w/bb29d84e5a7798b1994642ceda2a5457/13978702/Heavensouls%20x%20Stickerbush%20-%20Darkskin%20N---as%20With%20Lightskin%20Problems%2C%20Cover%20art.webp",
       "spotify_url": "https://open.spotify.com/track/4DMjRABKQKOF5R3GjIDbge"
     },
     {
-      "rank": 58,
+      "rank": 56,
       "title": "Endsong",
       "artists": [
         "The Cure"
@@ -925,11 +954,46 @@
       "primary_genres": [
         "Gothic Rock"
       ],
+      "secondary_genres": [],
       "average_rating": "4.47",
       "number_of_ratings": "/\n\n                              \n                                 3k",
       "rym_url": "https://rateyourmusic.com/song/the-cure/endsong/",
       "album_art_url": "https://e.snmc.io/i/300/w/e76024370ade6311b37ff75f4708a80e/12550970/The%20Cure%20-%20Songs%20of%20a%20Lost%20World%2C%20Cover%20art.webp",
       "spotify_url": "https://open.spotify.com/track/0gHvrWN5ZQPDqn3QnpI5DD"
+    },
+    {
+      "rank": 57,
+      "title": "The Heart Part 5",
+      "artists": [
+        "Kendrick Lamar"
+      ],
+      "release_date": "8 May 2022",
+      "primary_genres": [
+        "Conscious Hip Hop"
+      ],
+      "secondary_genres": [],
+      "average_rating": "4.49",
+      "number_of_ratings": "/\n\n                              \n                                 779",
+      "rym_url": "https://rateyourmusic.com/song/kendrick-lamar/the-heart-part-5/",
+      "album_art_url": "https://e.snmc.io/i/300/w/59264d11bca0bef71046d358534a58dd/9930488/Kendrick%20Lamar%20-%20The%20Heart%20Part%205%2C%20Cover%20art.webp",
+      "spotify_url": "https://open.spotify.com/track/5MMW4CZsZiZt2iuqAXzzWC"
+    },
+    {
+      "rank": 58,
+      "title": "Caught in a Jam",
+      "artists": [
+        "Portraits of Tracy"
+      ],
+      "release_date": "24 June 2026",
+      "primary_genres": [
+        "New Rave"
+      ],
+      "secondary_genres": [],
+      "average_rating": "4.50",
+      "number_of_ratings": "/\n\n                              \n                                 511",
+      "rym_url": "https://rateyourmusic.com/song/portraits-of-tracy/caught-in-a-jam/",
+      "album_art_url": "https://e.snmc.io/i/300/w/a1e890e07a0857a9ee5a10c39cd3007d/14859923/Portraits%20of%20Tracy%20-%20Q%3A%20From%20Where%20Do%20Our%20Primal%20Instincts%20Originate%3F%20A%3A%20MTV!%2C%20Cover%20art.webp",
+      "spotify_url": "https://open.spotify.com/track/7dxizz58rFUUPFSnnpNN1C"
     },
     {
       "rank": 59,
@@ -941,6 +1005,7 @@
       "primary_genres": [
         "Downtempo"
       ],
+      "secondary_genres": [],
       "average_rating": "4.47",
       "number_of_ratings": "/\n\n                              \n                                 2k",
       "rym_url": "https://rateyourmusic.com/song/boards-of-canada/you-retreat-in-time-and-space/",
@@ -958,6 +1023,7 @@
       "primary_genres": [
         "Jazz Rap"
       ],
+      "secondary_genres": [],
       "average_rating": "4.48",
       "number_of_ratings": "/\n\n                              \n                                 1k",
       "rym_url": "https://rateyourmusic.com/song/freddie-gibbs-the-alchemist/ensalada/",
@@ -966,38 +1032,6 @@
     },
     {
       "rank": 61,
-      "title": "Fish Whisperer",
-      "artists": [
-        "Vylet Pony"
-      ],
-      "release_date": "22 February 2022",
-      "primary_genres": [
-        "Progressive Pop"
-      ],
-      "average_rating": "4.49",
-      "number_of_ratings": "/\n\n                              \n                                 400",
-      "rym_url": "https://rateyourmusic.com/song/vylet-pony/fish-whisperer/",
-      "album_art_url": "https://e.snmc.io/i/300/w/827abbef2b76d2642bb2a05ca7f4ab7d/10147373/Vylet%20Pony%20-%20Can%20Opener's%20Notebook%3A%20Fish%20Whisperer%2C%20Cover%20art.webp",
-      "spotify_url": "https://open.spotify.com/track/4YROJKMNeMOp1Uy2fXTN8M"
-    },
-    {
-      "rank": 62,
-      "title": "VPN",
-      "artists": [
-        "Lil Ugly Mane"
-      ],
-      "release_date": "12 October 2021",
-      "primary_genres": [
-        "Trip Hop"
-      ],
-      "average_rating": "4.47",
-      "number_of_ratings": "/\n\n                              \n                                 2k",
-      "rym_url": "https://rateyourmusic.com/song/lil-ugly-mane/vpn/",
-      "album_art_url": "https://e.snmc.io/i/300/w/8e1a563d9e888beac8bddfb679b4bb00/9420650/Lil%20Ugly%20Mane%20-%20Volcanic%20Bird%20Enemy%20and%20the%20Voiced%20Concern%2C%20Cover%20art.webp",
-      "spotify_url": "https://open.spotify.com/track/20kDJjxo7sOjdwAxWcIlbV"
-    },
-    {
-      "rank": 63,
       "title": "흰천장 (White Ceiling)",
       "artists": [
         "Parannoul 파란노을"
@@ -1006,11 +1040,46 @@
       "primary_genres": [
         "Shoegaze"
       ],
+      "secondary_genres": [],
       "average_rating": "4.46",
       "number_of_ratings": "/\n\n                              \n                                 3k",
       "rym_url": "https://rateyourmusic.com/song/%ED%8C%8C%EB%9E%80%EB%85%B8%EC%9D%84/%ED%9D%B0%EC%B2%9C%EC%9E%A5-white-ceiling-1/",
       "album_art_url": "https://e.snmc.io/i/300/w/16d1b64a66e9142e91702d72e7b676b1/9102611/%ED%8C%8C%EB%9E%80%EB%85%B8%EC%9D%84%20%5BParannoul%5D%20-%20To%20See%20the%20Next%20Part%20of%20the%20Dream%2C%20Cover%20art.webp",
       "spotify_url": "https://open.spotify.com/track/0w5DKGccxr2uWY3pFbVeUS"
+    },
+    {
+      "rank": 62,
+      "title": "Fish Whisperer",
+      "artists": [
+        "Vylet Pony"
+      ],
+      "release_date": "22 February 2022",
+      "primary_genres": [
+        "Progressive Pop"
+      ],
+      "secondary_genres": [],
+      "average_rating": "4.49",
+      "number_of_ratings": "/\n\n                              \n                                 402",
+      "rym_url": "https://rateyourmusic.com/song/vylet-pony/fish-whisperer/",
+      "album_art_url": "https://e.snmc.io/i/300/w/827abbef2b76d2642bb2a05ca7f4ab7d/10147373/Vylet%20Pony%20-%20Can%20Opener's%20Notebook%3A%20Fish%20Whisperer%2C%20Cover%20art.webp",
+      "spotify_url": "https://open.spotify.com/track/4YROJKMNeMOp1Uy2fXTN8M"
+    },
+    {
+      "rank": 63,
+      "title": "VPN",
+      "artists": [
+        "Lil Ugly Mane"
+      ],
+      "release_date": "12 October 2021",
+      "primary_genres": [
+        "Trip Hop"
+      ],
+      "secondary_genres": [],
+      "average_rating": "4.47",
+      "number_of_ratings": "/\n\n                              \n                                 2k",
+      "rym_url": "https://rateyourmusic.com/song/lil-ugly-mane/vpn/",
+      "album_art_url": "https://e.snmc.io/i/300/w/8e1a563d9e888beac8bddfb679b4bb00/9420650/Lil%20Ugly%20Mane%20-%20Volcanic%20Bird%20Enemy%20and%20the%20Voiced%20Concern%2C%20Cover%20art.webp",
+      "spotify_url": "https://open.spotify.com/track/20kDJjxo7sOjdwAxWcIlbV"
     },
     {
       "rank": 64,
@@ -1023,6 +1092,7 @@
       "primary_genres": [
         "Cloud Rap"
       ],
+      "secondary_genres": [],
       "average_rating": "4.44",
       "number_of_ratings": "/\n\n                              \n                                 5k",
       "rym_url": "https://rateyourmusic.com/song/jpegmafia-danny-brown/kingdom-hearts-key/",
@@ -1039,7 +1109,8 @@
       "primary_genres": [
         "Indietronica"
       ],
-      "average_rating": "4.47",
+      "secondary_genres": [],
+      "average_rating": "4.46",
       "number_of_ratings": "/\n\n                              \n                                 2k",
       "rym_url": "https://rateyourmusic.com/song/jane-remover/movies-for-guys/",
       "album_art_url": "https://e.snmc.io/i/300/w/59e273d6e4d0171321a068ce50006c3c/9569752/Jane%20Remover%20-%20Frailty%2C%20Cover%20art.webp",
@@ -1055,6 +1126,7 @@
       "primary_genres": [
         "Jazz Rap"
       ],
+      "secondary_genres": [],
       "average_rating": "4.47",
       "number_of_ratings": "/\n\n                              \n                                 2k",
       "rym_url": "https://rateyourmusic.com/song/billy-woods-and-kenny-segal/facetime/",
@@ -1071,6 +1143,7 @@
       "primary_genres": [
         "Baroque Pop"
       ],
+      "secondary_genres": [],
       "average_rating": "4.47",
       "number_of_ratings": "/\n\n                              \n                                 1k",
       "rym_url": "https://rateyourmusic.com/song/father-john-misty/mahashmashana/",
@@ -1087,6 +1160,7 @@
       "primary_genres": [
         "Soft Rock"
       ],
+      "secondary_genres": [],
       "average_rating": "4.45",
       "number_of_ratings": "/\n\n                              \n                                 3k",
       "rym_url": "https://rateyourmusic.com/song/cameron-winter/nausicaa-love-will-be-revealed/",
@@ -1103,6 +1177,7 @@
       "primary_genres": [
         "Slacker Rock"
       ],
+      "secondary_genres": [],
       "average_rating": "4.47",
       "number_of_ratings": "/\n\n                              \n                                 1k",
       "rym_url": "https://rateyourmusic.com/song/mj-lenderman/shes-leaving-you/",
@@ -1119,6 +1194,7 @@
       "primary_genres": [
         "Progressive Pop"
       ],
+      "secondary_genres": [],
       "average_rating": "4.46",
       "number_of_ratings": "/\n\n                              \n                                 2k",
       "rym_url": "https://rateyourmusic.com/song/spellling/boys-at-school/",
@@ -1127,19 +1203,20 @@
     },
     {
       "rank": 71,
-      "title": "Lost in Translation",
+      "title": "아름다운 세상 (Beautiful World)",
       "artists": [
-        "Willy Rodriguez"
+        "Parannoul 파란노을"
       ],
-      "release_date": "25 December 2023",
+      "release_date": "23 February 2021",
       "primary_genres": [
-        "Noise Pop"
+        "Shoegaze"
       ],
-      "average_rating": "4.47",
-      "number_of_ratings": "/\n\n                              \n                                 862",
-      "rym_url": "https://rateyourmusic.com/song/willy-rodriguez/lost-in-translation/",
-      "album_art_url": "https://e.snmc.io/i/300/w/617c1b8e6fd9be1f7b576d26e3ab0d42/11646854/Willy%20Rodriguez%20-%20Wetdream%2C%20Cover%20art.webp",
-      "spotify_url": "https://open.spotify.com/track/0JgNkPRnKwZMNIN2wgbI5o"
+      "secondary_genres": [],
+      "average_rating": "4.45",
+      "number_of_ratings": "/\n\n                              \n                                 3k",
+      "rym_url": "https://rateyourmusic.com/song/%ED%8C%8C%EB%9E%80%EB%85%B8%EC%9D%84/%EC%95%84%EB%A6%84%EB%8B%A4%EC%9A%B4-%EC%84%B8%EC%83%81-beautiful-world/",
+      "album_art_url": "https://e.snmc.io/i/300/w/16d1b64a66e9142e91702d72e7b676b1/9102611/%ED%8C%8C%EB%9E%80%EB%85%B8%EC%9D%84%20%5BParannoul%5D%20-%20To%20See%20the%20Next%20Part%20of%20the%20Dream%2C%20Cover%20art.webp",
+      "spotify_url": "https://open.spotify.com/track/6dNk7wme2WgW7Sd6lYcCbL"
     },
     {
       "rank": 72,
@@ -1151,6 +1228,7 @@
       "primary_genres": [
         "Dream Pop"
       ],
+      "secondary_genres": [],
       "average_rating": "4.46",
       "number_of_ratings": "/\n\n                              \n                                 2k",
       "rym_url": "https://rateyourmusic.com/song/beach-house/superstar/",
@@ -1167,6 +1245,7 @@
       "primary_genres": [
         "Indietronica"
       ],
+      "secondary_genres": [],
       "average_rating": "4.45",
       "number_of_ratings": "/\n\n                              \n                                 2k",
       "rym_url": "https://rateyourmusic.com/song/porter-robinson/cheerleader/",
@@ -1183,6 +1262,7 @@
       "primary_genres": [
         "Americana"
       ],
+      "secondary_genres": [],
       "average_rating": "4.46",
       "number_of_ratings": "/\n\n                              \n                                 2k",
       "rym_url": "https://rateyourmusic.com/song/adrianne-lenker/sadness-as-a-gift/",
@@ -1191,22 +1271,40 @@
     },
     {
       "rank": 75,
-      "title": "Struggle With the Beast",
+      "title": "Patchmade",
       "artists": [
-        "Anna von Hausswolff"
+        "xaviersobased"
       ],
-      "release_date": "16 October 2025",
+      "release_date": "20 July 2022",
       "primary_genres": [
-        "Post-Rock"
+        "Jerk"
       ],
-      "average_rating": "4.47",
-      "number_of_ratings": "/\n\n                              \n                                 973",
-      "rym_url": "https://rateyourmusic.com/song/anna-von-hausswolff/struggle-with-the-beast/",
-      "album_art_url": "https://e.snmc.io/i/300/w/745a65185c80f23dab17cc4b5add0945/13679696/Anna%20von%20Hausswolff%20-%20Iconoclasts%2C%20Cover%20art.webp",
-      "spotify_url": "https://open.spotify.com/track/2Z19DwRllkxjcaMZfAQrNI"
+      "secondary_genres": [],
+      "average_rating": "4.48",
+      "number_of_ratings": "/\n\n                              \n                                 458",
+      "rym_url": "https://rateyourmusic.com/song/xaviersobased/patchmade/",
+      "album_art_url": "https://e.snmc.io/i/300/w/c588740f8137e54a48777475f8b764b0/13916079/xaviersobased%20-%20Install%2C%20Cover%20art.webp",
+      "spotify_url": "https://open.spotify.com/track/0oyPwdglM96uacIdupYg4y"
     },
     {
       "rank": 76,
+      "title": "Lost in Translation",
+      "artists": [
+        "Willy Rodriguez"
+      ],
+      "release_date": "25 December 2023",
+      "primary_genres": [
+        "Noise Pop"
+      ],
+      "secondary_genres": [],
+      "average_rating": "4.46",
+      "number_of_ratings": "/\n\n                              \n                                 872",
+      "rym_url": "https://rateyourmusic.com/song/willy-rodriguez/lost-in-translation/",
+      "album_art_url": "https://e.snmc.io/i/300/w/617c1b8e6fd9be1f7b576d26e3ab0d42/11646854/Willy%20Rodriguez%20-%20Wetdream%2C%20Cover%20art.webp",
+      "spotify_url": "https://open.spotify.com/track/0JgNkPRnKwZMNIN2wgbI5o"
+    },
+    {
+      "rank": 77,
       "title": "Mother I Sober",
       "artists": [
         "Kendrick Lamar"
@@ -1215,6 +1313,7 @@
       "primary_genres": [
         "Conscious Hip Hop"
       ],
+      "secondary_genres": [],
       "average_rating": "4.43",
       "number_of_ratings": "/\n\n                              \n                                 6k",
       "rym_url": "https://rateyourmusic.com/song/kendrick-lamar/mother-i-sober/",
@@ -1222,52 +1321,38 @@
       "spotify_url": "https://open.spotify.com/track/346SJSEbB6pNZMpwovxDiu"
     },
     {
-      "rank": 77,
-      "title": "아름다운 세상 (Beautiful World)",
-      "artists": [
-        "Parannoul 파란노을"
-      ],
-      "release_date": "23 February 2021",
-      "primary_genres": [
-        "Shoegaze"
-      ],
-      "average_rating": "4.45",
-      "number_of_ratings": "/\n\n                              \n                                 3k",
-      "rym_url": "https://rateyourmusic.com/song/%ED%8C%8C%EB%9E%80%EB%85%B8%EC%9D%84/%EC%95%84%EB%A6%84%EB%8B%A4%EC%9A%B4-%EC%84%B8%EC%83%81-beautiful-world/",
-      "album_art_url": "https://e.snmc.io/i/300/w/16d1b64a66e9142e91702d72e7b676b1/9102611/%ED%8C%8C%EB%9E%80%EB%85%B8%EC%9D%84%20%5BParannoul%5D%20-%20To%20See%20the%20Next%20Part%20of%20the%20Dream%2C%20Cover%20art.webp",
-      "spotify_url": "https://open.spotify.com/track/6dNk7wme2WgW7Sd6lYcCbL"
-    },
-    {
       "rank": 78,
-      "title": "Man Is Like a Spring Flower",
+      "title": "Struggle With the Beast",
       "artists": [
-        "Lingua Ignota"
+        "Anna von Hausswolff"
       ],
-      "release_date": "6 August 2021",
+      "release_date": "16 October 2025",
       "primary_genres": [
-        "Avant-Folk"
+        "Post-Rock"
       ],
-      "average_rating": "4.45",
-      "number_of_ratings": "/\n\n                              \n                                 2k",
-      "rym_url": "https://rateyourmusic.com/song/lingua-ignota/man-is-like-a-spring-flower/",
-      "album_art_url": "https://e.snmc.io/i/300/w/168abfc736027ed9a4cb06d16165fae6/9219589/Lingua%20Ignota%20-%20Sinner%20Get%20Ready%2C%20Cover%20art.webp",
-      "spotify_url": "https://open.spotify.com/track/2QEENkblf8Vho3IMdza6Ix"
+      "secondary_genres": [],
+      "average_rating": "4.46",
+      "number_of_ratings": "/\n\n                              \n                                 978",
+      "rym_url": "https://rateyourmusic.com/song/anna-von-hausswolff/struggle-with-the-beast/",
+      "album_art_url": "https://e.snmc.io/i/300/w/745a65185c80f23dab17cc4b5add0945/13679696/Anna%20von%20Hausswolff%20-%20Iconoclasts%2C%20Cover%20art.webp",
+      "spotify_url": "https://open.spotify.com/track/2Z19DwRllkxjcaMZfAQrNI"
     },
     {
       "rank": 79,
-      "title": "De todas las flores",
+      "title": "I Read Psalms Before I Killed Your Friend",
       "artists": [
-        "Natalia Lafourcade"
+        "okgutta"
       ],
-      "release_date": "22 September 2022",
+      "release_date": "5 May 2025",
       "primary_genres": [
-        "Singer-Songwriter"
+        "Cloud Rap"
       ],
-      "average_rating": "4.46",
-      "number_of_ratings": "/\n\n                              \n                                 1k",
-      "rym_url": "https://rateyourmusic.com/song/natalia-lafourcade/de-todas-las-flores/",
-      "album_art_url": "https://e.snmc.io/i/300/w/e016b0ac12abd7228f04ec7d169fc33e/10406895/Natalia%20Lafourcade%20-%20De%20todas%20las%20flores%2C%20Cover%20art.webp",
-      "spotify_url": "https://open.spotify.com/track/3MAHwAmag1U1gLLuvEQNHU"
+      "secondary_genres": [],
+      "average_rating": "4.48",
+      "number_of_ratings": "/\n\n                              \n                                 418",
+      "rym_url": "https://rateyourmusic.com/song/okgutta/i-read-psalms-before-i-killed-your-friend/",
+      "album_art_url": "https://e.snmc.io/i/300/w/380f396fd7f95b101b97dbb03bbb96db/14263407/okgutta%20-%20God%20(B)less%20America%2C%20Cover%20art.webp",
+      "spotify_url": "https://open.spotify.com/track/3s1YZuyUv0TNIPNIcY8sXa"
     },
     {
       "rank": 80,
@@ -1279,6 +1364,7 @@
       "primary_genres": [
         "Electropop"
       ],
+      "secondary_genres": [],
       "average_rating": "4.43",
       "number_of_ratings": "/\n\n                              \n                                 5k",
       "rym_url": "https://rateyourmusic.com/song/charli-xcx/forever/",
@@ -1287,19 +1373,20 @@
     },
     {
       "rank": 81,
-      "title": "Patchmade",
+      "title": "Man Is Like a Spring Flower",
       "artists": [
-        "xaviersobased"
+        "Lingua Ignota"
       ],
-      "release_date": "20 July 2022",
+      "release_date": "6 August 2021",
       "primary_genres": [
-        "Jerk"
+        "Avant-Folk"
       ],
-      "average_rating": "4.48",
-      "number_of_ratings": "/\n\n                              \n                                 453",
-      "rym_url": "https://rateyourmusic.com/song/xaviersobased/patchmade/",
-      "album_art_url": "https://e.snmc.io/i/300/w/c588740f8137e54a48777475f8b764b0/13916079/xaviersobased%20-%20Install%2C%20Cover%20art.webp",
-      "spotify_url": "https://open.spotify.com/track/0oyPwdglM96uacIdupYg4y"
+      "secondary_genres": [],
+      "average_rating": "4.45",
+      "number_of_ratings": "/\n\n                              \n                                 2k",
+      "rym_url": "https://rateyourmusic.com/song/lingua-ignota/man-is-like-a-spring-flower/",
+      "album_art_url": "https://e.snmc.io/i/300/w/168abfc736027ed9a4cb06d16165fae6/9219589/Lingua%20Ignota%20-%20Sinner%20Get%20Ready%2C%20Cover%20art.webp",
+      "spotify_url": "https://open.spotify.com/track/2QEENkblf8Vho3IMdza6Ix"
     },
     {
       "rank": 82,
@@ -1311,27 +1398,29 @@
       "primary_genres": [
         "Noise Pop"
       ],
+      "secondary_genres": [],
       "average_rating": "4.45",
-      "number_of_ratings": "/\n\n                              \n                                 886",
+      "number_of_ratings": "/\n\n                              \n                                 897",
       "rym_url": "https://rateyourmusic.com/song/willy-rodriguez/revisited/",
       "album_art_url": "https://e.snmc.io/i/300/w/617c1b8e6fd9be1f7b576d26e3ab0d42/11646854/Willy%20Rodriguez%20-%20Wetdream%2C%20Cover%20art.webp",
       "spotify_url": "https://open.spotify.com/track/0nYGuulTduYtaoRpbVQrhK"
     },
     {
       "rank": 83,
-      "title": "I Read Psalms Before I Killed Your Friend",
+      "title": "De todas las flores",
       "artists": [
-        "okgutta"
+        "Natalia Lafourcade"
       ],
-      "release_date": "5 May 2025",
+      "release_date": "22 September 2022",
       "primary_genres": [
-        "Cloud Rap"
+        "Singer-Songwriter"
       ],
-      "average_rating": "4.48",
-      "number_of_ratings": "/\n\n                              \n                                 408",
-      "rym_url": "https://rateyourmusic.com/song/okgutta/i-read-psalms-before-i-killed-your-friend/",
-      "album_art_url": "https://e.snmc.io/i/300/w/380f396fd7f95b101b97dbb03bbb96db/14263407/okgutta%20-%20God%20(B)less%20America%2C%20Cover%20art.webp",
-      "spotify_url": "https://open.spotify.com/track/3s1YZuyUv0TNIPNIcY8sXa"
+      "secondary_genres": [],
+      "average_rating": "4.46",
+      "number_of_ratings": "/\n\n                              \n                                 1k",
+      "rym_url": "https://rateyourmusic.com/song/natalia-lafourcade/de-todas-las-flores/",
+      "album_art_url": "https://e.snmc.io/i/300/w/e016b0ac12abd7228f04ec7d169fc33e/10406895/Natalia%20Lafourcade%20-%20De%20todas%20las%20flores%2C%20Cover%20art.webp",
+      "spotify_url": "https://open.spotify.com/track/3MAHwAmag1U1gLLuvEQNHU"
     },
     {
       "rank": 84,
@@ -1343,6 +1432,7 @@
       "primary_genres": [
         "Dance-Pop"
       ],
+      "secondary_genres": [],
       "average_rating": "4.44",
       "number_of_ratings": "/\n\n                              \n                                 4k",
       "rym_url": "https://rateyourmusic.com/song/magdalena-bay/secrets-your-fire/",
@@ -1351,22 +1441,6 @@
     },
     {
       "rank": 85,
-      "title": "Reincarnated",
-      "artists": [
-        "Kendrick Lamar"
-      ],
-      "release_date": "22 November 2024",
-      "primary_genres": [
-        "Conscious Hip Hop"
-      ],
-      "average_rating": "4.43",
-      "number_of_ratings": "/\n\n                              \n                                 6k",
-      "rym_url": "https://rateyourmusic.com/song/kendrick-lamar/reincarnated/",
-      "album_art_url": "https://e.snmc.io/i/300/w/3f8b1b2060058c0bfff2d800ba6c02bb/12744501/Kendrick%20Lamar%20-%20GNX%2C%20Cover%20art.webp",
-      "spotify_url": "https://open.spotify.com/track/0RgjEkSbeuStKfT2Pa4Zai"
-    },
-    {
-      "rank": 86,
       "title": "Prologue",
       "artists": [
         "Kamasi Washington"
@@ -1375,11 +1449,29 @@
       "primary_genres": [
         "Jazz Fusion"
       ],
+      "secondary_genres": [],
       "average_rating": "4.46",
-      "number_of_ratings": "/\n\n                              \n                                 693",
+      "number_of_ratings": "/\n\n                              \n                                 696",
       "rym_url": "https://rateyourmusic.com/song/kamasi-washington/prologue/",
       "album_art_url": "https://e.snmc.io/i/300/w/f51756df1ddf902cd7330a386e10f5c2/12078889/Kamasi%20Washington%20-%20Fearless%20Movement%2C%20Cover%20art.webp",
       "spotify_url": "https://open.spotify.com/track/3fkUXEFOWK2X4HXSv59BFN"
+    },
+    {
+      "rank": 86,
+      "title": "Reincarnated",
+      "artists": [
+        "Kendrick Lamar"
+      ],
+      "release_date": "22 November 2024",
+      "primary_genres": [
+        "Conscious Hip Hop"
+      ],
+      "secondary_genres": [],
+      "average_rating": "4.43",
+      "number_of_ratings": "/\n\n                              \n                                 6k",
+      "rym_url": "https://rateyourmusic.com/song/kendrick-lamar/reincarnated/",
+      "album_art_url": "https://e.snmc.io/i/300/w/3f8b1b2060058c0bfff2d800ba6c02bb/12744501/Kendrick%20Lamar%20-%20GNX%2C%20Cover%20art.webp",
+      "spotify_url": "https://open.spotify.com/track/0RgjEkSbeuStKfT2Pa4Zai"
     },
     {
       "rank": 87,
@@ -1391,6 +1483,7 @@
       "primary_genres": [
         "Hardcore Hip Hop"
       ],
+      "secondary_genres": [],
       "average_rating": "4.44",
       "number_of_ratings": "/\n\n                              \n                                 4k",
       "rym_url": "https://rateyourmusic.com/song/jpegmafia/rebound/",
@@ -1407,6 +1500,7 @@
       "primary_genres": [
         "Neo-Psychedelia"
       ],
+      "secondary_genres": [],
       "average_rating": "4.45",
       "number_of_ratings": "/\n\n                              \n                                 2k",
       "rym_url": "https://rateyourmusic.com/song/lil-ugly-mane/benadryl-submarine/",
@@ -1423,14 +1517,32 @@
       "primary_genres": [
         "Experimental Hip Hop"
       ],
+      "secondary_genres": [],
       "average_rating": "4.47",
-      "number_of_ratings": "/\n\n                              \n                                 705",
+      "number_of_ratings": "/\n\n                              \n                                 714",
       "rym_url": "https://rateyourmusic.com/song/lucy-bedroque/infinitude-uroboros/",
       "album_art_url": "https://e.snmc.io/i/300/w/3fbb3320c5ba946555353a2a21c6f791/11086063/lostrushi%20-%20Sisterhood%2C%20Cover%20art.webp",
       "spotify_url": "https://open.spotify.com/track/6MvsRCt7fro67PV9X1ILtl"
     },
     {
       "rank": 90,
+      "title": "(Rope) Away",
+      "artists": [
+        "Swans"
+      ],
+      "release_date": "30 May 2025",
+      "primary_genres": [
+        "Totalism"
+      ],
+      "secondary_genres": [],
+      "average_rating": "4.44",
+      "number_of_ratings": "/\n\n                              \n                                 2k",
+      "rym_url": "https://rateyourmusic.com/song/swans/_rope-away/",
+      "album_art_url": "https://e.snmc.io/i/300/w/d3c72e90abff7a00811c278eee421039/13075696/Swans%20-%20Birthing%2C%20Cover%20art.webp",
+      "spotify_url": "https://open.spotify.com/track/5azObkbtEzf7MSG3kP2sAN"
+    },
+    {
+      "rank": 91,
       "title": "운전대 (Wheel)",
       "artists": [
         "Parannoul 파란노을",
@@ -1440,27 +1552,12 @@
       "primary_genres": [
         "Emo"
       ],
+      "secondary_genres": [],
       "average_rating": "4.46",
-      "number_of_ratings": "/\n\n                              \n                                 544",
+      "number_of_ratings": "/\n\n                              \n                                 546",
       "rym_url": "https://rateyourmusic.com/song/%ED%8C%8C%EB%9E%80%EB%85%B8%EC%9D%84-asian-glow/%EC%9A%B4%EC%A0%84%EB%8C%80-wheel/",
       "album_art_url": "https://e.snmc.io/i/300/w/7e4b14d87832131c80a02be58160e608/10970588/%ED%8C%8C%EB%9E%80%EB%85%B8%EC%9D%84%20%5BParannoul%5D%20%26%20Asian%20Glow%20-%20Paraglow%2C%20Cover%20art.webp",
       "spotify_url": "https://open.spotify.com/track/3XQmkFMHvOWjWYU0VCkf4P"
-    },
-    {
-      "rank": 91,
-      "title": "(Rope) Away",
-      "artists": [
-        "Swans"
-      ],
-      "release_date": "30 May 2025",
-      "primary_genres": [
-        "Totalism"
-      ],
-      "average_rating": "4.44",
-      "number_of_ratings": "/\n\n                              \n                                 2k",
-      "rym_url": "https://rateyourmusic.com/song/swans/_rope-away/",
-      "album_art_url": "https://e.snmc.io/i/300/w/d3c72e90abff7a00811c278eee421039/13075696/Swans%20-%20Birthing%2C%20Cover%20art.webp",
-      "spotify_url": "https://open.spotify.com/track/5azObkbtEzf7MSG3kP2sAN"
     },
     {
       "rank": 92,
@@ -1472,6 +1569,7 @@
       "primary_genres": [
         "Indie Rock"
       ],
+      "secondary_genres": [],
       "average_rating": "4.44",
       "number_of_ratings": "/\n\n                              \n                                 3k",
       "rym_url": "https://rateyourmusic.com/song/phoebe-bridgers/kyoto/",
@@ -1488,30 +1586,15 @@
       "primary_genres": [
         "Post-Rock"
       ],
+      "secondary_genres": [],
       "average_rating": "4.47",
-      "number_of_ratings": "/\n\n                              \n                                 468",
+      "number_of_ratings": "/\n\n                              \n                                 470",
       "rym_url": "https://rateyourmusic.com/song/%ED%8C%8C%EB%9E%80%EB%85%B8%EC%9D%84/%ED%9D%B0%EC%B2%9C%EC%9E%A5-white-ceiling-demo/",
       "album_art_url": "https://e.snmc.io/i/300/w/c10cc338b6e0853c22d2b18c181b1211/10970563/%ED%8C%8C%EB%9E%80%EB%85%B8%EC%9D%84%20-%20White%20Ceiling%20%2F%20Black%20Dots%20Wandering%20Around%2C%20Cover%20art.webp",
       "spotify_url": "https://open.spotify.com/track/5HdBkxO6bnqQbz5VosPdvw"
     },
     {
       "rank": 94,
-      "title": "Terror Gang",
-      "artists": [
-        "SpaceGhostPurrp"
-      ],
-      "release_date": "19 November 2023",
-      "primary_genres": [
-        "Cloud Rap"
-      ],
-      "average_rating": "4.47",
-      "number_of_ratings": "/\n\n                              \n                                 486",
-      "rym_url": "https://rateyourmusic.com/song/spaceghostpurrp/terror-gang/",
-      "album_art_url": "https://e.snmc.io/i/300/w/682814f3a34798a04da2feba1251cddc/14129644/SpaceGhostPurrp%20-%20Dark%20Angels%2C%20Cover%20art.webp",
-      "spotify_url": "https://open.spotify.com/track/1uwuDvnkIUbJO9HRE8mFrR"
-    },
-    {
-      "rank": 95,
       "title": "Superman That",
       "artists": [
         "Injury Reserve"
@@ -1520,6 +1603,7 @@
       "primary_genres": [
         "Glitch Hop"
       ],
+      "secondary_genres": [],
       "average_rating": "4.41",
       "number_of_ratings": "/\n\n                              \n                                 4k",
       "rym_url": "https://rateyourmusic.com/song/injury-reserve/superman-that/",
@@ -1527,7 +1611,7 @@
       "spotify_url": "https://open.spotify.com/track/2gLco6poLosipqughuI7Rt"
     },
     {
-      "rank": 96,
+      "rank": 95,
       "title": "3D Country",
       "artists": [
         "Geese"
@@ -1536,6 +1620,7 @@
       "primary_genres": [
         "Country Rock"
       ],
+      "secondary_genres": [],
       "average_rating": "4.44",
       "number_of_ratings": "/\n\n                              \n                                 2k",
       "rym_url": "https://rateyourmusic.com/song/geese/3d-country/",
@@ -1543,23 +1628,7 @@
       "spotify_url": "https://open.spotify.com/track/6TLl4M9cQVHkPI75LTqABu"
     },
     {
-      "rank": 97,
-      "title": "Garden",
-      "artists": [
-        "Yabujin"
-      ],
-      "release_date": "18 May 2020",
-      "primary_genres": [
-        "Cloud Rap"
-      ],
-      "average_rating": "4.45",
-      "number_of_ratings": "/\n\n                              \n                                 812",
-      "rym_url": "https://rateyourmusic.com/song/yabujin/garden/",
-      "album_art_url": "https://e.snmc.io/i/300/w/4852d52bef97a1a3d1bf085dc7a88314/8198485/Yabujin%20-%20Baroque%2C%20Cover%20art.webp",
-      "spotify_url": "https://open.spotify.com/track/3qJQthWXYOmpLdS0H4yRPt"
-    },
-    {
-      "rank": 98,
+      "rank": 96,
       "title": "Kody Blu 31",
       "artists": [
         "JID"
@@ -1568,14 +1637,15 @@
       "primary_genres": [
         "Neo-Soul"
       ],
-      "average_rating": "4.44",
+      "secondary_genres": [],
+      "average_rating": "4.43",
       "number_of_ratings": "/\n\n                              \n                                 3k",
       "rym_url": "https://rateyourmusic.com/song/jid/kody-blu-31/",
       "album_art_url": "https://e.snmc.io/i/300/w/4dfa153eac4503992f67476ec0f6402f/10163281/JID%20-%20The%20Forever%20Story%2C%20Cover%20art.webp",
       "spotify_url": "https://open.spotify.com/track/4iMzpYxUO5RiZkGmNKRCMh"
     },
     {
-      "rank": 99,
+      "rank": 97,
       "title": "Bald!",
       "artists": [
         "JPEGMAFIA"
@@ -1584,6 +1654,7 @@
       "primary_genres": [
         "Cloud Rap"
       ],
+      "secondary_genres": [],
       "average_rating": "4.44",
       "number_of_ratings": "/\n\n                              \n                                 1k",
       "rym_url": "https://rateyourmusic.com/song/jpegmafia/bald/",
@@ -1591,20 +1662,55 @@
       "spotify_url": "https://open.spotify.com/track/4B462KwzHiJLHJeXYL5Y4V"
     },
     {
-      "rank": 100,
-      "title": "Say the Name",
+      "rank": 98,
+      "title": "Meet the Grahams",
       "artists": [
-        "clipping."
+        "Kendrick Lamar"
       ],
-      "release_date": "26 August 2020",
+      "release_date": "4 May 2024",
       "primary_genres": [
-        "Horrorcore"
+        "Jazz Rap"
       ],
-      "average_rating": "4.43",
-      "number_of_ratings": "/\n\n                              \n                                 2k",
-      "rym_url": "https://rateyourmusic.com/song/clipping/say-the-name/",
-      "album_art_url": "https://e.snmc.io/i/300/w/464bad89091d2638102ff7c3d57e5980/9569770/clipping_%20-%20Visions%20of%20Bodies%20Being%20Burned%2C%20Cover%20art.webp",
-      "spotify_url": "https://open.spotify.com/track/3YHhWdTlWjIML155CvcH4F"
+      "secondary_genres": [],
+      "average_rating": "4.40",
+      "number_of_ratings": "/\n\n                              \n                                 1k",
+      "rym_url": "https://rateyourmusic.com/song/kendrick-lamar/meet-the-grahams/",
+      "album_art_url": "https://e.snmc.io/i/300/w/c2b524deae421cd8c61ff41f228e826e/12085847/Kendrick%20Lamar%20-%20Meet%20the%20Grahams%2C%20Cover%20art.webp",
+      "spotify_url": "https://open.spotify.com/track/4S8PxReB1UiDR2F5x1lyIR"
+    },
+    {
+      "rank": 99,
+      "title": "Garden",
+      "artists": [
+        "Yabujin"
+      ],
+      "release_date": "18 May 2020",
+      "primary_genres": [
+        "Cloud Rap"
+      ],
+      "secondary_genres": [],
+      "average_rating": "4.45",
+      "number_of_ratings": "/\n\n                              \n                                 818",
+      "rym_url": "https://rateyourmusic.com/song/yabujin/garden/",
+      "album_art_url": "https://e.snmc.io/i/300/w/4852d52bef97a1a3d1bf085dc7a88314/8198485/Yabujin%20-%20Baroque%2C%20Cover%20art.webp",
+      "spotify_url": "https://open.spotify.com/track/3qJQthWXYOmpLdS0H4yRPt"
+    },
+    {
+      "rank": 100,
+      "title": "Terror Gang",
+      "artists": [
+        "SpaceGhostPurrp"
+      ],
+      "release_date": "19 November 2023",
+      "primary_genres": [
+        "Cloud Rap"
+      ],
+      "secondary_genres": [],
+      "average_rating": "4.46",
+      "number_of_ratings": "/\n\n                              \n                                 492",
+      "rym_url": "https://rateyourmusic.com/song/spaceghostpurrp/terror-gang/",
+      "album_art_url": "https://e.snmc.io/i/300/w/682814f3a34798a04da2feba1251cddc/14129644/SpaceGhostPurrp%20-%20Dark%20Angels%2C%20Cover%20art.webp",
+      "spotify_url": "https://open.spotify.com/track/1uwuDvnkIUbJO9HRE8mFrR"
     }
   ]
 }
