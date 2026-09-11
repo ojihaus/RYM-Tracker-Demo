@@ -2215,6 +2215,572 @@ export default function Home() {
 }
 `}</style>
 
+      <style>{`
+/* Mobile chart polish */
+@media (max-width: 680px) {
+  /* Make the main chart card denser so album art nearly fills the card height */
+  .rym-app .rym-pane--current .rym-song-card,
+  .rym-app .rym-pane--compact .rym-song-card {
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+  }
+
+  .rym-app .rym-pane--current .rym-song-row,
+  .rym-app .rym-pane--compact .rym-song-row {
+    align-items: stretch !important;
+  }
+
+  .rym-app .rym-pane--current .rym-song-cover,
+  .rym-app .rym-pane--compact .rym-song-cover {
+    height: auto !important;
+    min-height: 100% !important;
+    align-self: stretch !important;
+    display: flex !important;
+  }
+
+  .rym-app .rym-pane--current .rym-song-cover img,
+  .rym-app .rym-pane--compact .rym-song-cover img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    align-self: stretch !important;
+  }
+
+  /* Pull the information block together to remove dead space under album art */
+  .rym-app .rym-pane--current .rym-song-body,
+  .rym-app .rym-pane--compact .rym-song-body {
+    min-height: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    grid-template-areas:
+      "main main"
+      "actions actions"
+      "change rating" !important;
+    row-gap: 6px !important;
+    column-gap: 10px !important;
+    align-content: stretch !important;
+  }
+
+  .rym-app .rym-pane--current .rym-song-main,
+  .rym-app .rym-pane--compact .rym-song-main {
+    grid-area: main !important;
+  }
+
+  .rym-app .rym-pane--current .rym-song-actions,
+  .rym-app .rym-pane--compact .rym-song-actions {
+    grid-area: actions !important;
+    margin-top: 0 !important;
+  }
+
+  /* Rank change sits directly above / beside the rating area */
+  .rym-app .rym-pane--current .rym-rank-change,
+  .rym-app .rym-pane--compact .rym-rank-change {
+    grid-area: change !important;
+    align-self: end !important;
+    margin-top: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  .rym-app .rym-pane--current .rym-score,
+  .rym-app .rym-pane--compact .rym-score,
+  .rym-app .rym-pane--current .rym-rating,
+  .rym-app .rym-pane--compact .rym-rating {
+    grid-area: rating !important;
+    align-self: end !important;
+    justify-self: end !important;
+    margin-top: 0 !important;
+    white-space: nowrap !important;
+  }
+
+  /* Keep playback and RYM buttons identical in size */
+  .rym-app .rym-preview-button,
+  .rym-app .rym-rym-button {
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    min-height: 34px !important;
+    flex: 0 0 34px !important;
+    box-sizing: border-box !important;
+  }
+
+  .rym-app .rym-rym-button {
+    padding: 0 !important;
+  }
+
+  .rym-app .rym-rym-logo-image {
+    width: 34px !important;
+    height: 34px !important;
+    display: block !important;
+    object-fit: cover !important;
+    border-radius: 50% !important;
+  }
+
+  /* When the Spotify preview is expanded, keep controls aligned at the edges */
+  .rym-app .rym-spotify-expanded-controls,
+  .rym-app .rym-song-actions {
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  .rym-app .rym-song-actions .rym-rym-button {
+    margin-left: auto !important;
+  }
+
+  .rym-app .rym-song-actions .rym-preview-button + .rym-rym-button {
+    margin-left: auto !important;
+  }
+}
+`}</style>
+
+      <style>{`
+/* Mobile chart layout correction */
+@media (max-width: 680px) {
+  /* NORMAL CARD: larger artwork, tighter vertical fit */
+  .rym-app .rym-song:not(.rym-song--compact):not(.rym-song--playing) {
+    --rym-cover-size: 8.4rem !important;
+    grid-template-columns: 2.5rem var(--rym-cover-size) minmax(0, 1fr) !important;
+    gap: .72rem !important;
+    padding: .62rem .72rem .62rem .58rem !important;
+    align-items: stretch !important;
+  }
+
+  .rym-app .rym-song:not(.rym-song--compact):not(.rym-song--playing) > .rym-cover {
+    width: var(--rym-cover-size) !important;
+    height: var(--rym-cover-size) !important;
+    align-self: center !important;
+  }
+
+  .rym-app .rym-song:not(.rym-song--compact):not(.rym-song--playing) > .rym-song-body {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    min-height: var(--rym-cover-size) !important;
+    padding: 0 !important;
+  }
+
+  /* Play + RYM stay together before preview opens */
+  .rym-app .rym-song:not(.rym-song--compact):not(.rym-song--playing) .rym-song-actions {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    width: auto !important;
+    gap: .45rem !important;
+    margin-top: .48rem !important;
+  }
+
+  .rym-app .rym-song:not(.rym-song--compact):not(.rym-song--playing) .rym-song-actions .rym-rym-button {
+    margin-left: 0 !important;
+  }
+
+  /* Rank route sits on the right, directly ABOVE the rating */
+  .rym-app .rym-song:not(.rym-song--compact):not(.rym-song--playing) .rym-song-bottom {
+    display: flex !important;
+    flex-direction: column !important;
+    flex-wrap: nowrap !important;
+    align-items: flex-end !important;
+    justify-content: flex-end !important;
+    gap: .22rem !important;
+    width: 100% !important;
+    margin-top: auto !important;
+    padding-top: .35rem !important;
+  }
+
+  .rym-app .rym-song:not(.rym-song--compact):not(.rym-song--playing) .rym-rank-route {
+    align-self: flex-end !important;
+    margin: 0 !important;
+  }
+
+  .rym-app .rym-song:not(.rym-song--compact):not(.rym-song--playing) .rym-rating {
+    align-self: flex-end !important;
+    margin: 0 !important;
+  }
+
+  /* Play button and RYM logo are exactly the same size */
+  .rym-app .rym-song:not(.rym-song--compact) .rym-preview-button,
+  .rym-app .rym-song:not(.rym-song--compact) .rym-rym-button {
+    width: 2.1rem !important;
+    height: 2.1rem !important;
+    min-width: 2.1rem !important;
+    min-height: 2.1rem !important;
+    flex: 0 0 2.1rem !important;
+    box-sizing: border-box !important;
+  }
+
+  .rym-app .rym-song:not(.rym-song--compact) .rym-rym-button {
+    padding: 0 !important;
+    border-radius: 50% !important;
+    overflow: hidden !important;
+  }
+
+  .rym-app .rym-song:not(.rym-song--compact) .rym-rym-logo-image {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    border-radius: 50% !important;
+  }
+
+  /* OPEN PREVIEW: pause on left, RYM at far right */
+  .rym-app .rym-song--playing:not(.rym-song--compact) .rym-song-actions {
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+    gap: .45rem !important;
+    margin: 0 0 var(--rym-mobile-control-gap) 0 !important;
+  }
+
+  .rym-app .rym-song--playing:not(.rym-song--compact) .rym-song-actions .rym-preview-button {
+    margin: 0 !important;
+  }
+
+  .rym-app .rym-song--playing:not(.rym-song--compact) .rym-song-actions .rym-rym-button {
+    margin-left: auto !important;
+  }
+}
+`}</style>
+
+      <style>{`
+/* Final mobile spacing + control sizing */
+@media (max-width: 680px) {
+  /* Match top/bottom card padding to the horizontal padding */
+  .rym-app .rym-song:not(.rym-song--compact):not(.rym-song--playing) {
+    padding: .58rem .58rem !important;
+  }
+
+  .rym-app .rym-song:not(.rym-song--compact):not(.rym-song--playing) > .rym-song-body {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+  }
+
+  /* Slightly smaller mobile action buttons */
+  .rym-app .rym-song:not(.rym-song--compact) .rym-preview-button,
+  .rym-app .rym-song:not(.rym-song--compact) .rym-rym-button {
+    width: 1.85rem !important;
+    height: 1.85rem !important;
+    min-width: 1.85rem !important;
+    min-height: 1.85rem !important;
+    flex: 0 0 1.85rem !important;
+  }
+
+  .rym-app .rym-song:not(.rym-song--compact) .rym-rym-logo-image {
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  /* Keep artwork vertically centered with tighter card breathing room */
+  .rym-app .rym-song:not(.rym-song--compact):not(.rym-song--playing) > .rym-cover {
+    align-self: center !important;
+  }
+
+  .rym-app .rym-song:not(.rym-song--compact):not(.rym-song--playing) .rym-song-actions {
+    margin-top: .34rem !important;
+    gap: .38rem !important;
+  }
+
+  .rym-app .rym-song:not(.rym-song--compact):not(.rym-song--playing) .rym-song-bottom {
+    padding-top: .2rem !important;
+    gap: .16rem !important;
+  }
+}
+`}</style>
+
+      <style>{`
+/* MOBILE FINAL: force the card itself to fit the artwork */
+@media (max-width: 680px) {
+  .rym-app .rym-song:not(.rym-song--compact):not(.rym-song--playing) {
+    --rym-cover-size: 10.4rem !important;
+    grid-template-columns: 1.7rem var(--rym-cover-size) minmax(0, 1fr) !important;
+    gap: .55rem !important;
+    padding: .36rem .42rem !important;
+    align-items: stretch !important;
+  }
+
+  .rym-app .rym-song:not(.rym-song--compact):not(.rym-song--playing) > .rym-cover {
+    width: var(--rym-cover-size) !important;
+    height: var(--rym-cover-size) !important;
+    align-self: center !important;
+  }
+
+  .rym-app .rym-song:not(.rym-song--compact):not(.rym-song--playing) > .rym-song-body {
+    min-height: var(--rym-cover-size) !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* Keep controls compact */
+  .rym-app .rym-song:not(.rym-song--compact) .rym-preview-button,
+  .rym-app .rym-song:not(.rym-song--compact) .rym-rym-button {
+    width: 1.7rem !important;
+    height: 1.7rem !important;
+    min-width: 1.7rem !important;
+    min-height: 1.7rem !important;
+    flex: 0 0 1.7rem !important;
+  }
+
+  .rym-app .rym-song:not(.rym-song--compact):not(.rym-song--playing) .rym-song-actions {
+    display: flex !important;
+    width: auto !important;
+    justify-content: flex-start !important;
+    gap: .34rem !important;
+    margin-top: .28rem !important;
+  }
+
+  .rym-app .rym-song:not(.rym-song--compact):not(.rym-song--playing) .rym-song-actions .rym-rym-button {
+    margin-left: 0 !important;
+  }
+
+  /* Rank change directly above rating on the right */
+  .rym-app .rym-song:not(.rym-song--compact):not(.rym-song--playing) .rym-song-bottom {
+    margin-top: auto !important;
+    padding-top: .18rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-end !important;
+    justify-content: flex-end !important;
+    gap: .08rem !important;
+  }
+
+  .rym-app .rym-song:not(.rym-song--compact):not(.rym-song--playing) .rym-rank-route,
+  .rym-app .rym-song:not(.rym-song--compact):not(.rym-song--playing) .rym-rating {
+    margin: 0 !important;
+    align-self: flex-end !important;
+  }
+
+  /* Expanded preview: pause left, RYM right */
+  .rym-app .rym-song--playing:not(.rym-song--compact) .rym-song-actions {
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  .rym-app .rym-song--playing:not(.rym-song--compact) .rym-song-actions .rym-rym-button {
+    margin-left: auto !important;
+  }
+}
+`}</style>
+
+      <style>{`
+/* MOBILE FINAL: add a little breathing room */
+@media (max-width: 680px) {
+  .rym-app .rym-song:not(.rym-song--compact):not(.rym-song--playing) {
+    padding: .55rem .58rem !important;
+    gap: .62rem !important;
+  }
+}
+`}</style>
+
+      <style>{`
+/* Mobile spacing refinement */
+@media (max-width: 680px) {
+  /* Main/current chart: slightly more breathing room than previous version */
+  .rym-app .rym-song:not(.rym-song--compact):not(.rym-song--playing) {
+    padding: .68rem .68rem !important;
+    gap: .66rem !important;
+  }
+
+  /* Small/previous chart: remove excessive empty space */
+  .rym-app .rym-pane--compact .rym-song,
+  .rym-app .rym-song--compact {
+    padding: .38rem .42rem !important;
+    gap: .42rem !important;
+    min-height: 0 !important;
+  }
+
+  .rym-app .rym-pane--compact .rym-song-body,
+  .rym-app .rym-song--compact .rym-song-body {
+    min-height: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    justify-content: center !important;
+  }
+
+  .rym-app .rym-pane--compact .rym-cover,
+  .rym-app .rym-song--compact .rym-cover {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    align-self: center !important;
+  }
+}
+`}</style>
+
+      <style>{`
+/* Final mobile fixes: playing controls + compact calendar */
+@media (max-width: 1023px) {
+  /* The compact pane was clipping its calendar popover. */
+  .rym-app .rym-pane--compact {
+    overflow: visible !important;
+  }
+
+  .rym-app .rym-pane--compact .rym-chart-controls {
+    position: relative !important;
+    z-index: 100 !important;
+    overflow: visible !important;
+  }
+
+  .rym-app .rym-pane--compact .rym-snapshot-field {
+    position: relative !important;
+    z-index: 110 !important;
+    overflow: visible !important;
+  }
+
+  .rym-app .rym-pane--compact .rym-calendar-popover {
+    z-index: 9999 !important;
+  }
+}
+
+/* Selected time: solid RYM blue, no stroke */
+.rym-app .rym-time-button.is-selected {
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  background: var(--rym-blue) !important;
+  color: #fff !important;
+}
+
+@media (max-width: 680px) {
+  /* When preview is open, RYM must exactly match the pause button. */
+  .rym-app .rym-song.rym-song--playing:not(.rym-song--compact) .rym-preview-button,
+  .rym-app .rym-song.rym-song--playing:not(.rym-song--compact) .rym-rym-button {
+    width: 2.1rem !important;
+    height: 2.1rem !important;
+    min-width: 2.1rem !important;
+    min-height: 2.1rem !important;
+    flex: 0 0 2.1rem !important;
+    box-sizing: border-box !important;
+  }
+
+  .rym-app .rym-song.rym-song--playing:not(.rym-song--compact) .rym-rym-button {
+    padding: 0 !important;
+    margin-left: auto !important;
+    border-radius: 50% !important;
+    overflow: hidden !important;
+  }
+
+  .rym-app .rym-song.rym-song--playing:not(.rym-song--compact) .rym-rym-logo-image {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    border-radius: 50% !important;
+  }
+}
+`}</style>
+
+      <style>{`
+/* Compact admin modal on phones */
+@media (max-width: 680px) {
+  .rym-app .rym-admin-modal,
+  .rym-app .rym-pin-change-modal {
+    width: min(86vw, 320px) !important;
+    padding: 20px 18px 17px !important;
+    border-radius: 12px !important;
+  }
+
+  .rym-app .rym-admin-modal h2 {
+    margin: 2px 0 5px !important;
+    font-size: .96rem !important;
+  }
+
+  .rym-app .rym-admin-modal > p {
+    margin-bottom: 14px !important;
+    font-size: .8rem !important;
+    line-height: 1.38 !important;
+  }
+
+  .rym-app .rym-admin-dots {
+    gap: 7px !important;
+    margin: 2px 0 12px !important;
+  }
+
+  .rym-app .rym-admin-dots span {
+    width: 46px !important;
+    height: 46px !important;
+    border-radius: 9px !important;
+  }
+
+  .rym-app .rym-admin-pin {
+    width: 205px !important;
+    height: 46px !important;
+  }
+
+  .rym-app .rym-admin-submit {
+    min-height: 42px !important;
+    border-radius: 8px !important;
+    font-size: .84rem !important;
+  }
+
+  .rym-app .rym-pin-change-form {
+    gap: 10px !important;
+    margin-top: 10px !important;
+  }
+
+  .rym-app .rym-pin-change-form input {
+    min-height: 42px !important;
+  }
+}
+
+/* Site footer */
+.rym-app .rym-site-footer {
+  margin-top: 2.4rem;
+  padding: 1.15rem 1rem 1.35rem;
+  border-top: 1px solid rgba(74, 86, 99, .12);
+  text-align: center;
+  color: #9aa1aa;
+  font-size: .72rem;
+  line-height: 1.55;
+}
+
+.rym-app .rym-site-footer a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.rym-app .rym-site-footer a:hover {
+  color: #717984;
+}
+
+.rym-app .rym-site-footer .rym-made-by {
+  margin-top: .22rem;
+  color: #858d97;
+  font-weight: 600;
+  letter-spacing: .01em;
+}
+
+@media (max-width: 680px) {
+  .rym-app .rym-site-footer {
+    margin-top: 1.7rem;
+    padding: .95rem .8rem 1.1rem;
+    font-size: .68rem;
+  }
+}
+`}</style>
+
+      <style>{`
+/* Desktop/tablet main chart: keep artwork large enough to fill the card vertically */
+@media (min-width: 681px) {
+  .rym-app .rym-song:not(.rym-song--compact):not(.rym-song--playing) {
+    --rym-cover-size: 10.4rem !important;
+    grid-template-columns: 2.5rem var(--rym-cover-size) minmax(0, 1fr) !important;
+    align-items: stretch !important;
+  }
+
+  .rym-app .rym-song:not(.rym-song--compact):not(.rym-song--playing) > .rym-cover {
+    width: var(--rym-cover-size) !important;
+    height: var(--rym-cover-size) !important;
+    align-self: center !important;
+    flex-shrink: 0 !important;
+  }
+
+  .rym-app .rym-song:not(.rym-song--compact):not(.rym-song--playing) > .rym-song-body {
+    min-height: var(--rym-cover-size) !important;
+  }
+}
+`}</style>
+
       {adminModalOpen && (
         <div
           className="rym-admin-backdrop"
@@ -2571,6 +3137,14 @@ export default function Home() {
           </>
         )}
       </div>
+
+      <footer className="rym-site-footer">
+        <div>
+          Chart data sourced from Rate Your Music (RYM). RYM and related trademarks belong to their respective owners.
+          This site is an unofficial project and is not affiliated with or endorsed by Rate Your Music.
+        </div>
+        <div className="rym-made-by">Made By ojihaus</div>
+      </footer>
     </main>
   );
 }
@@ -3819,4 +4393,3 @@ body:has(.rym-app) { display: block; min-height: 100vh; min-height: 100dvh; }
 }
 
 `;
-
