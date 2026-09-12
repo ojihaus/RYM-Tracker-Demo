@@ -1,10 +1,70 @@
 import { NextResponse } from "next/server";
-import { promises as fs } from "fs";
-import path from "path";
 import { verifyAdminPin } from "../../lib/adminAuth";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
+export const revalidate = 0;
+
+const CHART_FILE_RE = /^(?:2020s|2026)-\d{4}\.json$/i;
+
+const NO_STORE_HEADERS = {
+  "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+  Pragma: "no-cache",
+  Expires: "0",
+};
+
+function githubHeaders(token: string) {
+  return {
+    Accept: "application/vnd.github+json",
+    Authorization: `Bearer ${token}`,
+    "X-GitHub-Api-Version": "2022-11-28",
+    "User-Agent": "rym-tracker-demo",
+  };
+}
+
+async function githubReadFailure(response: Response, action: string) {
+  const detail = await response.text();
+  console.error(`${action}:`, response.status, detail);
+
+  if (response.status === 401) {
+    return NextResponse.json(
+      { error: "GitHub server authentication failed." },
+      { status: 502, headers: NO_STORE_HEADERS }
+    );
+  }
+
+  if (
+    response.status === 403 &&
+    response.headers.get("x-ratelimit-remaining") === "0"
+  ) {
+    return NextResponse.json(
+      { error: "GitHub API rate limit exceeded. Please try again shortly." },
+      { status: 503, headers: NO_STORE_HEADERS }
+    );
+  }
+
+  if (response.status === 403) {
+    return NextResponse.json(
+      {
+        error:
+          "GitHub repository access was denied. Check the server token permissions.",
+      },
+      { status: 502, headers: NO_STORE_HEADERS }
+    );
+  }
+
+  if (response.status === 404) {
+    return NextResponse.json(
+      { error: "The GitHub chart data path could not be found." },
+      { status: 502, headers: NO_STORE_HEADERS }
+    );
+  }
+
+  return NextResponse.json(
+    { error: "Could not read the latest chart data from GitHub." },
+    { status: 502, headers: NO_STORE_HEADERS }
+  );
+}
 
 function inferPublicFilename(snapshot: any) {
   const sourceUrl = String(snapshot?.source_url || "");
@@ -23,23 +83,116 @@ function inferPublicFilename(snapshot: any) {
 }
 
 export async function GET() {
-  try {
-    const publicDir = path.join(process.cwd(), "public");
-    const entries = await fs.readdir(publicDir, { withFileTypes: true });
+  const token = process.env.RYM_GITHUB_TOKEN;
+  const owner = process.env.GITHUB_OWNER;
+  const repo = process.env.GITHUB_REPO;
+  const branch = process.env.GITHUB_BRANCH || "main";
 
-    const files = entries
-      .filter((entry) => entry.isFile())
-      .map((entry) => entry.name)
-      .filter((name) => /^(?:2020s|2026)-\d{4}\.json$/i.test(name))
-      .sort();
+  if (!token || !owner || !repo) {
+    return NextResponse.json(
+      { error: "GitHub server settings are missing" },
+      { status: 500, headers: NO_STORE_HEADERS }
+    );
+  }
+
+  const headers = githubHeaders(token);
+  const publicApiUrl =
+    `https://api.github.com/repos/${encodeURIComponent(owner)}/` +
+    `${encodeURIComponent(repo)}/contents/public?ref=${encodeURIComponent(branch)}`;
+
+  try {
+    const directoryResponse = await fetch(publicApiUrl, {
+      headers,
+      cache: "no-store",
+    });
+
+    if (!directoryResponse.ok) {
+      return githubReadFailure(
+        directoryResponse,
+        "Could not list GitHub chart files"
+      );
+    }
+
+    const directoryPayload = await directoryResponse.json();
+
+    if (!Array.isArray(directoryPayload)) {
+      console.error(
+        "Unexpected GitHub public directory response:",
+        directoryPayload
+      );
+      return NextResponse.json(
+        { error: "GitHub returned an unexpected chart directory response." },
+        { status: 502, headers: NO_STORE_HEADERS }
+      );
+    }
+
+    const chartEntries = directoryPayload
+      .filter(
+        (entry: any) =>
+          entry?.type === "file" &&
+          typeof entry?.name === "string" &&
+          typeof entry?.url === "string" &&
+          CHART_FILE_RE.test(entry.name)
+      )
+      .sort((a: any, b: any) => a.name.localeCompare(b.name));
+
+    const files: string[] = [];
+    const snapshots: unknown[] = [];
+
+    for (const entry of chartEntries) {
+      const fileUrl =
+        `${entry.url}${entry.url.includes("?") ? "&" : "?"}` +
+        `ref=${encodeURIComponent(branch)}`;
+
+      const fileResponse = await fetch(fileUrl, {
+        headers,
+        cache: "no-store",
+      });
+
+      if (!fileResponse.ok) {
+        return githubReadFailure(
+          fileResponse,
+          `Could not read GitHub chart file ${entry.name}`
+        );
+      }
+
+      const filePayload = await fileResponse.json();
+
+      if (typeof filePayload?.content !== "string") {
+        console.error("GitHub chart file has no content:", entry.name);
+        return NextResponse.json(
+          { error: `GitHub chart file ${entry.name} has no readable content.` },
+          { status: 502, headers: NO_STORE_HEADERS }
+        );
+      }
+
+      try {
+        const decoded = Buffer.from(
+          filePayload.content.replace(/\n/g, ""),
+          "base64"
+        ).toString("utf8");
+
+        snapshots.push(JSON.parse(decoded));
+        files.push(entry.name);
+      } catch (error) {
+        console.error("Invalid chart JSON in GitHub:", entry.name, error);
+        return NextResponse.json(
+          { error: `GitHub chart file ${entry.name} contains invalid JSON.` },
+          { status: 502, headers: NO_STORE_HEADERS }
+        );
+      }
+    }
 
     return NextResponse.json(
-      { files },
-      { headers: { "Cache-Control": "no-store" } }
+      { files, snapshots },
+      { headers: NO_STORE_HEADERS }
     );
   } catch (error) {
-    console.error("Could not scan public chart files:", error);
-    return NextResponse.json({ files: [] }, { status: 500 });
+    console.error("Could not load live GitHub chart data:", error);
+    return NextResponse.json(
+      { error: "Could not load the latest chart data from GitHub." },
+      { status: 502, headers: NO_STORE_HEADERS }
+    );
   }
 }
 
@@ -139,7 +292,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "Incorrect password" }, { status: 401 });
     }
 
-    if (!/^(?:2020s|2026)-\d{4}\.json$/i.test(filename)) {
+    if (!CHART_FILE_RE.test(filename)) {
       return NextResponse.json({ error: "Invalid chart filename" }, { status: 400 });
     }
 

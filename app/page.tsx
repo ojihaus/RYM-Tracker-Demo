@@ -125,6 +125,27 @@ function sanitizeSnapshotList(value: unknown): Snapshot[] {
   return Array.from(deduped.values());
 }
 
+async function fetchSharedSnapshots(): Promise<Snapshot[]> {
+  const response = await fetch(`/api/chart-files?ts=${Date.now()}`, {
+    cache: "no-store",
+    headers: { Accept: "application/json" },
+  });
+
+  const result = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(
+      result?.error || "Could not load the latest chart library."
+    );
+  }
+
+  if (!Array.isArray(result?.snapshots)) {
+    throw new Error("The chart library response is invalid.");
+  }
+
+  return sanitizeSnapshotList(result.snapshots);
+}
+
 function songKey(song: Song) {
   if (song.rym_url) return song.rym_url;
   return `${song.title}__${song.artists?.join("|")}`;
@@ -919,59 +940,32 @@ export default function Home() {
     let cancelled = false;
 
     async function loadInitialSnapshots() {
-      // Chart records are shared server data now. Do not restore stale per-device
-      // copies, otherwise a file deleted on one device can reappear on another.
+      // Chart records are shared server data now. Never restore stale per-device
+      // snapshot copies; GitHub is the single source of truth.
       try {
         localStorage.removeItem(STORAGE_KEY);
       } catch {
         // Storage can be unavailable in restricted/private browser contexts.
       }
 
-      let publicFiles: string[] = [];
-
       try {
-        const manifestResponse = await fetch("/api/chart-files", { cache: "no-store" });
-        if (manifestResponse.ok) {
-          const manifest = await manifestResponse.json();
-          if (Array.isArray(manifest?.files)) {
-            publicFiles = manifest.files
-              .filter((file: unknown): file is string => typeof file === "string")
-              .map((file: string) => (file.startsWith("/") ? file : `/${file}`));
-          }
-        }
-      } catch {
-        // Fall back to the original demo files if the manifest route is unavailable.
+        const sharedSnapshots = await fetchSharedSnapshots();
+        if (cancelled) return;
+
+        setRecords(sharedSnapshots);
+        setError("");
+      } catch (error) {
+        if (cancelled) return;
+
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Could not load the latest chart library.";
+
+        setError(`Could not load the latest chart library. (${message})`);
+      } finally {
+        if (!cancelled) setLoaded(true);
       }
-
-      if (publicFiles.length === 0) {
-        publicFiles = [
-          "/2020s-0902.json",
-          "/2020s-0909.json",
-          "/2026-0902.json",
-          "/2026-0909.json",
-        ];
-      }
-
-      const publicSnapshots = (
-        await Promise.all(
-          publicFiles.map(async (url) => {
-            try {
-              const response = await fetch(url, { cache: "no-store" });
-              if (!response.ok) return null;
-              return sanitizeSnapshot(await response.json());
-            } catch {
-              return null;
-            }
-          })
-        )
-      ).filter((snapshot): snapshot is Snapshot => snapshot !== null);
-
-      if (cancelled) return;
-
-      // GitHub/public is the single source of truth for chart records.
-      // This keeps imports and deletions synchronized across every device.
-      setRecords(sanitizeSnapshotList(publicSnapshots));
-      setLoaded(true);
     }
 
     loadInitialSnapshots();
@@ -1463,11 +1457,8 @@ export default function Home() {
         throw new Error(uploadResult?.error || "Upload failed");
       }
 
-      setRecords((current) => {
-        const key = snapshotKey(data);
-        const withoutDuplicate = current.filter((snapshot) => snapshotKey(snapshot) !== key);
-        return [...withoutDuplicate, data];
-      });
+      const latestSnapshots = await fetchSharedSnapshots();
+      setRecords(latestSnapshots);
 
       setRightChartUrl(data.source_url);
       setRightSnapshotKey(snapshotKey(data));
@@ -1475,8 +1466,8 @@ export default function Home() {
 
       window.alert(
         language === "ko"
-          ? `${uploadResult.filename || "JSON"} 파일을 GitHub public 폴더에 올렸습니다. Vercel 재배포 후 모든 방문자에게 반영됩니다.`
-          : `${uploadResult.filename || "JSON"} was committed to the GitHub public folder. It will be visible to everyone after Vercel redeploys.`
+          ? `${uploadResult.filename || "JSON"} 파일을 GitHub에 저장했습니다. 다른 기기에서도 새로고침하면 바로 반영됩니다.`
+          : `${uploadResult.filename || "JSON"} was saved to GitHub. Other devices will see it immediately after refreshing.`
       );
     } catch (error) {
       const message = error instanceof Error ? error.message : "";
@@ -1560,8 +1551,8 @@ export default function Home() {
 
     const ok = window.confirm(
       language === "ko"
-        ? `선택한 차트 기록 ${targets.length}개를 실제 파일에서도 삭제할까요?\n\nGitHub public 폴더에서도 삭제되며 Vercel이 자동 재배포됩니다.`
-        : `Delete ${targets.length} selected record(s) from the actual files too?\n\nThey will also be removed from the GitHub public folder and Vercel will redeploy automatically.`
+        ? `선택한 차트 기록 ${targets.length}개를 실제 파일에서도 삭제할까요?\n\nGitHub public 폴더에서도 즉시 삭제됩니다.`
+        : `Delete ${targets.length} selected record(s) from the actual files too?\n\nThey will be removed from the GitHub public folder immediately.`
     );
 
     if (!ok) return;
@@ -1569,18 +1560,22 @@ export default function Home() {
     try {
       await deleteSnapshotsFromGitHub(targets);
 
-      const targetKeys = new Set(targets.map(snapshotKey));
-      setRecords((current) =>
-        current.filter((snapshot) => !targetKeys.has(snapshotKey(snapshot)))
-      );
+      const latestSnapshots = await fetchSharedSnapshots();
+      setRecords(latestSnapshots);
       setSelectedForDelete([]);
 
       window.alert(
         language === "ko"
-          ? "삭제했습니다. GitHub의 실제 JSON 파일도 함께 삭제되었습니다."
-          : "Deleted. The actual JSON files were also removed from GitHub."
+          ? "삭제했습니다. 다른 기기에서도 새로고침하면 바로 반영됩니다."
+          : "Deleted. Other devices will reflect the change immediately after refreshing."
       );
     } catch (error) {
+      try {
+        setRecords(await fetchSharedSnapshots());
+      } catch {
+        // Keep the current UI if the authoritative refresh also fails.
+      }
+
       window.alert(
         error instanceof Error
           ? error.message
@@ -1603,7 +1598,8 @@ export default function Home() {
     try {
       await deleteSnapshotsFromGitHub(snapshots);
 
-      setRecords([]);
+      const latestSnapshots = await fetchSharedSnapshots();
+      setRecords(latestSnapshots);
       setSelectedForDelete([]);
       setLeftChartUrl("");
       setRightChartUrl("");
@@ -1615,10 +1611,16 @@ export default function Home() {
 
       window.alert(
         language === "ko"
-          ? "모든 기록과 GitHub의 실제 JSON 파일을 삭제했습니다."
-          : "All records and actual GitHub JSON files were deleted."
+          ? "모든 기록과 GitHub의 실제 JSON 파일을 삭제했습니다. 다른 기기에서도 새로고침하면 바로 반영됩니다."
+          : "All records and actual GitHub JSON files were deleted. Other devices will reflect the change immediately after refreshing."
       );
     } catch (error) {
+      try {
+        setRecords(await fetchSharedSnapshots());
+      } catch {
+        // Keep the current UI if the authoritative refresh also fails.
+      }
+
       window.alert(
         error instanceof Error
           ? error.message
