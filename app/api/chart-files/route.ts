@@ -127,3 +127,84 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Upload failed" }, { status: 500 });
   }
 }
+
+
+export async function DELETE(request: Request) {
+  try {
+    const body = await request.json();
+    const password = String(body?.password || "");
+    const filename = String(body?.filename || "");
+
+    if (!(await verifyAdminPin(password))) {
+      return NextResponse.json({ error: "Incorrect password" }, { status: 401 });
+    }
+
+    if (!/^(?:2020s|2026)-\d{4}\.json$/i.test(filename)) {
+      return NextResponse.json({ error: "Invalid chart filename" }, { status: 400 });
+    }
+
+    const token = process.env.RYM_GITHUB_TOKEN;
+    const owner = process.env.GITHUB_OWNER;
+    const repo = process.env.GITHUB_REPO;
+    const branch = process.env.GITHUB_BRANCH || "main";
+
+    if (!token || !owner || !repo) {
+      return NextResponse.json(
+        { error: "GitHub server settings are missing" },
+        { status: 500 }
+      );
+    }
+
+    const githubPath = `public/${filename}`;
+    const apiUrl = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${githubPath}`;
+    const headers = {
+      Accept: "application/vnd.github+json",
+      Authorization: `Bearer ${token}`,
+      "X-GitHub-Api-Version": "2022-11-28",
+      "User-Agent": "rym-tracker-demo",
+    };
+
+    const existing = await fetch(`${apiUrl}?ref=${encodeURIComponent(branch)}`, {
+      headers,
+      cache: "no-store",
+    });
+
+    if (existing.status === 404) {
+      return NextResponse.json({ error: "File not found" }, { status: 404 });
+    }
+
+    if (!existing.ok) {
+      const detail = await existing.text();
+      console.error("GitHub lookup failed:", existing.status, detail);
+      return NextResponse.json({ error: "Could not check the GitHub file" }, { status: 502 });
+    }
+
+    const existingData = await existing.json();
+    const sha = String(existingData?.sha || "");
+
+    if (!sha) {
+      return NextResponse.json({ error: "Could not resolve file SHA" }, { status: 502 });
+    }
+
+    const deleteResponse = await fetch(apiUrl, {
+      method: "DELETE",
+      headers: { ...headers, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: `Delete ${filename} from RYM Tracker`,
+        sha,
+        branch,
+      }),
+    });
+
+    if (!deleteResponse.ok) {
+      const detail = await deleteResponse.text();
+      console.error("GitHub delete failed:", deleteResponse.status, detail);
+      return NextResponse.json({ error: "GitHub delete failed" }, { status: 502 });
+    }
+
+    return NextResponse.json({ ok: true, filename });
+  } catch (error) {
+    console.error("Could not delete chart record:", error);
+    return NextResponse.json({ error: "Delete failed" }, { status: 500 });
+  }
+}

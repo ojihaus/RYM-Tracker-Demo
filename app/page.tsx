@@ -134,6 +134,20 @@ function snapshotKey(snapshot: Snapshot) {
   return `${snapshot.source_url}__${snapshot.captured_at}`;
 }
 
+function snapshotPublicFilename(snapshot: Snapshot) {
+  const capturedAt = new Date(snapshot.captured_at);
+  if (Number.isNaN(capturedAt.getTime())) return null;
+
+  let prefix = "";
+  if (/\/charts\/top\/song\/2020s\/?$/i.test(snapshot.source_url)) prefix = "2020s";
+  else if (/\/charts\/top\/song\/2026\/?$/i.test(snapshot.source_url)) prefix = "2026";
+  else return null;
+
+  const month = String(capturedAt.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(capturedAt.getUTCDate()).padStart(2, "0");
+  return `${prefix}-${month}${day}.json`;
+}
+
 function formatDate(value: string, language: Language = "en") {
   return new Date(value).toLocaleDateString(language === "ko" ? "ko-KR" : "en-US", {
     year: "numeric",
@@ -1507,45 +1521,112 @@ export default function Home() {
     setSelectedForDelete([]);
   }
 
-  function deleteSelected() {
+  async function deleteSnapshotsFromGitHub(targets: Snapshot[]) {
+    const password = adminPassword;
+    if (!password) {
+      throw new Error(
+        language === "ko"
+          ? "관리자 인증이 만료되었습니다. 라이브러리를 다시 열어주세요."
+          : "Administrator authentication expired. Reopen the library."
+      );
+    }
+
+    for (const snapshot of targets) {
+      const filename = snapshotPublicFilename(snapshot);
+      if (!filename) continue;
+
+      const response = await fetch("/api/chart-files", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password, filename }),
+      });
+
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok && response.status !== 404) {
+        if (response.status === 401) setAdminPassword("");
+        throw new Error(
+          result?.error ||
+            (language === "ko" ? `${filename} 삭제에 실패했습니다.` : `Could not delete ${filename}.`)
+        );
+      }
+    }
+  }
+
+  async function deleteSelected() {
     if (selectedForDelete.length === 0) return;
 
+    const targets = snapshots.filter((snapshot) =>
+      selectedForDelete.includes(snapshotKey(snapshot))
+    );
+
     const ok = window.confirm(
-      language === "ko" ? `선택한 차트 기록 ${selectedForDelete.length}개를 삭제할까요?` : `Delete ${selectedForDelete.length} selected record(s)?`
+      language === "ko"
+        ? `선택한 차트 기록 ${targets.length}개를 실제 파일에서도 삭제할까요?\n\nGitHub public 폴더에서도 삭제되며 Vercel이 자동 재배포됩니다.`
+        : `Delete ${targets.length} selected record(s) from the actual files too?\n\nThey will also be removed from the GitHub public folder and Vercel will redeploy automatically.`
     );
 
     if (!ok) return;
 
-    setRecords((current) =>
-      current.filter(
-        (snapshot) =>
-          !selectedForDelete.includes(
-            snapshotKey(snapshot)
-          )
-      )
-    );
+    try {
+      await deleteSnapshotsFromGitHub(targets);
 
-    setSelectedForDelete([]);
+      const targetKeys = new Set(targets.map(snapshotKey));
+      setRecords((current) =>
+        current.filter((snapshot) => !targetKeys.has(snapshotKey(snapshot)))
+      );
+      setSelectedForDelete([]);
+
+      window.alert(
+        language === "ko"
+          ? "삭제했습니다. GitHub의 실제 JSON 파일도 함께 삭제되었습니다."
+          : "Deleted. The actual JSON files were also removed from GitHub."
+      );
+    } catch (error) {
+      window.alert(
+        error instanceof Error
+          ? error.message
+          : (language === "ko" ? "삭제에 실패했습니다." : "Delete failed.")
+      );
+    }
   }
 
-  function deleteAll() {
+  async function deleteAll() {
     if (snapshots.length === 0) return;
 
     const ok = window.confirm(
-      language === "ko" ? `저장된 차트 기록 ${snapshots.length}개를 모두 삭제할까요?` : `Delete all ${snapshots.length} saved record(s)?`
+      language === "ko"
+        ? `저장된 차트 기록 ${snapshots.length}개를 모두 실제 파일에서도 삭제할까요?\n\nGitHub public 폴더의 차트 JSON도 삭제됩니다.`
+        : `Delete all ${snapshots.length} saved record(s), including the actual files?\n\nThe chart JSON files in the GitHub public folder will also be deleted.`
     );
 
     if (!ok) return;
 
-    setRecords([]);
-    setSelectedForDelete([]);
-    setLeftChartUrl("");
-    setRightChartUrl("");
-    setLeftSnapshotKey("");
-    setRightSnapshotKey("");
-    setActiveSpotifyUrl("");
-    setMovementFilter("ALL");
-    setSearchQuery("");
+    try {
+      await deleteSnapshotsFromGitHub(snapshots);
+
+      setRecords([]);
+      setSelectedForDelete([]);
+      setLeftChartUrl("");
+      setRightChartUrl("");
+      setLeftSnapshotKey("");
+      setRightSnapshotKey("");
+      setActiveSpotifyUrl("");
+      setMovementFilter("ALL");
+      setSearchQuery("");
+
+      window.alert(
+        language === "ko"
+          ? "모든 기록과 GitHub의 실제 JSON 파일을 삭제했습니다."
+          : "All records and actual GitHub JSON files were deleted."
+      );
+    } catch (error) {
+      window.alert(
+        error instanceof Error
+          ? error.message
+          : (language === "ko" ? "전체 삭제에 실패했습니다." : "Delete all failed.")
+      );
+    }
   }
 
   function toggleSpotifyPreview(url: string) {
