@@ -180,7 +180,47 @@ function formatDate(value: string, language: Language = "en") {
 function formatChartTitle(value?: string) {
   return (value || "RYM Song Chart")
     .replace(/\s*[-–—]\s*Rate\s+Your\s+Music\s*$/i, "")
+    .replace(/\s*\(\d+\)\s*$/i, "")
     .trim();
+}
+
+type ChartKind = "song" | "album";
+
+function chartKind(chart: ChartGroup): ChartKind {
+  if (/\/charts\/top\/album\//i.test(chart.sourceUrl) || /\balbums?\b/i.test(chart.title)) {
+    return "album";
+  }
+
+  return "song";
+}
+
+function chartPeriodLabel(chart: ChartGroup) {
+  const title = formatChartTitle(chart.title);
+
+  const between = title.match(
+    /\bbetween\s+((?:19|20)\d{2})\s+(?:and|to|[-–—])\s+((?:19|20)\d{2})\b/i
+  );
+  if (between) return `${between[1]}–${between[2]}`;
+
+  const decade = title.match(/\b((?:19|20)\d{2}s)\b/i);
+  if (decade) return decade[1];
+
+  const year = title.match(/\b((?:19|20)\d{2})\b/);
+  if (year) return year[1];
+
+  const pathPeriod = chart.sourceUrl.match(
+    /\/charts\/top\/(?:song|album)\/([^/?#]+)\/?(?:[?#].*)?$/i
+  )?.[1];
+
+  if (pathPeriod) {
+    try {
+      return decodeURIComponent(pathPeriod).replace(/_/g, " ");
+    } catch {
+      return pathPeriod.replace(/_/g, " ");
+    }
+  }
+
+  return title;
 }
 
 function dateId(value: string | Date) {
@@ -834,52 +874,194 @@ function ChartPane({
   const displayedCount = filter === "OUT" ? visibleOutSongs.length : visibleSongs.length;
 
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [chartPickerOpen, setChartPickerOpen] = useState(false);
+  const [pickerKind, setPickerKind] = useState<ChartKind>(
+    chart ? chartKind(chart) : "song"
+  );
+  const chartPickerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (chart) setPickerKind(chartKind(chart));
+  }, [chartUrl]);
+
+  useEffect(() => {
+    if (!chartPickerOpen) return;
+
+    function handlePointerDown(event: PointerEvent) {
+      const target = event.target;
+      if (!(target instanceof Node)) return;
+      if (!chartPickerRef.current?.contains(target)) {
+        setChartPickerOpen(false);
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setChartPickerOpen(false);
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [chartPickerOpen]);
+
+  const availableKinds: Record<ChartKind, boolean> = {
+    song: charts.some((item) => chartKind(item) === "song"),
+    album: charts.some((item) => chartKind(item) === "album"),
+  };
+
+  const periodOptions = Array.from(
+    charts
+      .filter((item) => chartKind(item) === pickerKind)
+      .reduce((map, item) => {
+        const label = chartPeriodLabel(item);
+        if (!map.has(label) || item.sourceUrl === chartUrl) map.set(label, item);
+        return map;
+      }, new Map<string, ChartGroup>())
+      .entries()
+  )
+    .map(([label, item]) => ({ label, item }))
+    .sort((a, b) =>
+      a.label.localeCompare(b.label, language === "ko" ? "ko-KR" : "en-US", {
+        numeric: true,
+      })
+    );
+
   const resolvedRoleLabel = roleLabel ?? (side === "LEFT" ? (language === "ko" ? "기준" : "REFERENCE") : (language === "ko" ? "대상" : "TARGET"));
 
   return (
     <section className={"rym-pane" + (compact ? " rym-pane--compact" : "")} aria-label={side + " chart"}>
       <div className="rym-pane-heading">
         <div className="rym-pane-caption">
-          <span className={"rym-role-badge " + (side === "RIGHT" ? "rym-role-badge--target" : "rym-role-badge--reference")}>{resolvedRoleLabel}</span>
+          <span className={"rym-role-badge " + (side === "RIGHT" ? " rym-role-badge--target" : " rym-role-badge--reference")}>{resolvedRoleLabel}</span>
           <span className="rym-count-pill">{displayedCount}{language === "ko" ? "곡" : " songs"}</span>
         </div>
         <h2 className="rym-chart-title">{formatChartTitle(snapshot?.page_title)}</h2>
       </div>
+
       <div className="rym-chart-controls">
-        <div className="rym-field">
-          <label className="rym-field-label" htmlFor={"rym-chart-" + side}>{language === "ko" ? "차트" : "Chart"}</label>
-          <select id={"rym-chart-" + side} value={chartUrl}
-            onChange={(event) => onChartChange(event.target.value)} className="rym-select rym-select--blue">
-            {charts.map((item) => (
-              <option key={item.sourceUrl} value={item.sourceUrl}>{item.title} ({item.snapshots.length})</option>
-            ))}
-          </select>
-        </div>
-        {chart && (
-          <div className="rym-field rym-snapshot-field">
-            <label className="rym-field-label" htmlFor={"rym-snapshot-" + side}>{language === "ko" ? "시점" : "Date"}</label>
-            <div className="rym-snapshot-control">
-              <select id={"rym-snapshot-" + side} value={snapshotKeyValue}
-                onChange={(event) => onSnapshotChange(event.target.value)} className="rym-select">
-                {chart.snapshots.map((item) => (
-                  <option key={snapshotKey(item)} value={snapshotKey(item)}>{formatDate(item.captured_at, language)}</option>
-                ))}
-              </select>
-              <button type="button" className="rym-calendar-toggle" aria-expanded={calendarOpen}
-                aria-controls={"rym-calendar-" + side} onClick={() => setCalendarOpen((current) => !current)}>
-                <RymIcon name="calendar" />
-                <span>{calendarOpen ? (language === "ko" ? "닫기" : "Close") : (language === "ko" ? "달력" : "Calendar")}</span>
-              </button>
-            </div>
-            {calendarOpen && (
-              <div id={"rym-calendar-" + side} className="rym-calendar-popover">
-                <SnapshotCalendar snapshots={chart.snapshots} selectedKey={snapshotKeyValue}
-                  onSelect={(value) => { onSnapshotChange(value); setCalendarOpen(false); }} compact={compact} language={language} />
+        <div className="rym-chart-control-row">
+          <div className="rym-field rym-chart-picker-field" ref={chartPickerRef}>
+            <label className="rym-field-label" htmlFor={"rym-chart-picker-" + side}>
+              {language === "ko" ? "차트" : "Chart"}
+            </label>
+
+            <button
+              id={"rym-chart-picker-" + side}
+              type="button"
+              className="rym-chart-picker-trigger"
+              aria-expanded={chartPickerOpen}
+              aria-controls={"rym-chart-picker-popover-" + side}
+              onClick={() => {
+                setCalendarOpen(false);
+                setChartPickerOpen((current) => !current);
+              }}
+            >
+              <span>{formatChartTitle(chart?.title)}</span>
+              <span className="rym-chart-picker-caret" aria-hidden="true" />
+            </button>
+
+            {chartPickerOpen && (
+              <div
+                id={"rym-chart-picker-popover-" + side}
+                className="rym-chart-picker-popover"
+                role="dialog"
+                aria-label={language === "ko" ? "차트 선택" : "Choose chart"}
+              >
+                <div className="rym-chart-picker-section">
+                  <p className="rym-chart-picker-section-label">
+                    {language === "ko" ? "차트 유형" : "Chart type"}
+                  </p>
+                  <div className="rym-chart-kind-switch">
+                    {(["song", "album"] as ChartKind[]).map((kind) => {
+                      const disabled = !availableKinds[kind];
+                      const active = pickerKind === kind;
+
+                      return (
+                        <button
+                          key={kind}
+                          type="button"
+                          disabled={disabled}
+                          className={"rym-chart-kind-button" + (active ? " is-active" : "")}
+                          aria-pressed={active}
+                          onClick={() => setPickerKind(kind)}
+                        >
+                          {kind === "song"
+                            ? (language === "ko" ? "곡 차트" : "Songs")
+                            : (language === "ko" ? "앨범 차트" : "Albums")}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="rym-chart-picker-section">
+                  <p className="rym-chart-picker-section-label">
+                    {language === "ko" ? "기간" : "Period"}
+                  </p>
+                  <div className="rym-chart-period-list">
+                    {periodOptions.map(({ label, item }) => {
+                      const active = item.sourceUrl === chartUrl;
+
+                      return (
+                        <button
+                          key={item.sourceUrl}
+                          type="button"
+                          className={"rym-chart-period-button" + (active ? " is-active" : "")}
+                          aria-pressed={active}
+                          onClick={() => {
+                            onChartChange(item.sourceUrl);
+                            setChartPickerOpen(false);
+                          }}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             )}
           </div>
-        )}
+
+          {chart && (
+            <div className="rym-date-control">
+              <button
+                type="button"
+                className="rym-calendar-toggle"
+                aria-expanded={calendarOpen}
+                aria-controls={"rym-calendar-" + side}
+                onClick={() => {
+                  setChartPickerOpen(false);
+                  setCalendarOpen((current) => !current);
+                }}
+              >
+                <RymIcon name="calendar" />
+                <span>{language === "ko" ? "시점" : "Date"}</span>
+              </button>
+
+              {calendarOpen && (
+                <div id={"rym-calendar-" + side} className="rym-calendar-popover">
+                  <SnapshotCalendar
+                    snapshots={chart.snapshots}
+                    selectedKey={snapshotKeyValue}
+                    onSelect={(value) => {
+                      onSnapshotChange(value);
+                      setCalendarOpen(false);
+                    }}
+                    compact={compact}
+                    language={language}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
+
       <div className="rym-song-list" tabIndex={0} role="region" aria-label={side + " chart songs"}>
         {visibleSongs.map((song) => (
           <SongCard key={songKey(song)} song={song} compact={compact}
@@ -3092,7 +3274,7 @@ export default function Home() {
                       <label key={key} className={"rym-library-row" + (checked ? " is-selected" : "")}>
                         <input type="checkbox" checked={checked} onChange={() => toggleDeleteSelection(key)} />
                         <span className="rym-library-row-content">
-                          <strong>{snapshot.page_title || "RYM Song Chart"}</strong>
+                          <strong>{formatChartTitle(snapshot.page_title || "RYM Song Chart")}</strong>
                           <span className="rym-library-date">{formatDate(snapshot.captured_at, language)}</span>
                           <span className="rym-library-source">{snapshot.source_url}</span>
                         </span>
@@ -4445,6 +4627,245 @@ body:has(.rym-app) { display: block; min-height: 100vh; min-height: 100dvh; }
 .rym-app .rym-pane--compact .rym-song-title,
 .rym-app .rym-pane--compact .rym-song-artists {
   line-height: 1.22;
+}
+
+
+/* Custom chart selector + calendar-only date UX */
+.rym-app .rym-chart-controls,
+.rym-app .rym-pane--compact .rym-chart-controls {
+  display: block !important;
+  position: relative !important;
+  overflow: visible !important;
+}
+
+.rym-app .rym-chart-control-row {
+  display: flex;
+  align-items: flex-end;
+  gap: .625rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.rym-app .rym-chart-picker-field {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  z-index: 70;
+}
+
+.rym-app .rym-date-control {
+  position: relative;
+  flex: 0 0 auto;
+  padding-top: 1.45rem;
+  z-index: 75;
+}
+
+.rym-app .rym-chart-picker-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  width: 100%;
+  min-width: 0;
+  height: 2.375rem;
+  padding: 0 .8rem 0 .75rem;
+  border: 0;
+  border-radius: 10px;
+  background: var(--rym-blue);
+  color: #fff;
+  font: inherit;
+  font-size: .8125rem;
+  font-weight: 680;
+  line-height: 1;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: none;
+  transition: background-color .14s ease, transform .12s ease, box-shadow .14s ease;
+}
+
+.rym-app .rym-chart-picker-trigger:hover {
+  background: var(--rym-blue-strong);
+}
+
+.rym-app .rym-chart-picker-trigger:active {
+  transform: translateY(1px);
+}
+
+.rym-app .rym-chart-picker-trigger:focus-visible {
+  outline: 2px solid #8aa9ca;
+  outline-offset: 2px;
+}
+
+.rym-app .rym-chart-picker-trigger > span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rym-app .rym-chart-picker-caret {
+  width: 0;
+  height: 0;
+  flex: 0 0 auto;
+  border-left: .28rem solid transparent;
+  border-right: .28rem solid transparent;
+  border-top: .34rem solid currentColor;
+  opacity: .95;
+  transition: transform .14s ease;
+}
+
+.rym-app .rym-chart-picker-trigger[aria-expanded="true"] .rym-chart-picker-caret {
+  transform: rotate(180deg);
+}
+
+.rym-app .rym-chart-picker-popover {
+  position: absolute;
+  z-index: 10020;
+  top: calc(100% + .4rem);
+  left: 0;
+  width: min(24rem, calc(100vw - 2rem));
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: .7rem;
+  border: 1px solid #d8dde5;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow:
+    0 18px 40px rgba(25, 35, 52, .16),
+    0 5px 14px rgba(25, 35, 52, .08);
+}
+
+.rym-app .rym-chart-picker-section + .rym-chart-picker-section {
+  margin-top: .7rem;
+  padding-top: .7rem;
+  border-top: 1px solid #edf0f4;
+}
+
+.rym-app .rym-chart-picker-section-label {
+  margin: 0 0 .42rem;
+  color: #656b75;
+  font-size: .6875rem;
+  font-weight: 720;
+  letter-spacing: .02em;
+}
+
+.rym-app .rym-chart-kind-switch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .4rem;
+}
+
+.rym-app .rym-chart-kind-button {
+  min-width: 0;
+  height: 2.1rem;
+  padding: 0 .65rem;
+  border: 1px solid #d9dee5;
+  border-radius: 8px;
+  background: #f6f7f9;
+  color: #4c535d;
+  font-size: .75rem;
+  font-weight: 680;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.rym-app .rym-chart-kind-button:hover:not(:disabled) {
+  border-color: #bcc8d7;
+  background: #f0f4f9;
+}
+
+.rym-app .rym-chart-kind-button.is-active {
+  border-color: transparent;
+  background: var(--rym-blue);
+  color: #fff;
+}
+
+.rym-app .rym-chart-kind-button:disabled {
+  opacity: .38;
+  cursor: default;
+}
+
+.rym-app .rym-chart-period-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+}
+
+.rym-app .rym-chart-period-button {
+  min-height: 2rem;
+  padding: .35rem .72rem;
+  border: 1px solid #d6dce4;
+  border-radius: 999px;
+  background: #f7f8fa;
+  color: #525963;
+  font-size: .75rem;
+  font-weight: 680;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.rym-app .rym-chart-period-button:hover {
+  border-color: #adc0d5;
+  background: #eef4fa;
+  color: var(--rym-blue);
+}
+
+.rym-app .rym-chart-period-button.is-active {
+  border-color: #9eb8d5;
+  background: #e6f0fa;
+  color: var(--rym-blue);
+}
+
+.rym-app .rym-date-control .rym-calendar-toggle {
+  min-width: 4.4rem;
+  width: auto;
+  padding-inline: .7rem;
+}
+
+.rym-app .rym-date-control .rym-calendar-popover {
+  top: calc(100% + .4rem) !important;
+  right: 0 !important;
+  left: auto !important;
+  width: min(20rem, calc(100vw - 2rem)) !important;
+  max-width: none !important;
+  z-index: 10030 !important;
+}
+
+.rym-app .rym-pane--compact .rym-chart-picker-field,
+.rym-app .rym-pane--compact .rym-date-control {
+  z-index: 10020 !important;
+}
+
+.rym-app .rym-pane--compact .rym-chart-picker-popover,
+.rym-app .rym-pane--compact .rym-date-control .rym-calendar-popover {
+  z-index: 10040 !important;
+}
+
+@media (max-width: 720px) {
+  .rym-app .rym-chart-control-row {
+    gap: .45rem;
+  }
+
+  .rym-app .rym-chart-picker-popover {
+    width: min(22rem, calc(100vw - 2rem));
+  }
+}
+
+@media (max-width: 420px) {
+  .rym-app .rym-chart-control-row {
+    gap: .35rem;
+  }
+
+  .rym-app .rym-date-control .rym-calendar-toggle {
+    min-width: 4rem !important;
+    width: auto !important;
+    padding: 0 .55rem !important;
+  }
+
+  .rym-app .rym-date-control .rym-calendar-toggle span {
+    display: inline !important;
+  }
 }
 
 `;
