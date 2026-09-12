@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 export const revalidate = 0;
 
-const CHART_FILE_RE = /^(?:2020s|2026)-\d{4}\.json$/i;
+const CHART_FILE_RE = /^(?:(?:2020s|2026)|(?:song|album)-[a-z0-9]+(?:-[a-z0-9]+)*)-\d{4}\.json$/i;
 
 const NO_STORE_HEADERS = {
   "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
@@ -66,16 +66,90 @@ async function githubReadFailure(response: Response, action: string) {
   );
 }
 
-function inferPublicFilename(snapshot: any) {
-  const sourceUrl = String(snapshot?.source_url || "");
-  const capturedAt = new Date(String(snapshot?.captured_at || ""));
+function chartFilePart(value: string) {
+  return value
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}
 
+function inferChartIdentity(snapshot: any) {
+  const sourceUrl = String(snapshot?.source_url || "");
+  const title = String(snapshot?.page_title || "");
+
+  const kindMatch = sourceUrl.match(/\/charts\/top\/(song|album)(?:\/|$)/i);
+  let kind: "song" | "album" | null =
+    kindMatch?.[1]?.toLowerCase() === "album"
+      ? "album"
+      : kindMatch?.[1]?.toLowerCase() === "song"
+      ? "song"
+      : null;
+
+  if (!kind) {
+    if (/\balbums?\b/i.test(title)) kind = "album";
+    else if (/\bsongs?\b/i.test(title)) kind = "song";
+  }
+
+  if (!kind) return null;
+
+  let period = "";
+
+  if (/\ball[\s-]*time\b/i.test(title)) {
+    period = "all-time";
+  }
+
+  if (!period) {
+    const between = title.match(
+      /\bbetween\s+((?:19|20)\d{2})\s+(?:and|to|[-–—])\s+((?:19|20)\d{2})\b/i
+    );
+    if (between) period = `${between[1]}-${between[2]}`;
+  }
+
+  if (!period) {
+    const decade = title.match(/\b((?:19|20)\d{2}s)\b/i);
+    if (decade) period = decade[1].toLowerCase();
+  }
+
+  if (!period) {
+    const year = title.match(/\b((?:19|20)\d{2})\b/);
+    if (year) period = year[1];
+  }
+
+  if (!period) {
+    const pathPeriod = sourceUrl.match(
+      /\/charts\/top\/(?:song|album)\/([^/?#]+)\/?(?:[?#].*)?$/i
+    )?.[1];
+
+    if (pathPeriod) {
+      try {
+        period = decodeURIComponent(pathPeriod);
+      } catch {
+        period = pathPeriod;
+      }
+    }
+  }
+
+  const normalizedPeriod = chartFilePart(period || "all-time");
+  if (!normalizedPeriod) return null;
+
+  return { kind, period: normalizedPeriod };
+}
+
+function inferPublicFilename(snapshot: any) {
+  const capturedAt = new Date(String(snapshot?.captured_at || ""));
   if (Number.isNaN(capturedAt.getTime())) return null;
 
-  let prefix = "";
-  if (/\/charts\/top\/song\/2020s\/?$/i.test(sourceUrl)) prefix = "2020s";
-  else if (/\/charts\/top\/song\/2026\/?$/i.test(sourceUrl)) prefix = "2026";
-  else return null;
+  const identity = inferChartIdentity(snapshot);
+  if (!identity) return null;
+
+  // Preserve the existing legacy names for 2020s/2026 song charts.
+  const prefix =
+    identity.kind === "song" &&
+    (identity.period === "2020s" || identity.period === "2026")
+      ? identity.period
+      : `${identity.kind}-${identity.period}`;
 
   const month = String(capturedAt.getUTCMonth() + 1).padStart(2, "0");
   const day = String(capturedAt.getUTCDate()).padStart(2, "0");
@@ -213,7 +287,7 @@ export async function POST(request: Request) {
     const filename = inferPublicFilename(snapshot);
     if (!filename) {
       return NextResponse.json(
-        { error: "Only the 2020s and 2026 song charts are supported by this demo." },
+        { error: "Unsupported chart. Import a Rate Your Music top song or album chart." },
         { status: 400 }
       );
     }

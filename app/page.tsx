@@ -155,14 +155,91 @@ function snapshotKey(snapshot: Snapshot) {
   return `${snapshot.source_url}__${snapshot.captured_at}`;
 }
 
+function chartFilePart(value: string) {
+  return value
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}
+
+function snapshotChartIdentity(snapshot: Pick<Snapshot, "source_url" | "page_title">) {
+  const sourceUrl = String(snapshot.source_url || "");
+  const title = String(snapshot.page_title || "");
+
+  const kindMatch = sourceUrl.match(/\/charts\/top\/(song|album)(?:\/|$)/i);
+  let kind: "song" | "album" | null =
+    kindMatch?.[1]?.toLowerCase() === "album"
+      ? "album"
+      : kindMatch?.[1]?.toLowerCase() === "song"
+      ? "song"
+      : null;
+
+  if (!kind) {
+    if (/\balbums?\b/i.test(title)) kind = "album";
+    else if (/\bsongs?\b/i.test(title)) kind = "song";
+  }
+
+  if (!kind) return null;
+
+  let period = "";
+
+  if (/\ball[\s-]*time\b/i.test(title)) {
+    period = "all-time";
+  }
+
+  if (!period) {
+    const between = title.match(
+      /\bbetween\s+((?:19|20)\d{2})\s+(?:and|to|[-–—])\s+((?:19|20)\d{2})\b/i
+    );
+    if (between) period = `${between[1]}-${between[2]}`;
+  }
+
+  if (!period) {
+    const decade = title.match(/\b((?:19|20)\d{2}s)\b/i);
+    if (decade) period = decade[1].toLowerCase();
+  }
+
+  if (!period) {
+    const year = title.match(/\b((?:19|20)\d{2})\b/);
+    if (year) period = year[1];
+  }
+
+  if (!period) {
+    const pathPeriod = sourceUrl.match(
+      /\/charts\/top\/(?:song|album)\/([^/?#]+)\/?(?:[?#].*)?$/i
+    )?.[1];
+
+    if (pathPeriod) {
+      try {
+        period = decodeURIComponent(pathPeriod);
+      } catch {
+        period = pathPeriod;
+      }
+    }
+  }
+
+  const normalizedPeriod = chartFilePart(period || "all-time");
+  if (!normalizedPeriod) return null;
+
+  return { kind, period: normalizedPeriod };
+}
+
 function snapshotPublicFilename(snapshot: Snapshot) {
   const capturedAt = new Date(snapshot.captured_at);
   if (Number.isNaN(capturedAt.getTime())) return null;
 
-  let prefix = "";
-  if (/\/charts\/top\/song\/2020s\/?$/i.test(snapshot.source_url)) prefix = "2020s";
-  else if (/\/charts\/top\/song\/2026\/?$/i.test(snapshot.source_url)) prefix = "2026";
-  else return null;
+  const identity = snapshotChartIdentity(snapshot);
+  if (!identity) return null;
+
+  // Keep the original filenames for the two existing demo chart families,
+  // so old records continue to overwrite/delete the same GitHub files.
+  let prefix =
+    identity.kind === "song" &&
+    (identity.period === "2020s" || identity.period === "2026")
+      ? identity.period
+      : `${identity.kind}-${identity.period}`;
 
   const month = String(capturedAt.getUTCMonth() + 1).padStart(2, "0");
   const day = String(capturedAt.getUTCDate()).padStart(2, "0");
@@ -187,7 +264,7 @@ function formatChartTitle(value?: string) {
 type ChartKind = "song" | "album";
 
 function chartKind(chart: ChartGroup): ChartKind {
-  if (/\/charts\/top\/album\//i.test(chart.sourceUrl) || /\balbums?\b/i.test(chart.title)) {
+  if (/\/charts\/top\/album(?:\/|$)/i.test(chart.sourceUrl) || /\balbums?\b/i.test(chart.title)) {
     return "album";
   }
 
@@ -196,6 +273,8 @@ function chartKind(chart: ChartGroup): ChartKind {
 
 function chartPeriodLabel(chart: ChartGroup) {
   const title = formatChartTitle(chart.title);
+
+  if (/\ball[\s-]*time\b/i.test(title)) return "All time";
 
   const between = title.match(
     /\bbetween\s+((?:19|20)\d{2})\s+(?:and|to|[-–—])\s+((?:19|20)\d{2})\b/i
