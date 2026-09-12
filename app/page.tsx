@@ -428,6 +428,37 @@ function weeklySnapshotRepresentatives(snapshots: Snapshot[]) {
   );
 }
 
+function previousWeeklySnapshot(
+  snapshots: Snapshot[],
+  currentSnapshot: Snapshot | null
+) {
+  const weekly = weeklySnapshotRepresentatives(snapshots);
+  if (!weekly.length) return null;
+
+  if (!currentSnapshot) {
+    return weekly[Math.max(0, weekly.length - 2)] ?? weekly[0];
+  }
+
+  const currentWeekStart = rymWeekStart(
+    currentSnapshot.captured_at
+  ).getTime();
+
+  let previous: Snapshot | null = null;
+
+  for (const snapshot of weekly) {
+    const weekStart = rymWeekStart(snapshot.captured_at).getTime();
+
+    if (weekStart < currentWeekStart) {
+      previous = snapshot;
+      continue;
+    }
+
+    break;
+  }
+
+  return previous ?? weekly[0];
+}
+
 function formatTime(value: string, language: Language = "en") {
   return new Date(value).toLocaleTimeString(language === "ko" ? "ko-KR" : "en-US", {
     hour: "2-digit",
@@ -1043,6 +1074,11 @@ function ChartPane({
   const displayedCount = filter === "OUT" ? visibleOutSongs.length : visibleSongs.length;
 
   const [chartPickerOpen, setChartPickerOpen] = useState(false);
+  const [compactCollapsed, setCompactCollapsed] = useState(() => {
+    if (!compact) return false;
+    if (typeof window === "undefined") return false;
+    return window.innerWidth <= 1023;
+  });
   const [pickerKind, setPickerKind] = useState<ChartKind>(
     chart ? chartKind(chart) : "song"
   );
@@ -1173,145 +1209,189 @@ function ChartPane({
   const resolvedRoleLabel = roleLabel ?? (side === "LEFT" ? (language === "ko" ? "기준" : "REFERENCE") : (language === "ko" ? "대상" : "TARGET"));
 
   return (
-    <section className={"rym-pane" + (compact ? " rym-pane--compact" : "")} aria-label={side + " chart"}>
-      <div className="rym-pane-heading">
-        <div className="rym-pane-caption">
-          <span className={"rym-role-badge " + (side === "RIGHT" ? " rym-role-badge--target" : " rym-role-badge--reference")}>{resolvedRoleLabel}</span>
-          <span className="rym-count-pill">{displayedCount}{displayedUnit}</span>
+    <section
+      className={
+        "rym-pane" +
+        (compact ? " rym-pane--compact" : "") +
+        (compact && compactCollapsed ? " rym-pane--collapsed" : "")
+      }
+      aria-label={side + " chart"}
+    >
+      {compact ? (
+        <button
+          type="button"
+          className="rym-pane-heading rym-pane-heading--toggle"
+          aria-expanded={!compactCollapsed}
+          onClick={() => {
+            setCompactCollapsed((current) => !current);
+            setChartPickerOpen(false);
+          }}
+        >
+          <span className="rym-pane-heading-main">
+            <span className="rym-pane-caption">
+              <span className={"rym-role-badge " + (side === "RIGHT" ? " rym-role-badge--target" : " rym-role-badge--reference")}>
+                {resolvedRoleLabel}
+              </span>
+              <span className="rym-count-pill">{displayedCount}{displayedUnit}</span>
+            </span>
+
+            <span className="rym-pane-title-row">
+              <span className="rym-chart-title">{formatChartTitle(snapshot?.page_title)}</span>
+              <span className="rym-pane-heading-week">{selectedWeekShort}</span>
+            </span>
+          </span>
+
+          <span
+            className={
+              "rym-pane-heading-chevron" +
+              (!compactCollapsed ? " is-open" : "")
+            }
+            aria-hidden="true"
+          />
+        </button>
+      ) : (
+        <div className="rym-pane-heading">
+          <div className="rym-pane-caption">
+            <span className={"rym-role-badge " + (side === "RIGHT" ? " rym-role-badge--target" : " rym-role-badge--reference")}>{resolvedRoleLabel}</span>
+            <span className="rym-count-pill">{displayedCount}{displayedUnit}</span>
+          </div>
+          <h2 className="rym-chart-title">{formatChartTitle(snapshot?.page_title)}</h2>
         </div>
-        <h2 className="rym-chart-title">{formatChartTitle(snapshot?.page_title)}</h2>
-      </div>
+      )}
 
-      <div className="rym-chart-controls">
-        <div className="rym-chart-control-row">
-          <div className="rym-chart-picker-field rym-chart-picker-field--unified" ref={chartPickerRef}>
-            <button
-              id={"rym-chart-picker-" + side}
-              ref={chartPickerButtonRef}
-              type="button"
-              className="rym-chart-picker-trigger rym-chart-picker-trigger--unified"
-              aria-expanded={chartPickerOpen}
-              aria-controls={"rym-chart-picker-popover-" + side}
-              onClick={() => setChartPickerOpen((current) => !current)}
-            >
-              <span className="rym-chart-picker-summary-title">
-                {selectedChartKind === "album" ? "Albums" : "Songs"}
-                {selectedChartPeriod ? ` · ${selectedChartPeriod}` : ""}
-              </span>
-
-              <span className="rym-chart-picker-week-badge">
-                {selectedWeekShort || (language === "ko" ? "시점 선택" : "Choose week")}
-              </span>
-
-              <span className="rym-chart-picker-caret" aria-hidden="true" />
-            </button>
-
-            {chartPickerOpen && typeof document !== "undefined" && createPortal(
-              <div className="rym-app rym-chart-picker-portal" aria-hidden="false">
-                <div
-                  id={"rym-chart-picker-popover-" + side}
-                  ref={chartPickerPopoverRef}
-                  className="rym-chart-picker-popover rym-chart-picker-popover--unified"
-                  role="dialog"
-                  aria-label={language === "ko" ? "차트와 주차 선택" : "Choose chart and week"}
-                  style={chartPickerFloatingStyle}
+      {(!compact || !compactCollapsed) && (
+        <div className={compact ? "rym-compact-expand-body" : undefined}>
+          <div className="rym-chart-controls">
+            <div className="rym-chart-control-row">
+              <div className="rym-chart-picker-field rym-chart-picker-field--unified" ref={chartPickerRef}>
+                <button
+                  id={"rym-chart-picker-" + side}
+                  ref={chartPickerButtonRef}
+                  type="button"
+                  className="rym-chart-picker-trigger rym-chart-picker-trigger--unified"
+                  aria-expanded={chartPickerOpen}
+                  aria-controls={"rym-chart-picker-popover-" + side}
+                  onClick={() => setChartPickerOpen((current) => !current)}
                 >
-                  <div className="rym-chart-picker-section">
-                    <p className="rym-chart-picker-section-label">
-                      {language === "ko" ? "차트 유형" : "Chart type"}
-                    </p>
-                    <div className="rym-chart-kind-switch">
-                      {(["song", "album"] as ChartKind[]).map((kind) => {
-                        const disabled = !availableKinds[kind];
-                        const active = pickerKind === kind;
+                  <span className="rym-chart-picker-summary-title">
+                    {selectedChartKind === "album" ? "Albums" : "Songs"}
+                    {selectedChartPeriod ? ` · ${selectedChartPeriod}` : ""}
+                  </span>
 
-                        return (
-                          <button
-                            key={kind}
-                            type="button"
-                            disabled={disabled}
-                            className={"rym-chart-kind-button" + (active ? " is-active" : "")}
-                            aria-pressed={active}
-                            onClick={() => setPickerKind(kind)}
-                          >
-                            {kind === "song" ? "Songs" : "Albums"}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
+                  <span className="rym-chart-picker-week-badge">
+                    {selectedWeekShort || (language === "ko" ? "시점 선택" : "Choose week")}
+                  </span>
 
-                  <div className="rym-chart-picker-section">
-                    <p className="rym-chart-picker-section-label">
-                      {language === "ko" ? "기간" : "Period"}
-                    </p>
-                    <div className="rym-chart-period-list">
-                      {periodOptions.map(({ label, item }) => {
-                        const active = item.sourceUrl === chartUrl;
+                  <span className="rym-chart-picker-caret" aria-hidden="true" />
+                </button>
 
-                        return (
-                          <button
-                            key={item.sourceUrl}
-                            type="button"
-                            className={"rym-chart-period-button" + (active ? " is-active" : "")}
-                            aria-pressed={active}
-                            onClick={() => {
-                              onChartChange(item.sourceUrl);
-                              setPickerKind(chartKind(item));
+                {chartPickerOpen && typeof document !== "undefined" && createPortal(
+                  <div className="rym-app rym-chart-picker-portal" aria-hidden="false">
+                    <div
+                      id={"rym-chart-picker-popover-" + side}
+                      ref={chartPickerPopoverRef}
+                      className="rym-chart-picker-popover rym-chart-picker-popover--unified"
+                      role="dialog"
+                      aria-label={language === "ko" ? "차트와 주차 선택" : "Choose chart and week"}
+                      style={chartPickerFloatingStyle}
+                    >
+                      <div className="rym-chart-picker-section">
+                        <p className="rym-chart-picker-section-label">
+                          {language === "ko" ? "차트 유형" : "Chart type"}
+                        </p>
+                        <div className="rym-chart-kind-switch">
+                          {(["song", "album"] as ChartKind[]).map((kind) => {
+                            const disabled = !availableKinds[kind];
+                            const active = pickerKind === kind;
+
+                            return (
+                              <button
+                                key={kind}
+                                type="button"
+                                disabled={disabled}
+                                className={"rym-chart-kind-button" + (active ? " is-active" : "")}
+                                aria-pressed={active}
+                                onClick={() => setPickerKind(kind)}
+                              >
+                                {kind === "song" ? "Songs" : "Albums"}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      <div className="rym-chart-picker-section">
+                        <p className="rym-chart-picker-section-label">
+                          {language === "ko" ? "기간" : "Period"}
+                        </p>
+                        <div className="rym-chart-period-list">
+                          {periodOptions.map(({ label, item }) => {
+                            const active = item.sourceUrl === chartUrl;
+
+                            return (
+                              <button
+                                key={item.sourceUrl}
+                                type="button"
+                                className={"rym-chart-period-button" + (active ? " is-active" : "")}
+                                aria-pressed={active}
+                                onClick={() => {
+                                  onChartChange(item.sourceUrl);
+                                  setPickerKind(chartKind(item));
+                                }}
+                              >
+                                {label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {chart && (
+                        <div className="rym-chart-picker-section rym-chart-picker-week-section">
+                          <SnapshotCalendar
+                            snapshots={chart.snapshots}
+                            selectedKey={snapshotKeyValue}
+                            onSelect={(value) => {
+                              onSnapshotChange(value);
+                              setChartPickerOpen(false);
                             }}
-                          >
-                            {label}
-                          </button>
-                        );
-                      })}
+                            compact={compact}
+                            language={language}
+                          />
+                        </div>
+                      )}
                     </div>
-                  </div>
+                  </div>,
+                  document.body
+                )}
+              </div>
+            </div>
+          </div>
 
-                  {chart && (
-                    <div className="rym-chart-picker-section rym-chart-picker-week-section">
-                      <SnapshotCalendar
-                        snapshots={chart.snapshots}
-                        selectedKey={snapshotKeyValue}
-                        onSelect={(value) => {
-                          onSnapshotChange(value);
-                          setChartPickerOpen(false);
-                        }}
-                        compact={compact}
-                        language={language}
-                      />
-                    </div>
-                  )}
+          <div className="rym-song-list" tabIndex={0} role="region" aria-label={side + " chart items"}>
+            {visibleSongs.map((song) => (
+              <SongCard key={songKey(song)} song={song} compact={compact}
+                comparedSong={comparisonActive && "status" in song ? song as ComparedSong : null} language={language}
+                activeSpotifyUrl={activeSpotifyUrl} onToggleSpotify={onToggleSpotify} />
+            ))}
+            {showOut && (
+              <section className="rym-out-section" aria-label={language === "ko" ? "대상 차트에서 이탈한 곡" : "Songs out of the target chart"}>
+                <div className="rym-out-heading">
+                  <h3>{language === "ko" ? "이탈" : "OUT"} <span>{visibleOutSongs.length}</span></h3>
+                  <p>{language === "ko" ? "기준 기록에는 있지만 대상 기록에서는 사라진 곡입니다." : "Present in the reference record, missing from the target record."}</p>
                 </div>
-              </div>,
-              document.body
+                {visibleOutSongs.map((song) => <SongCard key={songKey(song)} song={song} out language={language}
+                  activeSpotifyUrl={activeSpotifyUrl} onToggleSpotify={onToggleSpotify} />)}
+              </section>
+            )}
+            {!compact && visibleSongs.length === 0 && !showOut && (
+              <div className="rym-filter-empty">{language === "ko" ? "이 조건에 맞는 곡이 없습니다." : "No songs match this view."}</div>
             )}
           </div>
         </div>
-      </div>
-
-      <div className="rym-song-list" tabIndex={0} role="region" aria-label={side + " chart items"}>
-        {visibleSongs.map((song) => (
-          <SongCard key={songKey(song)} song={song} compact={compact}
-            comparedSong={comparisonActive && "status" in song ? song as ComparedSong : null} language={language}
-            activeSpotifyUrl={activeSpotifyUrl} onToggleSpotify={onToggleSpotify} />
-        ))}
-        {showOut && (
-          <section className="rym-out-section" aria-label={language === "ko" ? "대상 차트에서 이탈한 곡" : "Songs out of the target chart"}>
-            <div className="rym-out-heading">
-              <h3>{language === "ko" ? "이탈" : "OUT"} <span>{visibleOutSongs.length}</span></h3>
-              <p>{language === "ko" ? "기준 기록에는 있지만 대상 기록에서는 사라진 곡입니다." : "Present in the reference record, missing from the target record."}</p>
-            </div>
-            {visibleOutSongs.map((song) => <SongCard key={songKey(song)} song={song} out language={language}
-              activeSpotifyUrl={activeSpotifyUrl} onToggleSpotify={onToggleSpotify} />)}
-          </section>
-        )}
-        {!compact && visibleSongs.length === 0 && !showOut && (
-          <div className="rym-filter-empty">{language === "ko" ? "이 조건에 맞는 곡이 없습니다." : "No songs match this view."}</div>
-        )}
-      </div>
+      )}
     </section>
-  );
-}
+  );}
 
 export default function Home() {
   const [snapshots, setRecords] = useState<Snapshot[]>([]);
@@ -3600,8 +3680,65 @@ export default function Home() {
                 activeSpotifyUrl={activeSpotifyUrl} onToggleSpotify={toggleSpotifyPreview} />
               <ChartPane side="RIGHT" charts={charts} chartUrl={rightChartUrl}
                 snapshotKeyValue={rightSnapshotKey}
-                onChartChange={(value) => { setRightChartUrl(value); setRightSnapshotKey(""); }}
-                onSnapshotChange={setRightSnapshotKey} snapshot={rightSnapshot}
+                onChartChange={(value) => {
+                  setRightChartUrl(value);
+
+                  const nextChart =
+                    charts.find((item) => item.sourceUrl === value) ?? null;
+
+                  if (!nextChart) {
+                    setRightSnapshotKey("");
+                    return;
+                  }
+
+                  const weekly =
+                    weeklySnapshotRepresentatives(nextChart.snapshots);
+                  const latest =
+                    weekly[weekly.length - 1] ?? null;
+
+                  if (!latest) {
+                    setRightSnapshotKey("");
+                    return;
+                  }
+
+                  setRightSnapshotKey(snapshotKey(latest));
+
+                  const previous =
+                    previousWeeklySnapshot(nextChart.snapshots, latest);
+
+                  setLeftChartUrl(value);
+                  setLeftSnapshotKey(
+                    previous ? snapshotKey(previous) : snapshotKey(latest)
+                  );
+                }}
+                onSnapshotChange={(value) => {
+                  setRightSnapshotKey(value);
+
+                  const currentRightChart =
+                    charts.find(
+                      (item) => item.sourceUrl === rightChartUrl
+                    ) ?? null;
+
+                  const selectedRight =
+                    currentRightChart?.snapshots.find(
+                      (snapshot) => snapshotKey(snapshot) === value
+                    ) ?? null;
+
+                  if (!currentRightChart || !selectedRight) return;
+
+                  const previous =
+                    previousWeeklySnapshot(
+                      currentRightChart.snapshots,
+                      selectedRight
+                    );
+
+                  setLeftChartUrl(currentRightChart.sourceUrl);
+                  setLeftSnapshotKey(
+                    previous
+                      ? snapshotKey(previous)
+                      : snapshotKey(selectedRight)
+                  );
+                }} snapshot={rightSnapshot}
                 comparedSongs={effectiveComparison?.current ?? null} outSongs={effectiveComparison?.out ?? []}
                 comparisonActive={Boolean(effectiveComparison)} filter={effectiveComparison ? movementFilter : "ALL"}
                 query={searchQuery} roleLabel={sameChartComparison ? (language === "ko" ? "현재" : "CURRENT") : (language === "ko" ? "대상" : "TARGET")} language={language}
@@ -5769,6 +5906,317 @@ body:has(.rym-app) { display: block; min-height: 100vh; min-height: 100dvh; }
   border: 1px solid rgba(255,255,255,.55) !important;
   background: rgba(255,255,255,.14) !important;
   color: #fff !important;
+}
+
+/* FINAL compact-chart scroll boundary */
+.rym-app .rym-pane--compact .rym-song-list {
+  position: relative !important;
+  margin-top: .72rem !important;
+  padding-top: .72rem !important;
+  border-top: 1px solid #d9dee5 !important;
+  border-radius: 0 0 8px 8px !important;
+  background: #fff !important;
+
+  /* Make the scroll region feel intentional instead of visually clipped. */
+  box-shadow:
+    inset 0 8px 8px -10px rgba(32, 44, 60, .28),
+    inset 0 -8px 8px -10px rgba(32, 44, 60, .18) !important;
+
+  scroll-padding-top: .72rem !important;
+  scroll-snap-type: y proximity !important;
+}
+
+.rym-app .rym-pane--compact .rym-song {
+  scroll-snap-align: start !important;
+  scroll-snap-stop: normal !important;
+}
+
+/* Keep a clean gap between the selector and the independently scrolling list. */
+.rym-app .rym-pane--compact .rym-chart-controls {
+  margin-bottom: 0 !important;
+}
+
+/* Mobile/tablet compact chart gets the same explicit viewport boundary. */
+@media (max-width: 1023px) {
+  .rym-app .rym-pane--compact .rym-song-list {
+    margin-top: .68rem !important;
+    padding-top: .68rem !important;
+    border-top: 1px solid #d9dee5 !important;
+  }
+}
+
+/* FINAL compact chart collapse UI */
+.rym-app .rym-pane--compact.rym-pane--collapsed {
+  height: auto !important;
+  max-height: none !important;
+  min-height: 0 !important;
+  padding: .65rem !important;
+  overflow: visible !important;
+}
+
+.rym-app .rym-compact-collapse-toggle {
+  width: 100%;
+  min-width: 0;
+  min-height: 3.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .8rem;
+  padding: .55rem .7rem;
+  border: 1px solid #d5dae1;
+  border-radius: 9px;
+  background: #fff;
+  color: #273444;
+  text-align: left;
+  cursor: pointer;
+}
+
+.rym-app .rym-compact-collapse-toggle:hover {
+  background: #f8fafc;
+  border-color: #bdc7d2;
+}
+
+.rym-app .rym-compact-collapse-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: .13rem;
+}
+
+.rym-app .rym-compact-collapse-role {
+  color: #7b828d;
+  font-size: .64rem;
+  font-weight: 680;
+  line-height: 1.1;
+}
+
+.rym-app .rym-compact-collapse-copy strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #26384f;
+  font-size: .8rem;
+  font-weight: 760;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rym-app .rym-compact-collapse-meta {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+}
+
+.rym-app .rym-compact-collapse-week {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.65rem;
+  padding: 0 .55rem;
+  border: 1px solid #9db8d6;
+  border-radius: 999px;
+  background: #e7f0fb;
+  color: #234f82;
+  font-size: .68rem;
+  font-weight: 740;
+  white-space: nowrap;
+}
+
+.rym-app .rym-compact-collapse-chevron {
+  width: .46rem;
+  height: .46rem;
+  flex: 0 0 .46rem;
+  border-right: 2px solid #5f6e7e;
+  border-bottom: 2px solid #5f6e7e;
+  transform: rotate(45deg) translateY(-1px);
+  transition: transform .16s ease;
+}
+
+.rym-app .rym-compact-collapse-chevron.is-open {
+  transform: rotate(225deg) translate(-1px, -1px);
+}
+
+.rym-app .rym-compact-expand-body {
+  min-height: 0;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  margin-top: .7rem;
+}
+
+/* The expanded compact chart has a clearly separated scroll viewport. */
+.rym-app .rym-pane--compact:not(.rym-pane--collapsed) .rym-song-list {
+  position: relative !important;
+  margin-top: .72rem !important;
+  padding-top: .72rem !important;
+  border-top: 1px solid #d9dee5 !important;
+  border-radius: 0 0 8px 8px !important;
+  background: #fff !important;
+  box-shadow:
+    inset 0 8px 8px -10px rgba(32, 44, 60, .28),
+    inset 0 -8px 8px -10px rgba(32, 44, 60, .18) !important;
+  scroll-padding-top: .72rem !important;
+  scroll-snap-type: y proximity !important;
+}
+
+.rym-app .rym-pane--compact:not(.rym-pane--collapsed) .rym-song {
+  scroll-snap-align: start !important;
+}
+
+@media (max-width: 1023px) {
+  .rym-app .rym-pane--compact.rym-pane--collapsed {
+    padding: .6rem !important;
+  }
+
+  .rym-app .rym-compact-collapse-toggle {
+    min-height: 3rem;
+    padding: .5rem .62rem;
+  }
+
+  .rym-app .rym-compact-expand-body {
+    margin-top: .62rem;
+  }
+}
+
+/* FINAL compact-pane structure: title itself is the collapse control */
+.rym-app .rym-pane--compact.rym-pane--collapsed {
+  height: auto !important;
+  max-height: none !important;
+  min-height: 0 !important;
+  overflow: visible !important;
+}
+
+.rym-app .rym-pane--compact .rym-pane-heading--toggle {
+  width: 100% !important;
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: .7rem !important;
+  margin: 0 !important;
+  padding: 0 .08rem .05rem !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: inherit !important;
+  text-align: left !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+}
+
+.rym-app .rym-pane--compact .rym-pane-heading--toggle:hover {
+  background: transparent !important;
+}
+
+.rym-app .rym-pane-heading-main {
+  min-width: 0 !important;
+  display: block !important;
+}
+
+.rym-app .rym-pane--compact .rym-pane-heading--toggle .rym-pane-caption {
+  margin-bottom: .35rem !important;
+}
+
+.rym-app .rym-pane-title-row {
+  min-width: 0 !important;
+  display: flex !important;
+  align-items: baseline !important;
+  gap: .5rem !important;
+}
+
+.rym-app .rym-pane--compact .rym-pane-title-row .rym-chart-title {
+  min-width: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.rym-app .rym-pane-heading-week {
+  flex: 0 0 auto !important;
+  color: #78808b !important;
+  font-size: .68rem !important;
+  font-weight: 650 !important;
+  white-space: nowrap !important;
+}
+
+.rym-app .rym-pane-heading-chevron {
+  width: .5rem !important;
+  height: .5rem !important;
+  margin-right: .2rem !important;
+  border-right: 2px solid #667484 !important;
+  border-bottom: 2px solid #667484 !important;
+  transform: rotate(45deg) !important;
+  transition: transform .16s ease !important;
+}
+
+.rym-app .rym-pane-heading-chevron.is-open {
+  transform: rotate(225deg) !important;
+}
+
+/* Remove the earlier dedicated collapse-button UI entirely. */
+.rym-app .rym-compact-collapse-toggle,
+.rym-app .rym-compact-collapse-copy,
+.rym-app .rym-compact-collapse-meta,
+.rym-app .rym-compact-collapse-role,
+.rym-app .rym-compact-collapse-week,
+.rym-app .rym-compact-collapse-chevron {
+  display: none !important;
+}
+
+/* Expanded content sits directly under the persistent heading. */
+.rym-app .rym-compact-expand-body {
+  min-height: 0 !important;
+  display: flex !important;
+  flex: 1 1 auto !important;
+  flex-direction: column !important;
+  margin-top: .72rem !important;
+}
+
+/* Simple scroll boundary: only top and bottom separators. */
+.rym-app .rym-pane--compact:not(.rym-pane--collapsed) .rym-song-list {
+  position: relative !important;
+  margin-top: .72rem !important;
+  padding: .55rem .12rem .55rem .05rem !important;
+  border-top: 1px solid #d9dee5 !important;
+  border-right: 0 !important;
+  border-bottom: 1px solid #d9dee5 !important;
+  border-left: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  scroll-padding-top: .55rem !important;
+  scroll-padding-bottom: .55rem !important;
+  scroll-snap-type: none !important;
+}
+
+.rym-app .rym-pane--compact:not(.rym-pane--collapsed) .rym-song {
+  scroll-snap-align: none !important;
+}
+
+/* Keep the chart picker visually separate from the bordered list. */
+.rym-app .rym-pane--compact .rym-chart-controls {
+  margin-bottom: 0 !important;
+}
+
+@media (max-width: 1023px) {
+  .rym-app .rym-pane--compact .rym-pane-heading--toggle {
+    padding-inline: .05rem !important;
+  }
+
+  .rym-app .rym-pane-heading-week {
+    font-size: .65rem !important;
+  }
+
+  .rym-app .rym-compact-expand-body {
+    margin-top: .65rem !important;
+  }
+
+  .rym-app .rym-pane--compact:not(.rym-pane--collapsed) .rym-song-list {
+    margin-top: .65rem !important;
+    padding: .5rem .1rem .5rem .04rem !important;
+    border-top: 1px solid #d9dee5 !important;
+    border-bottom: 1px solid #d9dee5 !important;
+  }
 }
 
 `;
