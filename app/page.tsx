@@ -921,7 +921,7 @@ export default function Home() {
   const [language, setLanguage] = useState<Language>("en");
   const [activeSpotifyUrl, setActiveSpotifyUrl] = useState("");
   const [urlStateReady, setUrlStateReady] = useState(false);
-  const [hasComparisonUrlState, setHasComparisonUrlState] = useState(false);
+  const initialComparisonAppliedRef = useRef(false);
   const [adminPassword, setAdminPassword] = useState("");
   const [adminModalOpen, setAdminModalOpen] = useState(false);
   const [adminAction, setAdminAction] = useState<"IMPORT" | "LIBRARY" | null>(null);
@@ -989,20 +989,11 @@ export default function Home() {
 
     const params = new URLSearchParams(window.location.search);
 
-    const leftChart = params.get("lc");
-    const rightChart = params.get("rc");
-    const leftRecord = params.get("lr");
-    const rightRecord = params.get("rr");
-
-    setHasComparisonUrlState(Boolean(leftChart || rightChart || leftRecord || rightRecord));
+    // Chart/date selections intentionally do not persist across reloads.
+    // Every fresh visit starts from the newest two 2020s snapshots.
     const filter = params.get("filter");
     const query = params.get("q");
     const urlLanguage = params.get("lang");
-
-    if (leftChart) setLeftChartUrl(leftChart);
-    if (rightChart) setRightChartUrl(rightChart);
-    if (leftRecord) setLeftSnapshotKey(leftRecord);
-    if (rightRecord) setRightSnapshotKey(rightRecord);
 
     if (
       filter === "ALL" ||
@@ -1076,7 +1067,7 @@ export default function Home() {
   );
 
   useEffect(() => {
-    if (!loaded || !urlStateReady) return;
+    if (!loaded || !urlStateReady || initialComparisonAppliedRef.current) return;
 
     if (!charts.length) {
       setLeftChartUrl("");
@@ -1086,33 +1077,30 @@ export default function Home() {
       return;
     }
 
-    // Prefer the 2020s chart as the demo's default comparison chart.
+    // Every fresh visit starts on the 2020s chart.
+    // RIGHT/main = newest snapshot, LEFT/sub = snapshot immediately before it.
     const defaultChart =
       charts.find((chart) => /\/charts\/top\/song\/2020s\/?$/i.test(chart.sourceUrl)) ??
       charts.find((chart) => /between\s+2000\s+and\s+2029/i.test(chart.title)) ??
       charts[0];
 
-    if (
-      !charts.some(
-        (chart) => chart.sourceUrl === leftChartUrl
-      )
-    ) {
-      setLeftChartUrl(defaultChart.sourceUrl);
-    }
+    const latestIndex = defaultChart.snapshots.length - 1;
+    if (latestIndex < 0) return;
 
-    if (
-      !charts.some(
-        (chart) => chart.sourceUrl === rightChartUrl
-      )
-    ) {
-      // Same 2020s chart on both sides; the left pane uses the earliest
-      // snapshot and the right pane uses the latest snapshot.
-      setRightChartUrl(defaultChart.sourceUrl);
-    }
-  }, [charts, leftChartUrl, rightChartUrl, loaded, urlStateReady]);
+    const previousIndex = Math.max(0, latestIndex - 1);
+    const latest = defaultChart.snapshots[latestIndex];
+    const previous = defaultChart.snapshots[previousIndex];
+
+    setLeftChartUrl(defaultChart.sourceUrl);
+    setRightChartUrl(defaultChart.sourceUrl);
+    setLeftSnapshotKey(snapshotKey(previous));
+    setRightSnapshotKey(snapshotKey(latest));
+
+    initialComparisonAppliedRef.current = true;
+  }, [charts, loaded, urlStateReady]);
 
   useEffect(() => {
-    if (!loaded || !urlStateReady) return;
+    if (!loaded || !urlStateReady || !initialComparisonAppliedRef.current) return;
 
     if (!leftChart?.snapshots.length) {
       setLeftSnapshotKey("");
@@ -1125,19 +1113,13 @@ export default function Home() {
     );
 
     if (!valid) {
-      // Fresh visits default to the snapshot immediately before the latest one.
-      // If the URL explicitly names a record, preserve that shared/manual selection.
       const previousIndex = Math.max(0, leftChart.snapshots.length - 2);
-      const defaultLeft = hasComparisonUrlState
-        ? leftChart.snapshots[0]
-        : leftChart.snapshots[previousIndex];
-
-      setLeftSnapshotKey(snapshotKey(defaultLeft));
+      setLeftSnapshotKey(snapshotKey(leftChart.snapshots[previousIndex]));
     }
-  }, [leftChart, leftSnapshotKey, loaded, urlStateReady, hasComparisonUrlState]);
+  }, [leftChart, leftSnapshotKey, loaded, urlStateReady]);
 
   useEffect(() => {
-    if (!loaded || !urlStateReady) return;
+    if (!loaded || !urlStateReady || !initialComparisonAppliedRef.current) return;
 
     if (!rightChart?.snapshots.length) {
       setRightSnapshotKey("");
@@ -1164,10 +1146,6 @@ export default function Home() {
 
     const params = new URLSearchParams();
 
-    if (leftChartUrl) params.set("lc", leftChartUrl);
-    if (rightChartUrl) params.set("rc", rightChartUrl);
-    if (leftSnapshotKey) params.set("lr", leftSnapshotKey);
-    if (rightSnapshotKey) params.set("rr", rightSnapshotKey);
     if (movementFilter !== "ALL") params.set("filter", movementFilter);
     if (searchQuery.trim()) params.set("q", searchQuery.trim());
     params.set("lang", language);
@@ -1186,10 +1164,6 @@ export default function Home() {
   }, [
     loaded,
     urlStateReady,
-    leftChartUrl,
-    rightChartUrl,
-    leftSnapshotKey,
-    rightSnapshotKey,
     movementFilter,
     searchQuery,
     language,
