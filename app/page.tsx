@@ -25,6 +25,8 @@ type Snapshot = {
   page_title?: string;
   visible_item_count: number;
   songs: Song[];
+  file_name?: string;
+  is_metadata?: boolean;
 };
 
 type ChartGroup = {
@@ -111,6 +113,8 @@ function sanitizeSnapshot(value: unknown): Snapshot | null {
     page_title: optionalString(raw.page_title),
     visible_item_count: visibleItemCount,
     songs,
+    file_name: optionalString(raw.file_name),
+    is_metadata: raw.is_metadata === true,
   };
 }
 
@@ -127,8 +131,8 @@ function sanitizeSnapshotList(value: unknown): Snapshot[] {
   return Array.from(deduped.values());
 }
 
-async function fetchSharedSnapshots(): Promise<Snapshot[]> {
-  const response = await fetch(`/api/chart-files?ts=${Date.now()}`, {
+async function fetchSnapshotIndex(): Promise<Snapshot[]> {
+  const response = await fetch(`/api/chart-files?mode=index&ts=${Date.now()}`, {
     cache: "no-store",
     headers: { Accept: "application/json" },
   });
@@ -146,6 +150,35 @@ async function fetchSharedSnapshots(): Promise<Snapshot[]> {
   }
 
   return sanitizeSnapshotList(result.snapshots);
+}
+
+async function fetchSnapshotFile(filename: string): Promise<Snapshot> {
+  const response = await fetch(
+    `/api/chart-files?file=${encodeURIComponent(filename)}&ts=${Date.now()}`,
+    {
+      cache: "no-store",
+      headers: { Accept: "application/json" },
+    }
+  );
+
+  const result = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(
+      result?.error || "Could not load this chart record."
+    );
+  }
+
+  const snapshot = sanitizeSnapshot(result?.snapshot);
+  if (!snapshot) {
+    throw new Error("The chart record response is invalid.");
+  }
+
+  return {
+    ...snapshot,
+    file_name: filename,
+    is_metadata: false,
+  };
 }
 
 function songKey(song: Song) {
@@ -530,7 +563,7 @@ function findSnapshot(chart: ChartGroup | null, key: string) {
 
 type RymIconName =
   | "up" | "down" | "minus" | "star" | "upload"
-  | "calendar" | "library" | "swap" | "left" | "right" | "close" | "search" | "globe";
+  | "calendar" | "library" | "left" | "right" | "close" | "search" | "globe";
 
 function RymIcon({ name, className = "" }: { name: RymIconName; className?: string }) {
   const solid = name === "up" || name === "down" || name === "star";
@@ -542,7 +575,6 @@ function RymIcon({ name, className = "" }: { name: RymIconName; className?: stri
     upload: "M12 16V3m-5 5 5-5 5 5M4 15v5a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-5",
     calendar: "M8 2v4m8-4v4M3 9h18M5 4h14a2 2 0 0 1 2 2v14H3V6a2 2 0 0 1 2-2ZM7 13h2m3 0h2m3 0h1M7 17h2m3 0h2",
     library: "M4 4h16v17H4V4Zm4-2v4m8-4v4M8 10h8m-8 4h8m-8 4h5",
-    swap: "M3 7h17m-4-4 4 4-4 4M21 17H4m4-4-4 4 4 4",
     left: "m14 5-7 7 7 7",
     right: "m10 5 7 7-7 7",
     close: "m6 6 12 12M6 18 18 6",
@@ -862,6 +894,24 @@ function SnapshotCalendar({
     ? rymWeekMeta(selectedSnapshot.captured_at)
     : rymWeekMeta(new Date());
 
+  const earliestSnapshot = useMemo(() => {
+    if (!snapshots.length) return null;
+
+    return [...snapshots].sort(
+      (a, b) =>
+        new Date(a.captured_at).getTime() -
+        new Date(b.captured_at).getTime()
+    )[0];
+  }, [snapshots]);
+
+  const earliestWeekKey = earliestSnapshot
+    ? rymWeekKey(earliestSnapshot.captured_at)
+    : "";
+
+  const earliestMeta = earliestSnapshot
+    ? rymWeekMeta(earliestSnapshot.captured_at)
+    : null;
+
   const [monthCursor, setMonthCursor] = useState(
     () => new Date(selectedMeta.year, selectedMeta.month, 1)
   );
@@ -920,8 +970,16 @@ function SnapshotCalendar({
       weeks.push(monday);
     }
 
+    if (!earliestSnapshot || !earliestMeta) return weeks;
+
+    const earliestMonthIndex =
+      earliestMeta.year * 12 + earliestMeta.month;
+    const currentMonthIndex = year * 12 + month;
+
+    if (currentMonthIndex < earliestMonthIndex) return [];
+
     return weeks;
-  }, [year, month]);
+  }, [year, month, earliestSnapshot, earliestMeta]);
 
   const monthLabel =
     monthCursor.toLocaleDateString(language === "ko" ? "ko-KR" : "en-US", {
@@ -932,6 +990,32 @@ function SnapshotCalendar({
   const selectedWeekKey = selectedSnapshot
     ? rymWeekKey(selectedSnapshot.captured_at)
     : "";
+
+  const earliestMonthIndex = earliestMeta
+    ? earliestMeta.year * 12 + earliestMeta.month
+    : null;
+  const currentMonthIndex = year * 12 + month;
+  const canMoveToPreviousMonth =
+    earliestMonthIndex === null ||
+    currentMonthIndex > earliestMonthIndex;
+
+  const earliestWeekStartTime = earliestSnapshot
+    ? rymWeekStart(earliestSnapshot.captured_at).getTime()
+    : null;
+
+  const isTrackingStartMonth =
+    earliestMeta !== null &&
+    earliestMeta.year === year &&
+    earliestMeta.month === month;
+
+  const trackingStartMessage =
+    earliestMeta
+      ? language === "ko"
+        ? `해당 차트는 ${earliestMeta.month + 1}월 ${earliestMeta.weekNumber}주차부터 기록이 시작되었습니다.`
+        : `Tracking for this chart began in ${new Date(
+            Date.UTC(earliestMeta.year, earliestMeta.month, 1)
+          ).toLocaleDateString("en-US", { month: "long" })} week ${earliestMeta.weekNumber}.`
+      : "";
 
   function moveMonth(amount: number) {
     setMonthCursor(
@@ -953,9 +1037,13 @@ function SnapshotCalendar({
   return (
     <div className="rym-calendar rym-week-calendar">
       <div className="rym-calendar-heading">
-        <button type="button" onClick={() => moveMonth(-1)} className="rym-icon-button" aria-label={language === "ko" ? "이전 달" : "Previous month"}>
-          <RymIcon name="left" />
-        </button>
+        {canMoveToPreviousMonth ? (
+          <button type="button" onClick={() => moveMonth(-1)} className="rym-icon-button" aria-label={language === "ko" ? "이전 달" : "Previous month"}>
+            <RymIcon name="left" />
+          </button>
+        ) : (
+          <span className="rym-calendar-nav-spacer" aria-hidden="true" />
+        )}
         <p className={compact ? "rym-calendar-month rym-calendar-month--compact" : "rym-calendar-month"}>{monthLabel}</p>
         <button type="button" onClick={() => moveMonth(1)} className="rym-icon-button" aria-label={language === "ko" ? "다음 달" : "Next month"}>
           <RymIcon name="right" />
@@ -963,41 +1051,67 @@ function SnapshotCalendar({
       </div>
 
       <div className="rym-calendar-weeks" role="list" aria-label={language === "ko" ? "주차 선택" : "Choose week"}>
-        {monthWeeks.map((weekStart) => {
-          const key = rymWeekKey(weekStart);
-          const weekRecords = snapshotsByWeek.get(key) ?? [];
-          const hasSnapshot = weekRecords.length > 0;
-          const isSelected = selectedWeekKey === key;
-          const meta = rymWeekMeta(weekStart);
+        {(() => {
+          let insertedTrackingStartMessage = false;
 
-          return (
-            <button
-              key={key}
-              type="button"
-              disabled={!hasSnapshot}
-              onClick={() => selectWeek(weekStart)}
-              className={"rym-calendar-week-button" + (isSelected ? " is-selected" : "")}
-              aria-pressed={isSelected}
-              aria-label={
-                language === "ko"
-                  ? `${meta.year}년 ${meta.month + 1}월 ${meta.weekNumber}주차, ${hasSnapshot ? "기록 있음" : "기록 없음"}`
-                  : `${formatRymWeekLabel(weekStart, "en")}, ${hasSnapshot ? "record available" : "no record"}`
-              }
-            >
-              <span className="rym-calendar-week-copy">
-                <strong>
-                  {language === "ko"
-                    ? `${meta.month + 1}월 ${meta.weekNumber}주차`
-                    : `Week ${meta.weekNumber}`}
-                </strong>
-                <span>{formatRymWeekRange(weekStart, language)}</span>
-              </span>
-              {hasSnapshot && (
-                <span className="rym-calendar-week-indicator" aria-hidden="true" />
-              )}
-            </button>
-          );
-        })}
+          return monthWeeks.map((weekStart) => {
+            const key = rymWeekKey(weekStart);
+            const weekRecords = snapshotsByWeek.get(key) ?? [];
+            const hasSnapshot = weekRecords.length > 0;
+            const isSelected = selectedWeekKey === key;
+            const meta = rymWeekMeta(weekStart);
+
+            const isBeforeTrackingStart =
+              isTrackingStartMonth &&
+              earliestWeekStartTime !== null &&
+              weekStart.getTime() < earliestWeekStartTime;
+
+            if (isBeforeTrackingStart) {
+              if (insertedTrackingStartMessage) return null;
+              insertedTrackingStartMessage = true;
+
+              return (
+                <div
+                  key={`tracking-start-${key}`}
+                  className="rym-calendar-week-button rym-calendar-week-button--tracking-start"
+                  role="note"
+                >
+                  <span className="rym-calendar-week-copy">
+                    <strong>{trackingStartMessage}</strong>
+                  </span>
+                </div>
+              );
+            }
+
+            return (
+              <button
+                key={key}
+                type="button"
+                disabled={!hasSnapshot}
+                onClick={() => selectWeek(weekStart)}
+                className={"rym-calendar-week-button" + (isSelected ? " is-selected" : "")}
+                aria-pressed={isSelected}
+                aria-label={
+                  language === "ko"
+                    ? `${meta.year}년 ${meta.month + 1}월 ${meta.weekNumber}주차, ${hasSnapshot ? "기록 있음" : "기록 없음"}`
+                    : `${formatRymWeekLabel(weekStart, "en")}, ${hasSnapshot ? "record available" : "no record"}`
+                }
+              >
+                <span className="rym-calendar-week-copy">
+                  <strong>
+                    {language === "ko"
+                      ? `${meta.month + 1}월 ${meta.weekNumber}주차`
+                      : `Week ${meta.weekNumber}`}
+                  </strong>
+                  <span>{formatRymWeekRange(weekStart, language)}</span>
+                </span>
+                {hasSnapshot && (
+                  <span className="rym-calendar-week-indicator" aria-hidden="true" />
+                )}
+              </button>
+            );
+          });
+        })()}
       </div>
     </div>
   );
@@ -1071,7 +1185,12 @@ function ChartPane({
 
   const visibleOutSongs = outSongs.filter(matchesQuery);
   const showOut = comparisonActive && !compact && (filter === "ALL" || filter === "OUT") && visibleOutSongs.length > 0;
-  const displayedCount = filter === "OUT" ? visibleOutSongs.length : visibleSongs.length;
+  const displayedCount =
+    snapshot?.is_metadata && !comparisonActive
+      ? snapshot.visible_item_count
+      : filter === "OUT"
+      ? visibleOutSongs.length
+      : visibleSongs.length;
 
   const [chartPickerOpen, setChartPickerOpen] = useState(false);
   const [compactCollapsed, setCompactCollapsed] = useState(() => {
@@ -1082,6 +1201,61 @@ function ChartPane({
   const [pickerKind, setPickerKind] = useState<ChartKind>(
     chart ? chartKind(chart) : "song"
   );
+  const paneSpringRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (!compact || typeof window === "undefined" || window.innerWidth < 1024) {
+      return;
+    }
+
+    const pane = paneSpringRef.current;
+    if (!pane) return;
+
+    let lastScrollY = window.scrollY;
+    let targetY = 0;
+    let currentY = 0;
+    let velocity = 0;
+    let frame = 0;
+    let settleTimer: number | null = null;
+
+    const tick = () => {
+      const spring = (targetY - currentY) * 0.15;
+      velocity = (velocity + spring) * 0.73;
+      currentY += velocity;
+
+      if (Math.abs(currentY) < 0.01 && Math.abs(velocity) < 0.01) {
+        currentY = 0;
+        velocity = 0;
+      }
+
+      pane.style.setProperty("--rym-scroll-react-y", `${currentY.toFixed(2)}px`);
+      frame = requestAnimationFrame(tick);
+    };
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const delta = currentScrollY - lastScrollY;
+      lastScrollY = currentScrollY;
+
+      const impulse = Math.max(-12, Math.min(12, -delta * 0.32));
+      targetY = impulse;
+
+      if (settleTimer !== null) window.clearTimeout(settleTimer);
+      settleTimer = window.setTimeout(() => {
+        targetY = 0;
+      }, 75);
+    };
+
+    frame = requestAnimationFrame(tick);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      cancelAnimationFrame(frame);
+      if (settleTimer !== null) window.clearTimeout(settleTimer);
+    };
+  }, [compact]);
+
   const chartPickerRef = useRef<HTMLDivElement>(null);
   const chartPickerButtonRef = useRef<HTMLButtonElement>(null);
   const chartPickerPopoverRef = useRef<HTMLDivElement>(null);
@@ -1210,6 +1384,7 @@ function ChartPane({
 
   return (
     <section
+      ref={paneSpringRef}
       className={
         "rym-pane" +
         (compact ? " rym-pane--compact" : "") +
@@ -1424,6 +1599,91 @@ export default function Home() {
   const [pinChangeError, setPinChangeError] = useState("");
   const [pinChanging, setPinChanging] = useState(false);
   const importInputRef = useRef<HTMLInputElement>(null);
+  const scrollTopButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const button = scrollTopButtonRef.current;
+    if (!button) return;
+
+    let lastScrollY = window.scrollY;
+    let targetY = 0;
+    let currentY = 0;
+    let velocity = 0;
+    let frame = 0;
+    let settleTimer: number | null = null;
+
+    const tick = () => {
+      const spring = (targetY - currentY) * 0.16;
+      velocity = (velocity + spring) * 0.72;
+      currentY += velocity;
+
+      if (Math.abs(currentY) < 0.01 && Math.abs(velocity) < 0.01) {
+        currentY = 0;
+        velocity = 0;
+      }
+
+      button.style.setProperty("--rym-react-y", `${currentY.toFixed(2)}px`);
+      frame = requestAnimationFrame(tick);
+    };
+
+    const handleScrollReaction = () => {
+      const currentScrollY = window.scrollY;
+      const delta = currentScrollY - lastScrollY;
+      lastScrollY = currentScrollY;
+
+      // Page down -> floating button reacts upward.
+      // Page up -> floating button reacts downward.
+      const impulse = Math.max(-14, Math.min(14, -delta * 0.38));
+      targetY = impulse;
+
+      if (settleTimer !== null) {
+        window.clearTimeout(settleTimer);
+      }
+
+      settleTimer = window.setTimeout(() => {
+        targetY = 0;
+      }, 70);
+    };
+
+    frame = requestAnimationFrame(tick);
+    window.addEventListener("scroll", handleScrollReaction, { passive: true });
+
+    return () => {
+      window.removeEventListener("scroll", handleScrollReaction);
+      cancelAnimationFrame(frame);
+
+      if (settleTimer !== null) {
+        window.clearTimeout(settleTimer);
+      }
+    };
+  }, []);
+
+
+  async function ensureSnapshotLoaded(target: Snapshot | null) {
+    if (!target || !target.is_metadata || !target.file_name) return;
+
+    try {
+      const fullSnapshot = await fetchSnapshotFile(target.file_name);
+
+      setRecords((current) =>
+        current.map((item) =>
+          snapshotKey(item) === snapshotKey(target)
+            ? {
+                ...fullSnapshot,
+                file_name: target.file_name,
+                is_metadata: false,
+              }
+            : item
+        )
+      );
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Could not load this chart record.";
+      setError(message);
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -1438,7 +1698,7 @@ export default function Home() {
       }
 
       try {
-        const sharedSnapshots = await fetchSharedSnapshots();
+        const sharedSnapshots = await fetchSnapshotIndex();
         if (cancelled) return;
 
         setRecords(sharedSnapshots);
@@ -1555,6 +1815,17 @@ export default function Home() {
     [rightChart, rightSnapshotKey]
   );
 
+
+  useEffect(() => {
+    if (!leftSnapshot?.is_metadata) return;
+    void ensureSnapshotLoaded(leftSnapshot);
+  }, [leftSnapshotKey, leftSnapshot?.file_name, leftSnapshot?.is_metadata]);
+
+  useEffect(() => {
+    if (!rightSnapshot?.is_metadata) return;
+    void ensureSnapshotLoaded(rightSnapshot);
+  }, [rightSnapshotKey, rightSnapshot?.file_name, rightSnapshot?.is_metadata]);
+
   useEffect(() => {
     if (!loaded || !urlStateReady || initialComparisonAppliedRef.current) return;
 
@@ -1668,7 +1939,12 @@ export default function Home() {
   ]);
 
   const comparison = useMemo(() => {
-    if (!leftSnapshot || !rightSnapshot) return null;
+    if (
+      !leftSnapshot ||
+      !rightSnapshot ||
+      leftSnapshot.is_metadata ||
+      rightSnapshot.is_metadata
+    ) return null;
 
     const leftMap = new Map(
       leftSnapshot.songs.map((song) => [
@@ -1929,8 +2205,23 @@ export default function Home() {
         throw new Error(uploadResult?.error || "Upload failed");
       }
 
-      const latestSnapshots = await fetchSharedSnapshots();
-      setRecords(latestSnapshots);
+      const latestSnapshots = await fetchSnapshotIndex();
+      const uploadedFilename =
+        typeof uploadResult?.filename === "string"
+          ? uploadResult.filename
+          : snapshotPublicFilename(data);
+
+      setRecords(
+        latestSnapshots.map((item) =>
+          snapshotKey(item) === snapshotKey(data)
+            ? {
+                ...data,
+                file_name: uploadedFilename || item.file_name,
+                is_metadata: false,
+              }
+            : item
+        )
+      );
 
       setRightChartUrl(data.source_url);
       setRightSnapshotKey(snapshotKey(data));
@@ -1953,16 +2244,6 @@ export default function Home() {
     }
   }
 
-  function swapPanels() {
-    const oldLeftChart = leftChartUrl;
-    const oldLeftSnapshot = leftSnapshotKey;
-
-    setLeftChartUrl(rightChartUrl);
-    setLeftSnapshotKey(rightSnapshotKey);
-
-    setRightChartUrl(oldLeftChart);
-    setRightSnapshotKey(oldLeftSnapshot);
-  }
 
   function toggleDeleteSelection(key: string) {
     setSelectedForDelete((current) =>
@@ -1993,7 +2274,8 @@ export default function Home() {
     }
 
     for (const snapshot of targets) {
-      const filename = snapshotPublicFilename(snapshot);
+      const filename =
+        snapshot.file_name || snapshotPublicFilename(snapshot);
       if (!filename) continue;
 
       const response = await fetch("/api/chart-files", {
@@ -2032,7 +2314,7 @@ export default function Home() {
     try {
       await deleteSnapshotsFromGitHub(targets);
 
-      const latestSnapshots = await fetchSharedSnapshots();
+      const latestSnapshots = await fetchSnapshotIndex();
       setRecords(latestSnapshots);
       setSelectedForDelete([]);
 
@@ -2043,7 +2325,7 @@ export default function Home() {
       );
     } catch (error) {
       try {
-        setRecords(await fetchSharedSnapshots());
+        setRecords(await fetchSnapshotIndex());
       } catch {
         // Keep the current UI if the authoritative refresh also fails.
       }
@@ -2070,7 +2352,7 @@ export default function Home() {
     try {
       await deleteSnapshotsFromGitHub(snapshots);
 
-      const latestSnapshots = await fetchSharedSnapshots();
+      const latestSnapshots = await fetchSnapshotIndex();
       setRecords(latestSnapshots);
       setSelectedForDelete([]);
       setLeftChartUrl("");
@@ -2088,7 +2370,7 @@ export default function Home() {
       );
     } catch (error) {
       try {
-        setRecords(await fetchSharedSnapshots());
+        setRecords(await fetchSnapshotIndex());
       } catch {
         // Keep the current UI if the authoritative refresh also fails.
       }
@@ -3532,11 +3814,6 @@ export default function Home() {
               title={language === "ko" ? "English" : "한국어"}>
               <RymIcon name="globe" /><span>{language === "ko" ? "EN" : "한국어"}</span>
             </button>
-            {charts.length > 0 && (
-              <button type="button" onClick={swapPanels} className="rym-button rym-button--secondary">
-                <RymIcon name="swap" /><span>{language === "ko" ? "좌우 바꾸기" : "Swap Left / Right"}</span>
-              </button>
-            )}
             <button type="button" onClick={openLibraryWithPassword}
               className={"rym-button rym-button--secondary" + (libraryOpen ? " is-active" : "")}
               aria-expanded={libraryOpen} aria-controls="rym-library">
@@ -3744,19 +4021,59 @@ export default function Home() {
                 query={searchQuery} roleLabel={sameChartComparison ? (language === "ko" ? "현재" : "CURRENT") : (language === "ko" ? "대상" : "TARGET")} language={language}
                 activeSpotifyUrl={activeSpotifyUrl} onToggleSpotify={toggleSpotifyPreview} />
             </div>
-            <footer className="rym-footer">
-              {language === "ko" ? `이 브라우저에 ${charts.length}개 차트의 차트 기록 ${snapshots.length}개가 저장되어 있습니다.` : `${snapshots.length} records across ${charts.length} charts are saved in this browser.`}
-            </footer>
           </>
         )}
       </div>
 
       <footer className="rym-site-footer">
-        <div>
-          Chart data sourced from Rate Your Music (RYM). RYM and related trademarks belong to their respective owners.
-          This site is an unofficial project and is not affiliated with or endorsed by Rate Your Music.
+        <div className="rym-site-footer-copy">
+          <div>
+            Chart data sourced from Rate Your Music (RYM). RYM and related trademarks belong to their respective owners.
+            This site is an unofficial project and is not affiliated with or endorsed by Rate Your Music.
+          </div>
+          <div className="rym-made-by">Made By ojihaus</div>
         </div>
-        <div className="rym-made-by">Made By ojihaus</div>
+        <button
+          type="button"
+          ref={scrollTopButtonRef}
+          className="rym-scroll-top-button"
+          onClick={() => {
+            const startY = window.scrollY;
+            const duration = 620;
+            const startedAt = performance.now();
+
+            const animate = (now: number) => {
+              const progress = Math.min(1, (now - startedAt) / duration);
+              const easeOut = 1 - Math.pow(1 - progress, 5);
+
+              let y = startY * (1 - easeOut);
+
+              if (progress > 0.72) {
+                const bounceProgress = (progress - 0.72) / 0.28;
+                const bounce =
+                  12 *
+                  Math.sin(bounceProgress * Math.PI) *
+                  (1 - bounceProgress);
+                y += bounce;
+              }
+
+              window.scrollTo(0, Math.max(0, y));
+
+              if (progress < 1) {
+                requestAnimationFrame(animate);
+              } else {
+                window.scrollTo(0, 0);
+              }
+            };
+
+            requestAnimationFrame(animate);
+          }}
+          aria-label={language === "ko" ? "맨 위로 이동" : "Back to top"}
+          title={language === "ko" ? "맨 위로" : "Back to top"}
+        >
+          <span className="rym-scroll-top-arrow" aria-hidden="true">↑</span>
+          <span>{language === "ko" ? "맨 위로" : "Top"}</span>
+        </button>
       </footer>
     </main>
   );
@@ -6219,4 +6536,236 @@ body:has(.rym-app) { display: block; min-height: 100vh; min-height: 100dvh; }
   }
 }
 
+/* FINAL header separation */
+.rym-app .rym-subbar {
+  position: relative !important;
+  z-index: 5 !important;
+  box-shadow: 0 7px 16px rgba(24, 34, 48, .10) !important;
+}
+
+/* FINAL calendar tracking-start boundary */
+.rym-app .rym-calendar-nav-spacer,
+.rym-chart-picker-portal .rym-calendar-nav-spacer {
+  display: inline-block !important;
+  width: 2.25rem !important;
+  height: 2.25rem !important;
+  flex: 0 0 2.25rem !important;
+}
+
+
+.rym-app .rym-calendar-week-button--tracking-start,
+.rym-chart-picker-portal .rym-calendar-week-button--tracking-start {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 3.2rem !important;
+  padding: .65rem .72rem !important;
+  border: 1px dashed #cbd4de !important;
+  border-radius: .48rem !important;
+  background: #f7f9fb !important;
+  color: #6a7480 !important;
+  cursor: default !important;
+  text-align: center !important;
+}
+
+.rym-app .rym-calendar-week-button--tracking-start .rym-calendar-week-copy,
+.rym-chart-picker-portal .rym-calendar-week-button--tracking-start .rym-calendar-week-copy {
+  align-items: center !important;
+}
+
+.rym-app .rym-calendar-week-button--tracking-start strong,
+.rym-chart-picker-portal .rym-calendar-week-button--tracking-start strong {
+  font-size: .75rem !important;
+  font-weight: 600 !important;
+  line-height: 1.45 !important;
+  white-space: normal !important;
+}
+
+/* FINAL tracking-start slot size + site footer */
+.rym-app .rym-calendar-week-button--tracking-start,
+.rym-chart-picker-portal .rym-calendar-week-button--tracking-start {
+  min-height: unset !important;
+  height: auto !important;
+  padding: .48rem .62rem !important;
+}
+
+.rym-app .rym-calendar-week-button--tracking-start .rym-calendar-week-copy,
+.rym-chart-picker-portal .rym-calendar-week-button--tracking-start .rym-calendar-week-copy {
+  min-height: 0 !important;
+}
+
+.rym-app .rym-site-footer {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 1.25rem !important;
+  text-align: left !important;
+}
+
+.rym-app .rym-site-footer-copy {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  text-align: left !important;
+}
+
+.rym-app .rym-site-footer-copy > div,
+.rym-app .rym-made-by {
+  text-align: left !important;
+}
+
+.rym-app .rym-scroll-top-button {
+  flex: 0 0 auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: .38rem !important;
+  min-height: 2.4rem !important;
+  padding: .5rem .75rem !important;
+  border: 1px solid #cfd7df !important;
+  border-radius: .5rem !important;
+  background: #fff !important;
+  color: var(--rym-blue) !important;
+  font: inherit !important;
+  font-size: .76rem !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+}
+
+.rym-app .rym-scroll-top-button:hover {
+  background: #f5f7fa !important;
+}
+
+.rym-app .rym-scroll-top-arrow {
+  font-size: 1rem !important;
+  line-height: 1 !important;
+}
+
+@media (max-width: 720px) {
+  .rym-app .rym-site-footer {
+    align-items: flex-start !important;
+  }
+
+  .rym-app .rym-scroll-top-button span:last-child {
+    display: none !important;
+  }
+
+  .rym-app .rym-scroll-top-button {
+    width: 2.4rem !important;
+    height: 2.4rem !important;
+    min-height: 2.4rem !important;
+    padding: 0 !important;
+  }
+}
+
+/* FINAL exact calendar slot + centered footer + floating top control */
+.rym-app .rym-calendar-week-button--tracking-start {
+  min-height: 2.8rem !important;
+  padding: .5rem .65rem !important;
+}
+
+.rym-chart-picker-portal .rym-calendar-week-button--tracking-start {
+  min-height: 2.52rem !important;
+  padding: .5rem .65rem !important;
+}
+
+.rym-app .rym-calendar-week-button--tracking-start .rym-calendar-week-copy,
+.rym-chart-picker-portal .rym-calendar-week-button--tracking-start .rym-calendar-week-copy {
+  width: 100% !important;
+  min-height: 0 !important;
+  justify-content: center !important;
+}
+
+.rym-app .rym-site-footer {
+  display: block !important;
+  text-align: center !important;
+}
+
+.rym-app .rym-site-footer-copy,
+.rym-app .rym-site-footer-copy > div,
+.rym-app .rym-made-by {
+  text-align: center !important;
+}
+
+.rym-app .rym-scroll-top-button {
+  --rym-react-y: 0px;
+  position: fixed !important;
+  right: max(1.15rem, env(safe-area-inset-right)) !important;
+  bottom: max(1.15rem, env(safe-area-inset-bottom)) !important;
+  z-index: 2147482000 !important;
+  min-width: 2.7rem !important;
+  min-height: 2.7rem !important;
+  padding: .55rem .8rem !important;
+  border: 1px solid rgba(34, 73, 115, .18) !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, .94) !important;
+  color: var(--rym-blue) !important;
+  box-shadow:
+    0 8px 24px rgba(24, 42, 65, .16),
+    0 2px 6px rgba(24, 42, 65, .08) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  transform: translateY(var(--rym-react-y)) scale(1) !important;
+  transition:
+    box-shadow .22s ease,
+    background .2s ease !important;
+  will-change: transform !important;
+}
+
+.rym-app .rym-scroll-top-button:hover {
+  background: #fff !important;
+  box-shadow:
+    0 12px 28px rgba(24, 42, 65, .19),
+    0 4px 9px rgba(24, 42, 65, .09) !important;
+}
+
+.rym-app .rym-scroll-top-button:active {
+  transform: translateY(var(--rym-react-y)) scale(.96) !important;
+  transition-duration: .08s !important;
+}
+
+@media (max-width: 720px) {
+  .rym-app .rym-site-footer {
+    text-align: center !important;
+  }
+
+  .rym-app .rym-scroll-top-button {
+    width: 2.7rem !important;
+    height: 2.7rem !important;
+    min-width: 2.7rem !important;
+    min-height: 2.7rem !important;
+    padding: 0 !important;
+    right: max(.85rem, env(safe-area-inset-right)) !important;
+    bottom: max(.85rem, env(safe-area-inset-bottom)) !important;
+  }
+}
+
+/* Desktop sub-chart only: scroll-reaction spring */
+@media (min-width: 1024px) {
+  .rym-app .rym-pane--compact {
+    --rym-scroll-react-y: 0px;
+    transform: translateY(var(--rym-scroll-react-y)) !important;
+    will-change: transform !important;
+  }
+}
+
+/* CLEAN ROLLBACK — comparison toolbar is NOT sticky/floating and uses original UI */
+.rym-app .rym-comparison-bar {
+  position: relative !important;
+  top: auto !important;
+  z-index: auto !important;
+  transform: none !important;
+  will-change: auto !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.rym-app .rym-comparison-head {
+  display: flex !important;
+}
+
+.rym-app .rym-comparison-description {
+  display: flex !important;
+}
+
 `;
+

@@ -5,7 +5,8 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 export const revalidate = 0;
 
-const CHART_FILE_RE = /^(?:(?:2020s|2026)|(?:song|album)-[a-z0-9]+(?:-[a-z0-9]+)*)-\d{4}\.json$/i;
+const CHART_FILE_RE =
+  /^(?:(?:2020s|2026)|(?:song|album)-[a-z0-9]+(?:-[a-z0-9]+)*)-\d{4}\.json$/i;
 
 const NO_STORE_HEADERS = {
   "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
@@ -144,7 +145,6 @@ function inferPublicFilename(snapshot: any) {
   const identity = inferChartIdentity(snapshot);
   if (!identity) return null;
 
-  // Preserve the existing legacy names for 2020s/2026 song charts.
   const prefix =
     identity.kind === "song" &&
     (identity.period === "2020s" || identity.period === "2026")
@@ -156,109 +156,188 @@ function inferPublicFilename(snapshot: any) {
   return `${prefix}-${month}${day}.json`;
 }
 
-export async function GET() {
+function decodeGithubJson(payload: any, filename: string) {
+  if (typeof payload?.content !== "string") {
+    throw new Error(`GitHub chart file ${filename} has no readable content.`);
+  }
+
+  const decoded = Buffer.from(
+    payload.content.replace(/\n/g, ""),
+    "base64"
+  ).toString("utf8");
+
+  return JSON.parse(decoded);
+}
+
+function snapshotMetadata(snapshot: any, filename: string) {
+  return {
+    captured_at: snapshot?.captured_at,
+    source_url: snapshot?.source_url,
+    page_title: snapshot?.page_title,
+    visible_item_count:
+      typeof snapshot?.visible_item_count === "number"
+        ? snapshot.visible_item_count
+        : Array.isArray(snapshot?.songs)
+        ? snapshot.songs.length
+        : 0,
+    songs: [],
+    file_name: filename,
+    is_metadata: true,
+  };
+}
+
+async function githubSettings() {
   const token = process.env.RYM_GITHUB_TOKEN;
   const owner = process.env.GITHUB_OWNER;
   const repo = process.env.GITHUB_REPO;
   const branch = process.env.GITHUB_BRANCH || "main";
 
-  if (!token || !owner || !repo) {
+  if (!token || !owner || !repo) return null;
+
+  return {
+    token,
+    owner,
+    repo,
+    branch,
+    headers: githubHeaders(token),
+  };
+}
+
+async function listChartEntries(settings: NonNullable<Awaited<ReturnType<typeof githubSettings>>>) {
+  const publicApiUrl =
+    `https://api.github.com/repos/${encodeURIComponent(settings.owner)}/` +
+    `${encodeURIComponent(settings.repo)}/contents/public?ref=${encodeURIComponent(settings.branch)}`;
+
+  const directoryResponse = await fetch(publicApiUrl, {
+    headers: settings.headers,
+    cache: "no-store",
+  });
+
+  if (!directoryResponse.ok) {
+    return { errorResponse: await githubReadFailure(directoryResponse, "Could not list GitHub chart files") };
+  }
+
+  const directoryPayload = await directoryResponse.json();
+
+  if (!Array.isArray(directoryPayload)) {
+    return {
+      errorResponse: NextResponse.json(
+        { error: "GitHub returned an unexpected chart directory response." },
+        { status: 502, headers: NO_STORE_HEADERS }
+      ),
+    };
+  }
+
+  const entries = directoryPayload
+    .filter(
+      (entry: any) =>
+        entry?.type === "file" &&
+        typeof entry?.name === "string" &&
+        typeof entry?.url === "string" &&
+        CHART_FILE_RE.test(entry.name)
+    )
+    .sort((a: any, b: any) => a.name.localeCompare(b.name));
+
+  return { entries };
+}
+
+async function readChartEntry(
+  settings: NonNullable<Awaited<ReturnType<typeof githubSettings>>>,
+  entry: any
+) {
+  const fileUrl =
+    `${entry.url}${entry.url.includes("?") ? "&" : "?"}` +
+    `ref=${encodeURIComponent(settings.branch)}`;
+
+  const fileResponse = await fetch(fileUrl, {
+    headers: settings.headers,
+    cache: "no-store",
+  });
+
+  if (!fileResponse.ok) {
+    throw new Error(
+      `Could not read GitHub chart file ${entry.name} (${fileResponse.status})`
+    );
+  }
+
+  const filePayload = await fileResponse.json();
+  return decodeGithubJson(filePayload, entry.name);
+}
+
+export async function GET(request: Request) {
+  const settings = await githubSettings();
+
+  if (!settings) {
     return NextResponse.json(
       { error: "GitHub server settings are missing" },
       { status: 500, headers: NO_STORE_HEADERS }
     );
   }
 
-  const headers = githubHeaders(token);
-  const publicApiUrl =
-    `https://api.github.com/repos/${encodeURIComponent(owner)}/` +
-    `${encodeURIComponent(repo)}/contents/public?ref=${encodeURIComponent(branch)}`;
+  const requestUrl = new URL(request.url);
+  const filename = requestUrl.searchParams.get("file");
 
   try {
-    const directoryResponse = await fetch(publicApiUrl, {
-      headers,
-      cache: "no-store",
-    });
+    if (filename) {
+      if (!CHART_FILE_RE.test(filename)) {
+        return NextResponse.json(
+          { error: "Invalid chart filename" },
+          { status: 400, headers: NO_STORE_HEADERS }
+        );
+      }
 
-    if (!directoryResponse.ok) {
-      return githubReadFailure(
-        directoryResponse,
-        "Could not list GitHub chart files"
-      );
-    }
+      const apiUrl =
+        `https://api.github.com/repos/${encodeURIComponent(settings.owner)}/` +
+        `${encodeURIComponent(settings.repo)}/contents/public/${encodeURIComponent(filename)}` +
+        `?ref=${encodeURIComponent(settings.branch)}`;
 
-    const directoryPayload = await directoryResponse.json();
-
-    if (!Array.isArray(directoryPayload)) {
-      console.error(
-        "Unexpected GitHub public directory response:",
-        directoryPayload
-      );
-      return NextResponse.json(
-        { error: "GitHub returned an unexpected chart directory response." },
-        { status: 502, headers: NO_STORE_HEADERS }
-      );
-    }
-
-    const chartEntries = directoryPayload
-      .filter(
-        (entry: any) =>
-          entry?.type === "file" &&
-          typeof entry?.name === "string" &&
-          typeof entry?.url === "string" &&
-          CHART_FILE_RE.test(entry.name)
-      )
-      .sort((a: any, b: any) => a.name.localeCompare(b.name));
-
-    const files: string[] = [];
-    const snapshots: unknown[] = [];
-
-    for (const entry of chartEntries) {
-      const fileUrl =
-        `${entry.url}${entry.url.includes("?") ? "&" : "?"}` +
-        `ref=${encodeURIComponent(branch)}`;
-
-      const fileResponse = await fetch(fileUrl, {
-        headers,
+      const fileResponse = await fetch(apiUrl, {
+        headers: settings.headers,
         cache: "no-store",
       });
 
       if (!fileResponse.ok) {
         return githubReadFailure(
           fileResponse,
-          `Could not read GitHub chart file ${entry.name}`
+          `Could not read GitHub chart file ${filename}`
         );
       }
 
-      const filePayload = await fileResponse.json();
+      const payload = await fileResponse.json();
+      const snapshot = decodeGithubJson(payload, filename);
 
-      if (typeof filePayload?.content !== "string") {
-        console.error("GitHub chart file has no content:", entry.name);
-        return NextResponse.json(
-          { error: `GitHub chart file ${entry.name} has no readable content.` },
-          { status: 502, headers: NO_STORE_HEADERS }
-        );
-      }
-
-      try {
-        const decoded = Buffer.from(
-          filePayload.content.replace(/\n/g, ""),
-          "base64"
-        ).toString("utf8");
-
-        snapshots.push(JSON.parse(decoded));
-        files.push(entry.name);
-      } catch (error) {
-        console.error("Invalid chart JSON in GitHub:", entry.name, error);
-        return NextResponse.json(
-          { error: `GitHub chart file ${entry.name} contains invalid JSON.` },
-          { status: 502, headers: NO_STORE_HEADERS }
-        );
-      }
+      return NextResponse.json(
+        { filename, snapshot },
+        { headers: NO_STORE_HEADERS }
+      );
     }
 
+    const listed = await listChartEntries(settings);
+    if ("errorResponse" in listed && listed.errorResponse) {
+      return listed.errorResponse;
+    }
+
+    const entries = listed.entries ?? [];
+
+    // Initial requests receive metadata only. The browser then requests the
+    // two records it is actually comparing, and additional records on demand.
+    const snapshots = await Promise.all(
+      entries.map(async (entry: any) => {
+        try {
+          const snapshot = await readChartEntry(settings, entry);
+          return snapshotMetadata(snapshot, entry.name);
+        } catch (error) {
+          console.error("Could not build chart metadata:", entry.name, error);
+          return null;
+        }
+      })
+    );
+
     return NextResponse.json(
-      { files, snapshots },
+      {
+        files: entries.map((entry: any) => entry.name),
+        snapshots: snapshots.filter(Boolean),
+      },
       { headers: NO_STORE_HEADERS }
     );
   } catch (error) {
@@ -280,24 +359,31 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Incorrect password" }, { status: 401 });
     }
 
-    if (!snapshot || !Array.isArray(snapshot.songs) || !snapshot.source_url || !snapshot.captured_at) {
-      return NextResponse.json({ error: "Invalid chart record" }, { status: 400 });
+    if (
+      !snapshot ||
+      !Array.isArray(snapshot.songs) ||
+      !snapshot.source_url ||
+      !snapshot.captured_at
+    ) {
+      return NextResponse.json(
+        { error: "Invalid chart record" },
+        { status: 400 }
+      );
     }
 
     const filename = inferPublicFilename(snapshot);
     if (!filename) {
       return NextResponse.json(
-        { error: "Unsupported chart. Import a Rate Your Music top song or album chart." },
+        {
+          error:
+            "Unsupported chart. Import a Rate Your Music top song or album chart.",
+        },
         { status: 400 }
       );
     }
 
-    const token = process.env.RYM_GITHUB_TOKEN;
-    const owner = process.env.GITHUB_OWNER;
-    const repo = process.env.GITHUB_REPO;
-    const branch = process.env.GITHUB_BRANCH || "main";
-
-    if (!token || !owner || !repo) {
+    const settings = await githubSettings();
+    if (!settings) {
       return NextResponse.json(
         { error: "GitHub server settings are missing" },
         { status: 500 }
@@ -305,19 +391,18 @@ export async function POST(request: Request) {
     }
 
     const githubPath = `public/${filename}`;
-    const apiUrl = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${githubPath}`;
-    const headers = {
-      Accept: "application/vnd.github+json",
-      Authorization: `Bearer ${token}`,
-      "X-GitHub-Api-Version": "2022-11-28",
-      "User-Agent": "rym-tracker-demo",
-    };
+    const apiUrl =
+      `https://api.github.com/repos/${encodeURIComponent(settings.owner)}/` +
+      `${encodeURIComponent(settings.repo)}/contents/${githubPath}`;
 
     let sha: string | undefined;
-    const existing = await fetch(`${apiUrl}?ref=${encodeURIComponent(branch)}`, {
-      headers,
-      cache: "no-store",
-    });
+    const existing = await fetch(
+      `${apiUrl}?ref=${encodeURIComponent(settings.branch)}`,
+      {
+        headers: settings.headers,
+        cache: "no-store",
+      }
+    );
 
     if (existing.ok) {
       const existingData = await existing.json();
@@ -325,7 +410,10 @@ export async function POST(request: Request) {
     } else if (existing.status !== 404) {
       const detail = await existing.text();
       console.error("GitHub lookup failed:", existing.status, detail);
-      return NextResponse.json({ error: "Could not check the GitHub file" }, { status: 502 });
+      return NextResponse.json(
+        { error: "Could not check the GitHub file" },
+        { status: 502 }
+      );
     }
 
     const jsonText = JSON.stringify(snapshot, null, 2) + "\n";
@@ -333,11 +421,14 @@ export async function POST(request: Request) {
 
     const commitResponse = await fetch(apiUrl, {
       method: "PUT",
-      headers: { ...headers, "Content-Type": "application/json" },
+      headers: {
+        ...settings.headers,
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
         message: `${sha ? "Update" : "Add"} ${filename} from RYM Tracker`,
         content,
-        branch,
+        branch: settings.branch,
         ...(sha ? { sha } : {}),
       }),
     });
@@ -345,7 +436,10 @@ export async function POST(request: Request) {
     if (!commitResponse.ok) {
       const detail = await commitResponse.text();
       console.error("GitHub commit failed:", commitResponse.status, detail);
-      return NextResponse.json({ error: "GitHub upload failed" }, { status: 502 });
+      return NextResponse.json(
+        { error: "GitHub upload failed" },
+        { status: 502 }
+      );
     }
 
     return NextResponse.json({ ok: true, filename });
@@ -354,7 +448,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Upload failed" }, { status: 500 });
   }
 }
-
 
 export async function DELETE(request: Request) {
   try {
@@ -367,15 +460,14 @@ export async function DELETE(request: Request) {
     }
 
     if (!CHART_FILE_RE.test(filename)) {
-      return NextResponse.json({ error: "Invalid chart filename" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid chart filename" },
+        { status: 400 }
+      );
     }
 
-    const token = process.env.RYM_GITHUB_TOKEN;
-    const owner = process.env.GITHUB_OWNER;
-    const repo = process.env.GITHUB_REPO;
-    const branch = process.env.GITHUB_BRANCH || "main";
-
-    if (!token || !owner || !repo) {
+    const settings = await githubSettings();
+    if (!settings) {
       return NextResponse.json(
         { error: "GitHub server settings are missing" },
         { status: 500 }
@@ -383,18 +475,17 @@ export async function DELETE(request: Request) {
     }
 
     const githubPath = `public/${filename}`;
-    const apiUrl = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/contents/${githubPath}`;
-    const headers = {
-      Accept: "application/vnd.github+json",
-      Authorization: `Bearer ${token}`,
-      "X-GitHub-Api-Version": "2022-11-28",
-      "User-Agent": "rym-tracker-demo",
-    };
+    const apiUrl =
+      `https://api.github.com/repos/${encodeURIComponent(settings.owner)}/` +
+      `${encodeURIComponent(settings.repo)}/contents/${githubPath}`;
 
-    const existing = await fetch(`${apiUrl}?ref=${encodeURIComponent(branch)}`, {
-      headers,
-      cache: "no-store",
-    });
+    const existing = await fetch(
+      `${apiUrl}?ref=${encodeURIComponent(settings.branch)}`,
+      {
+        headers: settings.headers,
+        cache: "no-store",
+      }
+    );
 
     if (existing.status === 404) {
       return NextResponse.json({ error: "File not found" }, { status: 404 });
@@ -403,30 +494,42 @@ export async function DELETE(request: Request) {
     if (!existing.ok) {
       const detail = await existing.text();
       console.error("GitHub lookup failed:", existing.status, detail);
-      return NextResponse.json({ error: "Could not check the GitHub file" }, { status: 502 });
+      return NextResponse.json(
+        { error: "Could not check the GitHub file" },
+        { status: 502 }
+      );
     }
 
     const existingData = await existing.json();
     const sha = String(existingData?.sha || "");
 
     if (!sha) {
-      return NextResponse.json({ error: "Could not resolve file SHA" }, { status: 502 });
+      return NextResponse.json(
+        { error: "Could not resolve file SHA" },
+        { status: 502 }
+      );
     }
 
     const deleteResponse = await fetch(apiUrl, {
       method: "DELETE",
-      headers: { ...headers, "Content-Type": "application/json" },
+      headers: {
+        ...settings.headers,
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
         message: `Delete ${filename} from RYM Tracker`,
         sha,
-        branch,
+        branch: settings.branch,
       }),
     });
 
     if (!deleteResponse.ok) {
       const detail = await deleteResponse.text();
       console.error("GitHub delete failed:", deleteResponse.status, detail);
-      return NextResponse.json({ error: "GitHub delete failed" }, { status: 502 });
+      return NextResponse.json(
+        { error: "GitHub delete failed" },
+        { status: 502 }
+      );
     }
 
     return NextResponse.json({ ok: true, filename });
