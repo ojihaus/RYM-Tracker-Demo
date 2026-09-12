@@ -315,6 +315,117 @@ function dateId(value: string | Date) {
   return `${year}-${month}-${day}`;
 }
 
+function rymWeekStart(value: string | Date) {
+  const input = typeof value === "string" ? new Date(value) : value;
+  const date = new Date(
+    Date.UTC(
+      input.getUTCFullYear(),
+      input.getUTCMonth(),
+      input.getUTCDate(),
+      12
+    )
+  );
+
+  // Weekly UI uses a conventional Monday-Sunday week.
+  const daysSinceMonday = (date.getUTCDay() + 6) % 7;
+  date.setUTCDate(date.getUTCDate() - daysSinceMonday);
+  return date;
+}
+
+function rymWeekKey(value: string | Date) {
+  const start = rymWeekStart(value);
+  const year = start.getUTCFullYear();
+  const month = String(start.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(start.getUTCDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function rymWeekMeta(value: string | Date) {
+  const start = rymWeekStart(value);
+  const end = new Date(start);
+  end.setUTCDate(end.getUTCDate() + 6);
+
+  // Assign a cross-month week to the month containing Thursday.
+  // This keeps one physical week under one label instead of splitting it.
+  const anchor = new Date(start);
+  anchor.setUTCDate(anchor.getUTCDate() + 3);
+
+  return {
+    start,
+    end,
+    year: anchor.getUTCFullYear(),
+    month: anchor.getUTCMonth(),
+    weekNumber: Math.ceil(anchor.getUTCDate() / 7),
+  };
+}
+
+function formatRymWeekLabel(value: string | Date, language: Language = "en") {
+  const meta = rymWeekMeta(value);
+
+  if (language === "ko") {
+    return `${meta.year}년 ${meta.month + 1}월 ${meta.weekNumber}주차`;
+  }
+
+  const month = new Date(
+    Date.UTC(meta.year, meta.month, 1, 12)
+  ).toLocaleDateString("en-US", { month: "short" });
+
+  return `${month} ${meta.year} · Week ${meta.weekNumber}`;
+}
+
+function formatRymWeekRange(value: string | Date, language: Language = "en") {
+  const { start, end } = rymWeekMeta(value);
+  const sameYear = start.getUTCFullYear() === end.getUTCFullYear();
+  const sameMonth =
+    sameYear && start.getUTCMonth() === end.getUTCMonth();
+
+  if (language === "ko") {
+    if (sameMonth) {
+      return `${start.getUTCMonth() + 1}. ${start.getUTCDate()}. – ${end.getUTCMonth() + 1}. ${end.getUTCDate()}.`;
+    }
+
+    return `${start.getUTCFullYear()}. ${start.getUTCMonth() + 1}. ${start.getUTCDate()}. – ${end.getUTCFullYear()}. ${end.getUTCMonth() + 1}. ${end.getUTCDate()}.`;
+  }
+
+  const startMonth = start.toLocaleDateString("en-US", {
+    month: "short",
+    timeZone: "UTC",
+  });
+  const endMonth = end.toLocaleDateString("en-US", {
+    month: "short",
+    timeZone: "UTC",
+  });
+
+  if (sameMonth) {
+    return `${startMonth} ${start.getUTCDate()}–${end.getUTCDate()}`;
+  }
+
+  return `${startMonth} ${start.getUTCDate()} – ${endMonth} ${end.getUTCDate()}`;
+}
+
+function weeklySnapshotRepresentatives(snapshots: Snapshot[]) {
+  const byWeek = new Map<string, Snapshot>();
+
+  for (const snapshot of snapshots) {
+    const key = rymWeekKey(snapshot.captured_at);
+    const current = byWeek.get(key);
+
+    if (
+      !current ||
+      new Date(snapshot.captured_at).getTime() >
+        new Date(current.captured_at).getTime()
+    ) {
+      byWeek.set(key, snapshot);
+    }
+  }
+
+  return Array.from(byWeek.values()).sort(
+    (a, b) =>
+      rymWeekStart(a.captured_at).getTime() -
+      rymWeekStart(b.captured_at).getTime()
+  );
+}
+
 function formatTime(value: string, language: Language = "en") {
   return new Date(value).toLocaleTimeString(language === "ko" ? "ko-KR" : "en-US", {
     hour: "2-digit",
@@ -711,53 +822,31 @@ function SnapshotCalendar({
     snapshots.find(
       (item) => snapshotKey(item) === selectedKey
     ) ??
-    snapshots[snapshots.length - 1] ??
+    weeklySnapshotRepresentatives(snapshots).at(-1) ??
     null;
 
-  const selectedDate =
-    selectedSnapshot
-      ? new Date(selectedSnapshot.captured_at)
-      : new Date();
+  const selectedMeta = selectedSnapshot
+    ? rymWeekMeta(selectedSnapshot.captured_at)
+    : rymWeekMeta(new Date());
 
   const [monthCursor, setMonthCursor] = useState(
-    () =>
-      new Date(
-        selectedDate.getFullYear(),
-        selectedDate.getMonth(),
-        1
-      )
-  );
-
-  const [activeDay, setActiveDay] = useState(
-    selectedSnapshot
-      ? dateId(selectedSnapshot.captured_at)
-      : ""
+    () => new Date(selectedMeta.year, selectedMeta.month, 1)
   );
 
   useEffect(() => {
     if (!selectedSnapshot) return;
 
-    const nextDate =
-      new Date(selectedSnapshot.captured_at);
-
+    const nextMeta = rymWeekMeta(selectedSnapshot.captured_at);
     setMonthCursor(
-      new Date(
-        nextDate.getFullYear(),
-        nextDate.getMonth(),
-        1
-      )
-    );
-
-    setActiveDay(
-      dateId(selectedSnapshot.captured_at)
+      new Date(nextMeta.year, nextMeta.month, 1)
     );
   }, [selectedKey]);
 
-  const snapshotsByDay = useMemo(() => {
+  const snapshotsByWeek = useMemo(() => {
     const map = new Map<string, Snapshot[]>();
 
     for (const item of snapshots) {
-      const key = dateId(item.captured_at);
+      const key = rymWeekKey(item.captured_at);
       const list = map.get(key) ?? [];
       list.push(item);
       map.set(key, list);
@@ -776,27 +865,30 @@ function SnapshotCalendar({
 
   const year = monthCursor.getFullYear();
   const month = monthCursor.getMonth();
-  const firstDay =
-    (new Date(year, month, 1).getDay() + 6) % 7;
-  const daysInMonth =
-    new Date(year, month + 1, 0).getDate();
 
-  const cells: Array<number | null> = [
-    ...Array(firstDay).fill(null),
-    ...Array.from(
-      { length: daysInMonth },
-      (_, index) => index + 1
-    ),
-  ];
+  const monthWeeks = useMemo(() => {
+    const firstOfMonth = new Date(Date.UTC(year, month, 1, 12));
+    const daysUntilThursday = (4 - firstOfMonth.getUTCDay() + 7) % 7;
+    const firstThursday = new Date(firstOfMonth);
+    firstThursday.setUTCDate(
+      firstThursday.getUTCDate() + daysUntilThursday
+    );
 
-  while (cells.length % 7 !== 0) {
-    cells.push(null);
-  }
+    const weeks: Date[] = [];
 
-  const activeRecords =
-    activeDay
-      ? snapshotsByDay.get(activeDay) ?? []
-      : [];
+    for (
+      let anchor = firstThursday;
+      anchor.getUTCMonth() === month &&
+      anchor.getUTCFullYear() === year;
+      anchor = new Date(anchor.getTime() + 7 * 24 * 60 * 60 * 1000)
+    ) {
+      const monday = new Date(anchor);
+      monday.setUTCDate(monday.getUTCDate() - 3);
+      weeks.push(monday);
+    }
+
+    return weeks;
+  }, [year, month]);
 
   const monthLabel =
     monthCursor.toLocaleDateString(language === "ko" ? "ko-KR" : "en-US", {
@@ -804,33 +896,29 @@ function SnapshotCalendar({
       year: "numeric",
     });
 
+  const selectedWeekKey = selectedSnapshot
+    ? rymWeekKey(selectedSnapshot.captured_at)
+    : "";
+
   function moveMonth(amount: number) {
     setMonthCursor(
       new Date(year, month + amount, 1)
     );
   }
 
-  function selectDay(day: number) {
-    const key = dateId(
-      new Date(year, month, day)
-    );
-
-    const items =
-      snapshotsByDay.get(key) ?? [];
-
+  function selectWeek(weekStart: Date) {
+    const key = rymWeekKey(weekStart);
+    const items = snapshotsByWeek.get(key) ?? [];
     if (!items.length) return;
 
-    setActiveDay(key);
-
-    const latest =
-      items[items.length - 1];
-
+    // Multiple imports inside one week represent the same RYM chart cycle.
+    // The latest captured file in that week is the representative snapshot.
+    const latest = items[items.length - 1];
     onSelect(snapshotKey(latest));
   }
 
-
   return (
-    <div className="rym-calendar">
+    <div className="rym-calendar rym-week-calendar">
       <div className="rym-calendar-heading">
         <button type="button" onClick={() => moveMonth(-1)} className="rym-icon-button" aria-label={language === "ko" ? "이전 달" : "Previous month"}>
           <RymIcon name="left" />
@@ -840,44 +928,44 @@ function SnapshotCalendar({
           <RymIcon name="right" />
         </button>
       </div>
-      <div className="rym-calendar-week">
-        {(language === "ko" ? ["월", "화", "수", "목", "금", "토", "일"] : ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]).map((day) => <span key={day}>{day}</span>)}
-      </div>
-      <div className="rym-calendar-days">
-        {cells.map((day, index) => {
-          if (day === null) return <span key={"empty-" + index} aria-hidden="true" />;
-          const key = dateId(new Date(year, month, day));
-          const dayRecords = snapshotsByDay.get(key) ?? [];
-          const hasSnapshot = dayRecords.length > 0;
-          const isSelected = selectedSnapshot ? dateId(selectedSnapshot.captured_at) === key : false;
+
+      <div className="rym-calendar-weeks" role="list" aria-label={language === "ko" ? "주차 선택" : "Choose week"}>
+        {monthWeeks.map((weekStart) => {
+          const key = rymWeekKey(weekStart);
+          const weekRecords = snapshotsByWeek.get(key) ?? [];
+          const hasSnapshot = weekRecords.length > 0;
+          const isSelected = selectedWeekKey === key;
+          const meta = rymWeekMeta(weekStart);
+
           return (
-            <button key={key} type="button" disabled={!hasSnapshot} onClick={() => selectDay(day)}
-              className={"rym-calendar-day" + (isSelected ? " is-selected" : "")}
-              aria-pressed={isSelected} aria-label={language === "ko" ? `${key}, 기록 ${dayRecords.length}개` : key + ", " + dayRecords.length + " records"}
-              title={language === "ko" ? `기록 ${dayRecords.length}개` : dayRecords.length + " records"}>
-              <span>{day}</span>
-              {hasSnapshot && <span className="rym-calendar-dot" aria-hidden="true" />}
+            <button
+              key={key}
+              type="button"
+              disabled={!hasSnapshot}
+              onClick={() => selectWeek(weekStart)}
+              className={"rym-calendar-week-button" + (isSelected ? " is-selected" : "")}
+              aria-pressed={isSelected}
+              aria-label={
+                language === "ko"
+                  ? `${meta.year}년 ${meta.month + 1}월 ${meta.weekNumber}주차, ${hasSnapshot ? "기록 있음" : "기록 없음"}`
+                  : `${formatRymWeekLabel(weekStart, "en")}, ${hasSnapshot ? "record available" : "no record"}`
+              }
+            >
+              <span className="rym-calendar-week-copy">
+                <strong>
+                  {language === "ko"
+                    ? `${meta.month + 1}월 ${meta.weekNumber}주차`
+                    : `Week ${meta.weekNumber}`}
+                </strong>
+                <span>{formatRymWeekRange(weekStart, language)}</span>
+              </span>
+              {hasSnapshot && (
+                <span className="rym-calendar-week-indicator" aria-hidden="true" />
+              )}
             </button>
           );
         })}
       </div>
-      {activeRecords.length > 0 && (
-        <div className="rym-calendar-times">
-          <p className="rym-field-label">{language === "ko" ? "이 날짜의 기록" : "Records on this day"}</p>
-          <div className="rym-time-buttons">
-            {activeRecords.map((item) => {
-              const key = snapshotKey(item);
-              const active = key === selectedKey;
-              return (
-                <button key={key} type="button" onClick={() => onSelect(key)} aria-pressed={active}
-                  className={"rym-time-button" + (active ? " is-selected" : "")}>
-                  {formatTime(item.captured_at, language)}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -1345,12 +1433,14 @@ export default function Home() {
       charts.find((chart) => /between\s+2000\s+and\s+2029/i.test(chart.title)) ??
       charts[0];
 
-    const latestIndex = defaultChart.snapshots.length - 1;
+    const weeklySnapshots =
+      weeklySnapshotRepresentatives(defaultChart.snapshots);
+    const latestIndex = weeklySnapshots.length - 1;
     if (latestIndex < 0) return;
 
     const previousIndex = Math.max(0, latestIndex - 1);
-    const latest = defaultChart.snapshots[latestIndex];
-    const previous = defaultChart.snapshots[previousIndex];
+    const latest = weeklySnapshots[latestIndex];
+    const previous = weeklySnapshots[previousIndex];
 
     setLeftChartUrl(defaultChart.sourceUrl);
     setRightChartUrl(defaultChart.sourceUrl);
@@ -1374,8 +1464,14 @@ export default function Home() {
     );
 
     if (!valid) {
-      const previousIndex = Math.max(0, leftChart.snapshots.length - 2);
-      setLeftSnapshotKey(snapshotKey(leftChart.snapshots[previousIndex]));
+      const weeklySnapshots =
+        weeklySnapshotRepresentatives(leftChart.snapshots);
+      const previousIndex = Math.max(0, weeklySnapshots.length - 2);
+      const previous = weeklySnapshots[previousIndex];
+
+      if (previous) {
+        setLeftSnapshotKey(snapshotKey(previous));
+      }
     }
   }, [leftChart, leftSnapshotKey, loaded, urlStateReady]);
 
@@ -1393,12 +1489,13 @@ export default function Home() {
     );
 
     if (!valid) {
-      const latest =
-        rightChart.snapshots[
-          rightChart.snapshots.length - 1
-        ];
+      const weeklySnapshots =
+        weeklySnapshotRepresentatives(rightChart.snapshots);
+      const latest = weeklySnapshots[weeklySnapshots.length - 1];
 
-      setRightSnapshotKey(snapshotKey(latest));
+      if (latest) {
+        setRightSnapshotKey(snapshotKey(latest));
+      }
     }
   }, [rightChart, rightSnapshotKey, loaded, urlStateReady]);
 
@@ -3354,7 +3451,10 @@ export default function Home() {
                         <input type="checkbox" checked={checked} onChange={() => toggleDeleteSelection(key)} />
                         <span className="rym-library-row-content">
                           <strong>{formatChartTitle(snapshot.page_title || "RYM Song Chart")}</strong>
-                          <span className="rym-library-date">{formatDate(snapshot.captured_at, language)}</span>
+                          <span className="rym-library-date">
+                            {formatRymWeekLabel(snapshot.captured_at, language)}
+                            <span className="rym-library-week-range"> · {formatRymWeekRange(snapshot.captured_at, language)}</span>
+                          </span>
                           <span className="rym-library-source">{snapshot.source_url}</span>
                         </span>
                         <span className="rym-library-song-count">{snapshot.songs.length}{language === "ko" ? "곡" : " songs"}</span>
@@ -4330,19 +4430,77 @@ body:has(.rym-app) { display: block; min-height: 100vh; min-height: 100dvh; }
 .rym-app .rym-calendar-month--compact { font-size: .8125rem; }
 .rym-app .rym-icon-button { width: 1.875rem; height: 1.875rem; flex: 0 0 auto; padding: .35rem; display: inline-flex; align-items: center; justify-content: center; color: var(--rym-link); background: #fff; border: 1px solid #d8dade; border-radius: 10px; }
 .rym-app .rym-icon-button:hover { background: #f0f3f7; }
-.rym-app .rym-calendar-week, .rym-app .rym-calendar-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: .15rem; text-align: center; }
-.rym-app .rym-calendar-week { font-size: .6875rem; color: #7b7e87; margin-bottom: .375rem; }
-.rym-app .rym-calendar-day { border: none; border-radius: 5px; background: #f0f2f5; color: var(--rym-link); width: 100%; min-width: 0; min-height: 1.875rem; aspect-ratio: 1; padding: 0; position: relative; font-size: .8125rem; font-weight: 650; }
-.rym-app .rym-calendar-day:disabled { background: transparent; color: #b4b8c0; opacity: 1; font-weight: 400; }
-.rym-app .rym-calendar-day:hover:not(:disabled) { background: #dfe7f1; }
-.rym-app .rym-calendar-day.is-selected { color: #fff; background: var(--rym-blue); }
-.rym-app .rym-calendar-day.is-selected:hover { background: var(--rym-blue-strong); }
-.rym-app .rym-calendar-dot { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: currentColor; bottom: 3px; left: calc(50% - 1.5px); }
-.rym-app .rym-calendar-times { border-top: 1px solid var(--rym-border); padding-top: .625rem; margin-top: .625rem; }
-.rym-app .rym-calendar-times .rym-field-label { font-size: .6875rem; font-weight: 500; }
-.rym-app .rym-time-buttons { display: flex; flex-wrap: wrap; gap: .3rem; }
-.rym-app .rym-time-button { min-height: 1.875rem; padding: .25rem .45rem; color: #535a67; border: 1px solid #d6d9df; background: #f3f4f6; border-radius: 5px; font-size: .75rem; }
-.rym-app .rym-time-button.is-selected { color: #fff; border-color: var(--rym-blue); background: var(--rym-blue); }
+.rym-app .rym-calendar-weeks {
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+}
+.rym-app .rym-calendar-week-button {
+  width: 100%;
+  min-width: 0;
+  min-height: 2.8rem;
+  padding: .5rem .65rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .65rem;
+  border: 1px solid #d9dde3;
+  border-radius: 7px;
+  background: #f5f6f8;
+  color: #46505e;
+  text-align: left;
+  cursor: pointer;
+}
+.rym-app .rym-calendar-week-button:hover:not(:disabled) {
+  background: #eaf0f7;
+  border-color: #bfcbd9;
+}
+.rym-app .rym-calendar-week-button:disabled {
+  background: #fafafa;
+  color: #a7acb4;
+  border-color: #eceef1;
+  cursor: default;
+  opacity: 1;
+}
+.rym-app .rym-calendar-week-button.is-selected {
+  background: var(--rym-blue);
+  border-color: var(--rym-blue);
+  color: #fff;
+}
+.rym-app .rym-calendar-week-button.is-selected:hover {
+  background: var(--rym-blue-strong);
+  border-color: var(--rym-blue-strong);
+}
+.rym-app .rym-calendar-week-copy {
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: .5rem;
+}
+.rym-app .rym-calendar-week-copy strong {
+  font-size: .8125rem;
+  font-weight: 720;
+  white-space: nowrap;
+}
+.rym-app .rym-calendar-week-copy > span {
+  min-width: 0;
+  color: #7b818b;
+  font-size: .72rem;
+  white-space: nowrap;
+}
+.rym-app .rym-calendar-week-button.is-selected .rym-calendar-week-copy > span {
+  color: rgba(255,255,255,.78);
+}
+.rym-app .rym-calendar-week-indicator {
+  width: .42rem;
+  height: .42rem;
+  flex: 0 0 .42rem;
+  border-radius: 50%;
+  background: var(--rym-blue);
+}
+.rym-app .rym-calendar-week-button.is-selected .rym-calendar-week-indicator {
+  background: #fff;
+}
 
 /* Library and utility states. */
 .rym-app .rym-library { background: #fff; border: 1px solid var(--rym-border); border-radius: 8px; padding: 1rem; margin-bottom: 1rem; box-shadow: 0 1px 2px #00000006; }
@@ -4359,6 +4517,7 @@ body:has(.rym-app) { display: block; min-height: 100vh; min-height: 100dvh; }
 .rym-app .rym-library-row-content { display: flex; flex-direction: column; flex: 1; min-width: 0; gap: .15rem; }
 .rym-app .rym-library-row-content > strong { color: var(--rym-link); font-size: .875rem; overflow-wrap: anywhere; }
 .rym-app .rym-library-date { font-size: .75rem; color: #737783; }
+.rym-app .rym-library-week-range { color: #8a8f98; font-weight: 450; }
 .rym-app .rym-library-source { font-size: .6875rem; color: #888c96; overflow-wrap: anywhere; }
 .rym-app .rym-library-song-count { color: #747986; font-size: .75rem; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .rym-app .rym-library-empty { padding: 1rem; color: var(--rym-muted); font-size: .875rem; }
@@ -4518,7 +4677,7 @@ body:has(.rym-app) { display: block; min-height: 100vh; min-height: 100dvh; }
   .rym-app .rym-song-bottom { padding-top: .5rem; }
   .rym-app .rym-rating strong { font-size: .9rem; }
   .rym-app .rym-rating-count, .rym-app .rym-rank-route { font-size: .6875rem; }
-  .rym-app .rym-calendar-day { aspect-ratio: auto; min-height: 2.25rem; }
+  .rym-app .rym-calendar-week-button { min-height: 3rem; padding: .55rem .65rem; }
   .rym-app .rym-library { padding: .875rem; }
   .rym-app .rym-library-actions .rym-button { flex: 1 1 auto; }
   .rym-app .rym-library-row { flex-wrap: wrap; padding: .75rem; gap: .55rem; }
@@ -4648,9 +4807,17 @@ body:has(.rym-app) { display: block; min-height: 100vh; min-height: 100dvh; }
   min-width: 4rem;
   padding-inline: .55rem;
 }
-.rym-app .rym-pane--compact .rym-calendar-week,
-.rym-app .rym-pane--compact .rym-calendar-days {
+.rym-app .rym-pane--compact .rym-calendar-weeks {
   min-width: 0;
+}
+.rym-app .rym-pane--compact .rym-calendar-week-copy {
+  gap: .35rem;
+}
+.rym-app .rym-pane--compact .rym-calendar-week-copy strong {
+  font-size: .75rem;
+}
+.rym-app .rym-pane--compact .rym-calendar-week-copy > span {
+  font-size: .675rem;
 }
 
 @media (max-width: 420px) {
