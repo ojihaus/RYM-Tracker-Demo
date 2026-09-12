@@ -1040,7 +1040,6 @@ function ChartPane({
   const showOut = comparisonActive && !compact && (filter === "ALL" || filter === "OUT") && visibleOutSongs.length > 0;
   const displayedCount = filter === "OUT" ? visibleOutSongs.length : visibleSongs.length;
 
-  const [calendarOpen, setCalendarOpen] = useState(false);
   const [chartPickerOpen, setChartPickerOpen] = useState(false);
   const [pickerKind, setPickerKind] = useState<ChartKind>(
     chart ? chartKind(chart) : "song"
@@ -1097,6 +1096,23 @@ function ChartPane({
       })
     );
 
+  const selectedChartKind: ChartKind = chart ? chartKind(chart) : "song";
+  const selectedChartPeriod = chart ? chartPeriodLabel(chart) : "";
+  const selectedWeekLabel = snapshot
+    ? formatRymWeekLabel(snapshot.captured_at, language)
+    : "";
+  const selectedWeekRange = snapshot
+    ? formatRymWeekRange(snapshot.captured_at, language)
+    : "";
+  const selectedChartLabel =
+    selectedChartKind === "album"
+      ? (language === "ko" ? "앨범 차트" : "Albums")
+      : (language === "ko" ? "곡 차트" : "Songs");
+  const displayedUnit =
+    selectedChartKind === "album"
+      ? (language === "ko" ? "앨범" : " albums")
+      : (language === "ko" ? "곡" : " songs");
+
   const resolvedRoleLabel = roleLabel ?? (side === "LEFT" ? (language === "ko" ? "기준" : "REFERENCE") : (language === "ko" ? "대상" : "TARGET"));
 
   return (
@@ -1104,39 +1120,51 @@ function ChartPane({
       <div className="rym-pane-heading">
         <div className="rym-pane-caption">
           <span className={"rym-role-badge " + (side === "RIGHT" ? " rym-role-badge--target" : " rym-role-badge--reference")}>{resolvedRoleLabel}</span>
-          <span className="rym-count-pill">{displayedCount}{language === "ko" ? "곡" : " songs"}</span>
+          <span className="rym-count-pill">{displayedCount}{displayedUnit}</span>
         </div>
         <h2 className="rym-chart-title">{formatChartTitle(snapshot?.page_title)}</h2>
       </div>
 
       <div className="rym-chart-controls">
         <div className="rym-chart-control-row">
-          <div className="rym-field rym-chart-picker-field" ref={chartPickerRef}>
+          <div className="rym-field rym-chart-picker-field rym-chart-picker-field--unified" ref={chartPickerRef}>
             <label className="rym-field-label" htmlFor={"rym-chart-picker-" + side}>
-              {language === "ko" ? "차트" : "Chart"}
+              {language === "ko" ? "차트 / 시점" : "Chart / Date"}
             </label>
 
             <button
               id={"rym-chart-picker-" + side}
               type="button"
-              className="rym-chart-picker-trigger"
+              className="rym-chart-picker-trigger rym-chart-picker-trigger--unified"
               aria-expanded={chartPickerOpen}
               aria-controls={"rym-chart-picker-popover-" + side}
-              onClick={() => {
-                setCalendarOpen(false);
-                setChartPickerOpen((current) => !current);
-              }}
+              onClick={() => setChartPickerOpen((current) => !current)}
             >
-              <span>{formatChartTitle(chart?.title)}</span>
+              <span className="rym-chart-picker-summary">
+                <span className="rym-chart-picker-summary-title">
+                  {selectedChartLabel}
+                  {selectedChartPeriod ? ` · ${selectedChartPeriod}` : ""}
+                </span>
+                <span className="rym-chart-picker-summary-hint">
+                  {language === "ko" ? "차트와 주차 변경" : "Change chart and week"}
+                </span>
+              </span>
               <span className="rym-chart-picker-caret" aria-hidden="true" />
             </button>
+
+            {snapshot && (
+              <div className="rym-chart-current-week" aria-label={language === "ko" ? "현재 선택된 주차" : "Selected week"}>
+                <strong>{selectedWeekLabel}</strong>
+                <span>{selectedWeekRange}</span>
+              </div>
+            )}
 
             {chartPickerOpen && (
               <div
                 id={"rym-chart-picker-popover-" + side}
-                className="rym-chart-picker-popover"
+                className="rym-chart-picker-popover rym-chart-picker-popover--unified"
                 role="dialog"
-                aria-label={language === "ko" ? "차트 선택" : "Choose chart"}
+                aria-label={language === "ko" ? "차트와 시점 선택" : "Choose chart and week"}
               >
                 <div className="rym-chart-picker-section">
                   <p className="rym-chart-picker-section-label">
@@ -1181,7 +1209,7 @@ function ChartPane({
                           aria-pressed={active}
                           onClick={() => {
                             onChartChange(item.sourceUrl);
-                            setChartPickerOpen(false);
+                            setPickerKind(chartKind(item));
                           }}
                         >
                           {label}
@@ -1190,46 +1218,37 @@ function ChartPane({
                     })}
                   </div>
                 </div>
+
+                {chart && (
+                  <div className="rym-chart-picker-section rym-chart-picker-week-section">
+                    <div className="rym-chart-picker-week-heading">
+                      <p className="rym-chart-picker-section-label">
+                        {language === "ko" ? "시점" : "Week"}
+                      </p>
+                      {snapshot && (
+                        <span>{selectedWeekLabel}</span>
+                      )}
+                    </div>
+
+                    <SnapshotCalendar
+                      snapshots={chart.snapshots}
+                      selectedKey={snapshotKeyValue}
+                      onSelect={(value) => {
+                        onSnapshotChange(value);
+                        setChartPickerOpen(false);
+                      }}
+                      compact={compact}
+                      language={language}
+                    />
+                  </div>
+                )}
               </div>
             )}
           </div>
-
-          {chart && (
-            <div className="rym-date-control">
-              <button
-                type="button"
-                className="rym-calendar-toggle"
-                aria-expanded={calendarOpen}
-                aria-controls={"rym-calendar-" + side}
-                onClick={() => {
-                  setChartPickerOpen(false);
-                  setCalendarOpen((current) => !current);
-                }}
-              >
-                <RymIcon name="calendar" />
-                <span>{language === "ko" ? "시점" : "Date"}</span>
-              </button>
-
-              {calendarOpen && (
-                <div id={"rym-calendar-" + side} className="rym-calendar-popover">
-                  <SnapshotCalendar
-                    snapshots={chart.snapshots}
-                    selectedKey={snapshotKeyValue}
-                    onSelect={(value) => {
-                      onSnapshotChange(value);
-                      setCalendarOpen(false);
-                    }}
-                    compact={compact}
-                    language={language}
-                  />
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </div>
 
-      <div className="rym-song-list" tabIndex={0} role="region" aria-label={side + " chart songs"}>
+      <div className="rym-song-list" tabIndex={0} role="region" aria-label={side + " chart items"}>
         {visibleSongs.map((song) => (
           <SongCard key={songKey(song)} song={song} compact={compact}
             comparedSong={comparisonActive && "status" in song ? song as ComparedSong : null} language={language}
@@ -5111,6 +5130,174 @@ body:has(.rym-app) { display: block; min-height: 100vh; min-height: 100dvh; }
 
   .rym-app .rym-date-control .rym-calendar-toggle span {
     display: inline !important;
+  }
+}
+
+/* FINAL UX: unified chart + weekly snapshot selector */
+.rym-app .rym-chart-control-row {
+  display: block !important;
+}
+
+.rym-app .rym-chart-picker-field--unified {
+  width: min(100%, 30rem);
+  max-width: 30rem;
+  flex: 0 1 30rem;
+}
+
+.rym-app .rym-pane--compact .rym-chart-picker-field--unified {
+  width: 100%;
+  max-width: none;
+}
+
+.rym-app .rym-chart-picker-trigger--unified {
+  width: 100%;
+  height: auto;
+  min-height: 3.15rem;
+  padding: .56rem .72rem .56rem .78rem;
+  border: 1px solid #c9d4e1;
+  border-radius: 10px;
+  background: #eef3f8;
+  color: #244a78;
+  box-shadow: none;
+}
+
+.rym-app .rym-chart-picker-trigger--unified:hover {
+  border-color: #aabed3;
+  background: #e7eff7;
+}
+
+.rym-app .rym-chart-picker-trigger--unified[aria-expanded="true"] {
+  border-color: #95aec9;
+  background: #e5eef7;
+  box-shadow: 0 0 0 2px rgba(47, 85, 145, .08);
+}
+
+.rym-app .rym-chart-picker-summary {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: .19rem;
+}
+
+.rym-app .rym-chart-picker-summary-title {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #244a78;
+  font-size: .82rem;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.rym-app .rym-chart-picker-summary-hint {
+  color: #718096;
+  font-size: .67rem;
+  font-weight: 520;
+  line-height: 1.15;
+}
+
+.rym-app .rym-chart-picker-trigger--unified .rym-chart-picker-caret {
+  color: #315f8d;
+}
+
+.rym-app .rym-chart-current-week {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: .28rem .45rem;
+  min-height: 1.35rem;
+  padding: .34rem .12rem 0 .12rem;
+  color: #6d7480;
+}
+
+.rym-app .rym-chart-current-week strong {
+  color: #3c4654;
+  font-size: .72rem;
+  font-weight: 720;
+  line-height: 1.2;
+}
+
+.rym-app .rym-chart-current-week span {
+  color: #858b95;
+  font-size: .68rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+.rym-app .rym-chart-picker-popover--unified {
+  width: min(24rem, calc(100vw - 2rem));
+  max-width: none;
+  padding: .75rem;
+}
+
+.rym-app .rym-chart-picker-week-section {
+  padding-top: .75rem !important;
+}
+
+.rym-app .rym-chart-picker-week-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-bottom: .4rem;
+}
+
+.rym-app .rym-chart-picker-week-heading .rym-chart-picker-section-label {
+  margin: 0;
+}
+
+.rym-app .rym-chart-picker-week-heading > span {
+  min-width: 0;
+  overflow: hidden;
+  color: #78808b;
+  font-size: .66rem;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rym-app .rym-chart-picker-popover--unified .rym-calendar {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.rym-app .rym-chart-picker-popover--unified .rym-calendar-heading {
+  margin-bottom: .55rem;
+}
+
+.rym-app .rym-chart-picker-popover--unified .rym-calendar-week-button {
+  min-height: 2.65rem;
+}
+
+@media (max-width: 720px) {
+  .rym-app .rym-chart-picker-field--unified,
+  .rym-app .rym-pane--compact .rym-chart-picker-field--unified {
+    width: 100%;
+    max-width: none;
+  }
+
+  .rym-app .rym-chart-picker-popover--unified {
+    width: min(23rem, calc(100vw - 1.5rem));
+  }
+}
+
+@media (max-width: 420px) {
+  .rym-app .rym-chart-picker-trigger--unified {
+    min-height: 3rem;
+    padding: .52rem .65rem;
+  }
+
+  .rym-app .rym-chart-current-week {
+    padding-top: .3rem;
+  }
+
+  .rym-app .rym-chart-picker-popover--unified {
+    width: min(22rem, calc(100vw - 1rem));
   }
 }
 
