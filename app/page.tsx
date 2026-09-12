@@ -919,13 +919,12 @@ export default function Home() {
     let cancelled = false;
 
     async function loadInitialSnapshots() {
-      let savedSnapshots: Snapshot[] = [];
-
+      // Chart records are shared server data now. Do not restore stale per-device
+      // copies, otherwise a file deleted on one device can reappear on another.
       try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) savedSnapshots = sanitizeSnapshotList(JSON.parse(saved));
+        localStorage.removeItem(STORAGE_KEY);
       } catch {
-        // Ignore broken local data.
+        // Storage can be unavailable in restricted/private browser contexts.
       }
 
       let publicFiles: string[] = [];
@@ -969,9 +968,9 @@ export default function Home() {
 
       if (cancelled) return;
 
-      // Public demo records are always available to every visitor.
-      // Locally imported records are kept as additional personal records.
-      setRecords(sanitizeSnapshotList([...savedSnapshots, ...publicSnapshots]));
+      // GitHub/public is the single source of truth for chart records.
+      // This keeps imports and deletions synchronized across every device.
+      setRecords(sanitizeSnapshotList(publicSnapshots));
       setLoaded(true);
     }
 
@@ -1042,15 +1041,14 @@ export default function Home() {
   useEffect(() => {
     if (!loaded) return;
 
+    // Chart records must not be cached per device. GitHub/public is authoritative.
+    // Also clears old versions of the site that may have saved chart records locally.
     try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(snapshots)
-      );
+      localStorage.removeItem(STORAGE_KEY);
     } catch {
-      // A full/blocked storage area should not break the current session.
+      // Keep the app usable even when storage access is blocked.
     }
-  }, [snapshots, loaded]);
+  }, [loaded]);
 
   const charts = useMemo(
     () => buildCharts(snapshots),
