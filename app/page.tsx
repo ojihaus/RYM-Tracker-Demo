@@ -1195,9 +1195,7 @@ function ChartPane({
               onClick={() => setChartPickerOpen((current) => !current)}
             >
               <span className="rym-chart-picker-summary-title">
-                {selectedChartKind === "album"
-                  ? (language === "ko" ? "앨범" : "Albums")
-                  : (language === "ko" ? "곡" : "Songs")}
+                {selectedChartKind === "album" ? "Albums" : "Songs"}
                 {selectedChartPeriod ? ` · ${selectedChartPeriod}` : ""}
               </span>
 
@@ -1220,7 +1218,7 @@ function ChartPane({
                 >
                   <div className="rym-chart-picker-section">
                     <p className="rym-chart-picker-section-label">
-                      {language === "ko" ? "차트" : "Chart"}
+                      {language === "ko" ? "차트 유형" : "Chart type"}
                     </p>
                     <div className="rym-chart-kind-switch">
                       {(["song", "album"] as ChartKind[]).map((kind) => {
@@ -1236,9 +1234,7 @@ function ChartPane({
                             aria-pressed={active}
                             onClick={() => setPickerKind(kind)}
                           >
-                            {kind === "song"
-                              ? (language === "ko" ? "곡" : "Songs")
-                              : (language === "ko" ? "앨범" : "Albums")}
+                            {kind === "song" ? "Songs" : "Albums"}
                           </button>
                         );
                       })}
@@ -1273,13 +1269,6 @@ function ChartPane({
 
                   {chart && (
                     <div className="rym-chart-picker-section rym-chart-picker-week-section">
-                      <div className="rym-chart-picker-week-heading">
-                        <p className="rym-chart-picker-section-label">
-                          {language === "ko" ? "주차" : "Week"}
-                        </p>
-                        {snapshot && <span>{selectedWeekLabel}</span>}
-                      </div>
-
                       <SnapshotCalendar
                         snapshots={chart.snapshots}
                         selectedKey={snapshotKeyValue}
@@ -3576,27 +3565,27 @@ export default function Home() {
                     <span>{language === "ko" ? "전체" : "ALL"}</span><strong>{movementCounts.all}</strong>
                   </button>
                   <button type="button" className={"rym-filter rym-filter--changed" + (movementFilter === "CHANGED" ? " is-active" : "")}
-                    aria-pressed={movementFilter === "CHANGED"} onClick={() => setMovementFilter("CHANGED")}>
+                    aria-pressed={movementFilter === "CHANGED"} onClick={() => setMovementFilter((current) => current === "CHANGED" ? "ALL" : "CHANGED")}>
                     <span>{language === "ko" ? "변동" : "CHANGED"}</span><strong>{movementCounts.changed}</strong>
                   </button>
                   <button type="button" className={"rym-filter rym-filter--new" + (movementFilter === "NEW" ? " is-active" : "")}
-                    aria-pressed={movementFilter === "NEW"} onClick={() => setMovementFilter("NEW")}>
+                    aria-pressed={movementFilter === "NEW"} onClick={() => setMovementFilter((current) => current === "NEW" ? "ALL" : "NEW")}>
                     <span>{language === "ko" ? "신규" : "NEW"}</span><strong>{movementCounts.new}</strong>
                   </button>
                   <button type="button" className={"rym-filter rym-filter--up" + (movementFilter === "UP" ? " is-active" : "")}
-                    aria-pressed={movementFilter === "UP"} onClick={() => setMovementFilter("UP")}>
+                    aria-pressed={movementFilter === "UP"} onClick={() => setMovementFilter((current) => current === "UP" ? "ALL" : "UP")}>
                     <RymIcon name="up" /><strong>{movementCounts.up}</strong>
                   </button>
                   <button type="button" className={"rym-filter rym-filter--down" + (movementFilter === "DOWN" ? " is-active" : "")}
-                    aria-pressed={movementFilter === "DOWN"} onClick={() => setMovementFilter("DOWN")}>
+                    aria-pressed={movementFilter === "DOWN"} onClick={() => setMovementFilter((current) => current === "DOWN" ? "ALL" : "DOWN")}>
                     <RymIcon name="down" /><strong>{movementCounts.down}</strong>
                   </button>
                   <button type="button" className={"rym-filter rym-filter--same" + (movementFilter === "SAME" ? " is-active" : "")}
-                    aria-pressed={movementFilter === "SAME"} onClick={() => setMovementFilter("SAME")}>
+                    aria-pressed={movementFilter === "SAME"} onClick={() => setMovementFilter((current) => current === "SAME" ? "ALL" : "SAME")}>
                     <RymIcon name="minus" /><strong>{movementCounts.same}</strong>
                   </button>
                   <button type="button" className={"rym-filter rym-filter--out" + (movementFilter === "OUT" ? " is-active" : "")}
-                    aria-pressed={movementFilter === "OUT"} onClick={() => setMovementFilter("OUT")}>
+                    aria-pressed={movementFilter === "OUT"} onClick={() => setMovementFilter((current) => current === "OUT" ? "ALL" : "OUT")}>
                     <span>{language === "ko" ? "이탈" : "OUT"}</span><strong>{movementCounts.out}</strong>
                   </button>
                 </div>
@@ -5407,7 +5396,7 @@ body:has(.rym-app) { display: block; min-height: 100vh; min-height: 100dvh; }
   align-items: center !important;
   height: 1.72rem !important;
   padding: 0 .58rem !important;
-  border: 0 !important;
+  border: 1px solid #9db8d6 !important;
   border-radius: 999px !important;
   background: #e7f0fb !important;
   color: #234f82 !important;
@@ -5488,8 +5477,8 @@ body:has(.rym-app) { display: block; min-height: 100vh; min-height: 100dvh; }
   border: 0 !important;
   outline: 0 !important;
   box-shadow: none !important;
-  background: #e7f0fb !important;
-  color: #234f82 !important;
+  background: var(--rym-blue) !important;
+  color: #fff !important;
 }
 
 .rym-chart-picker-portal .rym-chart-period-list {
@@ -5511,7 +5500,7 @@ body:has(.rym-app) { display: block; min-height: 100vh; min-height: 100dvh; }
 }
 
 .rym-chart-picker-portal .rym-chart-period-button.is-active {
-  border: 0 !important;
+  border: 1px solid #9db8d6 !important;
   outline: 0 !important;
   box-shadow: none !important;
   background: #e7f0fb !important;
@@ -5563,7 +5552,7 @@ body:has(.rym-app) { display: block; min-height: 100vh; min-height: 100dvh; }
 }
 
 .rym-chart-picker-portal .rym-calendar-week-button.is-selected {
-  border: 0 !important;
+  border: 1px solid #9db8d6 !important;
   outline: 0 !important;
   box-shadow: none !important;
   background: #e7f0fb !important;
@@ -5617,6 +5606,169 @@ body:has(.rym-app) { display: block; min-height: 100vh; min-height: 100dvh; }
   .rym-chart-picker-portal .rym-chart-picker-popover--unified {
     padding: .65rem !important;
   }
+}
+
+/* FINAL chart-type label refinement */
+.rym-app .rym-chart-picker-summary-title {
+  line-height: 1.25 !important;
+  padding-top: .06rem !important;
+  padding-bottom: .08rem !important;
+  overflow: hidden !important;
+}
+
+.rym-app .rym-chart-picker-trigger--unified {
+  overflow: visible !important;
+}
+
+.rym-chart-picker-portal .rym-chart-kind-button {
+  line-height: 1.25 !important;
+  padding-top: .1rem !important;
+  padding-bottom: .14rem !important;
+  overflow: visible !important;
+}
+
+/* FINAL icon color fixes */
+.rym-app .rym-preview-play {
+  border-left-color: var(--rym-blue) !important;
+}
+
+.rym-app .rym-filter--up.is-active {
+  color: var(--rym-up) !important;
+}
+
+.rym-app .rym-filter--down.is-active {
+  color: var(--rym-down) !important;
+}
+
+.rym-app .rym-filter--up.is-active .rym-icon {
+  color: var(--rym-up) !important;
+  fill: currentColor !important;
+}
+
+.rym-app .rym-filter--down.is-active .rym-icon {
+  color: var(--rym-down) !important;
+  fill: currentColor !important;
+}
+
+/* FINAL picker cleanup + NEW filter color */
+.rym-app .rym-filter--new.is-active {
+  color: #315f96 !important;
+}
+
+.rym-app .rym-filter--new.is-active .rym-icon {
+  color: #315f96 !important;
+  fill: currentColor !important;
+}
+
+/* The selector is one control: remove the redundant outer framed column/card. */
+.rym-app .rym-chart-controls {
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.rym-app .rym-chart-control-row {
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.rym-app .rym-chart-picker-field--unified {
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Week list starts directly after the divider; no duplicate heading row. */
+.rym-chart-picker-portal .rym-chart-picker-week-section {
+  padding-top: .62rem !important;
+}
+
+.rym-chart-picker-portal .rym-chart-picker-week-section .rym-calendar-heading {
+  margin-top: 0 !important;
+}
+
+/* FINAL filter toggle + strong primary selector */
+
+/* Default ALL state is the primary state: dark RYM blue, no stroke. */
+.rym-app .rym-filter--all.is-active {
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  background: var(--rym-blue) !important;
+  color: #fff !important;
+}
+
+.rym-app .rym-filter--all.is-active strong,
+.rym-app .rym-filter--all.is-active span {
+  color: #fff !important;
+}
+
+/* Preserve semantic colors when each movement filter is active. */
+.rym-app .rym-filter--new.is-active {
+  color: #315f96 !important;
+}
+
+.rym-app .rym-filter--up.is-active {
+  color: var(--rym-up) !important;
+}
+
+.rym-app .rym-filter--down.is-active {
+  color: var(--rym-down) !important;
+}
+
+.rym-app .rym-filter--new.is-active .rym-icon {
+  color: #315f96 !important;
+  fill: currentColor !important;
+}
+
+.rym-app .rym-filter--up.is-active .rym-icon {
+  color: var(--rym-up) !important;
+  fill: currentColor !important;
+}
+
+.rym-app .rym-filter--down.is-active .rym-icon {
+  color: var(--rym-down) !important;
+  fill: currentColor !important;
+}
+
+/* Closed chart/week selector is now one strong primary button. */
+.rym-app .rym-chart-picker-trigger--unified {
+  border: 0 !important;
+  outline: 0 !important;
+  background: var(--rym-blue) !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+
+.rym-app .rym-chart-picker-trigger--unified:hover {
+  border: 0 !important;
+  background: var(--rym-blue-strong) !important;
+  box-shadow: none !important;
+}
+
+.rym-app .rym-chart-picker-trigger--unified[aria-expanded="true"] {
+  border: 0 !important;
+  background: var(--rym-blue-strong) !important;
+  box-shadow: none !important;
+}
+
+.rym-app .rym-chart-picker-trigger--unified .rym-chart-picker-summary-title {
+  color: #fff !important;
+}
+
+.rym-app .rym-chart-picker-trigger--unified .rym-chart-picker-caret {
+  color: #fff !important;
+}
+
+/* Week stays readable as a subordinate chip inside the dark selector. */
+.rym-app .rym-chart-picker-trigger--unified .rym-chart-picker-week-badge {
+  border: 1px solid rgba(255,255,255,.55) !important;
+  background: rgba(255,255,255,.14) !important;
+  color: #fff !important;
 }
 
 `;
