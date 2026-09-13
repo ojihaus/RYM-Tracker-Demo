@@ -1193,6 +1193,7 @@ function ChartPane({
       : visibleSongs.length;
 
   const [chartPickerOpen, setChartPickerOpen] = useState(false);
+  const [compactListScrolled, setCompactListScrolled] = useState(false);
   const [compactCollapsed, setCompactCollapsed] = useState(() => {
     if (!compact) return false;
     if (typeof window === "undefined") return false;
@@ -1285,21 +1286,14 @@ function ChartPane({
       left = Math.max(edge, Math.min(left, viewportWidth - width - edge));
 
       const spaceBelow = viewportHeight - rect.bottom - gap - edge;
-      const spaceAbove = rect.top - gap - edge;
-      const openAbove = spaceBelow < Math.min(380, maxHeight) && spaceAbove > spaceBelow;
-
-      const top = openAbove
-        ? Math.max(edge, rect.top - Math.min(maxHeight, spaceAbove) - gap)
-        : Math.min(rect.bottom + gap, viewportHeight - edge);
+      const top = rect.bottom + gap;
 
       setChartPickerFloatingStyle({
         position: "fixed",
         top,
         left,
         width,
-        maxHeight: openAbove
-          ? Math.min(maxHeight, Math.max(220, spaceAbove))
-          : Math.min(maxHeight, Math.max(220, spaceBelow)),
+        maxHeight: Math.min(maxHeight, Math.max(180, spaceBelow)),
       });
     }
 
@@ -1543,7 +1537,26 @@ function ChartPane({
             </div>
           </div>
 
-          <div className="rym-song-list" tabIndex={0} role="region" aria-label={side + " chart items"}>
+          {compact && (
+            <div
+              className={
+                "rym-compact-list-divider" +
+                (compactListScrolled ? " is-scrolled" : "")
+              }
+              aria-hidden="true"
+            />
+          )}
+
+          <div
+            className="rym-song-list"
+            tabIndex={0}
+            role="region"
+            aria-label={side + " chart items"}
+            onScroll={(event) => {
+              if (!compact) return;
+              setCompactListScrolled(event.currentTarget.scrollTop > 2);
+            }}
+          >
             {visibleSongs.map((song) => (
               <SongCard key={songKey(song)} song={song} compact={compact}
                 comparedSong={comparisonActive && "status" in song ? song as ComparedSong : null} language={language}
@@ -6767,5 +6780,110 @@ body:has(.rym-app) { display: block; min-height: 100vh; min-height: 100dvh; }
   display: flex !important;
 }
 
-`;
 
+/* STRUCTURAL compact sub-chart viewport
+   Header/selector stays fixed, then one full-width divider, then a scroll viewport
+   that continues to the pane's rounded bottom edge with NO bottom separator. */
+@media (min-width: 1024px) {
+  .rym-app .rym-pane--compact:not(.rym-pane--collapsed) {
+    overflow: hidden !important;
+  }
+
+  .rym-app .rym-pane--compact:not(.rym-pane--collapsed) .rym-compact-expand-body {
+    min-height: 0 !important;
+    flex: 1 1 auto !important;
+    display: flex !important;
+    flex-direction: column !important;
+
+    /* Let the scrolling viewport occupy the pane's bottom padding so rows are
+       clipped by the OUTER rounded border, not by an inner horizontal edge. */
+    margin-bottom: -.85rem !important;
+  }
+
+  .rym-app .rym-pane--compact .rym-chart-controls {
+    flex: 0 0 auto !important;
+    margin-bottom: 0 !important;
+  }
+
+  /* A real structural divider, not a song-list border/pseudo element.
+     Negative margins exactly cancel the pane's .85rem horizontal padding,
+     so the rule visually joins the compact pane's left/right border. */
+  .rym-app .rym-pane--compact .rym-compact-list-divider {
+    position: relative !important;
+    z-index: 3 !important;
+    flex: 0 0 auto !important;
+    height: 1px !important;
+    margin: .72rem -.85rem 0 !important;
+    border: 0 !important;
+    background: #d7dce3 !important;
+    opacity: 1 !important;
+    box-sizing: border-box !important;
+    pointer-events: none !important;
+  }
+
+  /* No shadow at the top of the list.
+     It fades in only after the compact chart itself has been scrolled. */
+  .rym-app .rym-pane--compact .rym-compact-list-divider::after {
+    content: "" !important;
+    position: absolute !important;
+    left: 0 !important;
+    right: 0 !important;
+
+    /* Overlap the 1px divider very slightly so Safari cannot render
+       a translucent seam between the rule and the shadow layer. */
+    top: 0 !important;
+    height: 22px !important;
+
+    background: linear-gradient(
+      to bottom,
+      rgba(24, 38, 56, .055) 0%,
+      rgba(24, 38, 56, .032) 30%,
+      rgba(24, 38, 56, .014) 64%,
+      rgba(24, 38, 56, 0) 100%
+    ) !important;
+
+    opacity: 0 !important;
+    transition: opacity .18s ease !important;
+    pointer-events: none !important;
+  }
+
+  .rym-app .rym-pane--compact .rym-compact-list-divider.is-scrolled::after {
+    opacity: 1 !important;
+  }
+
+  .rym-app .rym-pane--compact:not(.rym-pane--collapsed) .rym-song-list {
+    z-index: 1 !important;
+  }
+
+  .rym-app .rym-pane--compact:not(.rym-pane--collapsed) .rym-song-list {
+    position: relative !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+
+    /* The divider above owns the top separation. */
+    margin: 0 !important;
+    padding: .72rem .22rem .85rem .05rem !important;
+
+    /* Absolutely no internal top/bottom edge. */
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    overscroll-behavior-y: contain !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: #c5c8cf transparent !important;
+    scrollbar-gutter: stable !important;
+  }
+
+  .rym-app .rym-pane--compact:not(.rym-pane--collapsed) .rym-song-list::before,
+  .rym-app .rym-pane--compact:not(.rym-pane--collapsed) .rym-song-list::after {
+    content: none !important;
+    display: none !important;
+  }
+}
+
+`;
