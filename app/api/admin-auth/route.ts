@@ -1,44 +1,40 @@
-import { NextResponse } from "next/server";
-import { changeAdminPin, verifyAdminPin } from "../../lib/adminAuth";
+import { ADMIN_COOKIE, SESSION_SECONDS, changeAdminPin, checkAuthRateLimit, authenticateAdmin, requireAdminSession } from "../../lib/adminAuth";
+import { assertSameOrigin, errorResponse, HttpError, json, readJsonBody } from "../../lib/http";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+function authenticatedResponse(session: string) {
+  const response = json({ ok: true });
+  response.cookies.set(ADMIN_COOKIE, session, {
+    httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "strict", path: "/api", maxAge: SESSION_SECONDS,
+  });
+  return response;
+}
+
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const password = String(body?.password || "");
-
-    if (!(await verifyAdminPin(password))) {
-      return NextResponse.json({ ok: false }, { status: 401 });
-    }
-
-    return NextResponse.json({ ok: true });
-  } catch {
-    return NextResponse.json({ ok: false }, { status: 400 });
-  }
+    const body = await readJsonBody(request);
+    checkAuthRateLimit(request);
+    if (typeof body.password !== "string") throw new HttpError(401, "INCORRECT_PIN", "The PIN is incorrect.");
+    return authenticatedResponse(await authenticateAdmin(body.password));
+  } catch (error) { return errorResponse(error); }
 }
 
 export async function PUT(request: Request) {
   try {
-    const body = await request.json();
-    const currentPassword = String(body?.currentPassword || "");
-    const newPassword = String(body?.newPassword || "");
+    const body = await readJsonBody(request);
+    await requireAdminSession(request);
+    checkAuthRateLimit(request);
+    return authenticatedResponse(await changeAdminPin(String(body.currentPassword || ""), String(body.newPassword || "")));
+  } catch (error) { return errorResponse(error); }
+}
 
-    const result = await changeAdminPin(currentPassword, newPassword);
-
-    if (!result.ok) {
-      return NextResponse.json(
-        { ok: false, error: result.error },
-        { status: result.status }
-      );
-    }
-
-    return NextResponse.json({ ok: true });
-  } catch {
-    return NextResponse.json(
-      { ok: false, error: "비밀번호를 변경할 수 없습니다." },
-      { status: 400 }
-    );
-  }
+export async function DELETE(request: Request) {
+  try {
+    assertSameOrigin(request);
+    const response = json({ ok: true });
+    response.cookies.set(ADMIN_COOKIE, "", { httpOnly: true, sameSite: "strict", secure: process.env.NODE_ENV === "production", path: "/api", maxAge: 0 });
+    return response;
+  } catch (error) { return errorResponse(error); }
 }
