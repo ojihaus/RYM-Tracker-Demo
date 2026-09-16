@@ -5,6 +5,14 @@ import { errorMessage } from "../lib/chartClient";
 import SongCard from "./SongCard";
 import SnapshotCalendar from "./SnapshotCalendar";
 
+const COMPACT_TRANSITION_MS = 330;
+const PICKER_OPEN_MS = 330;
+const PICKER_SHADOW_CLOSE_MS = 120;
+const PICKER_CLOSE_BUFFER_MS = 10;
+const PICKER_CLOSE_MS = PICKER_SHADOW_CLOSE_MS + PICKER_OPEN_MS + PICKER_CLOSE_BUFFER_MS;
+const PICKER_SCROLL_DELAY_MS = PICKER_OPEN_MS + 30;
+const PICKER_BOTTOM_GAP = 24;
+
 type ChartPaneProps = {
   side: "LEFT" | "RIGHT";
   compact?: boolean;
@@ -87,7 +95,6 @@ export default function ChartPane({
   const [chartPickerOpen, setChartPickerOpen] = useState(false);
   const [chartPickerClosing, setChartPickerClosing] = useState(false);
   const chartPickerCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const chartPickerEnsureVisibleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [compactListScrolled, setCompactListScrolled] = useState(false);
   const smallViewport = useSmallViewport();
   const [collapsedChoice, setCollapsedChoice] = useState<boolean | null>(null);
@@ -124,7 +131,7 @@ export default function ChartPane({
         setCollapsedChoice(true);
         setCompactTransition(null);
         compactTransitionTimerRef.current = null;
-      }, 330);
+      }, COMPACT_TRANSITION_MS);
       return;
     }
 
@@ -134,7 +141,7 @@ export default function ChartPane({
     compactTransitionTimerRef.current = setTimeout(() => {
       setCompactTransition(null);
       compactTransitionTimerRef.current = null;
-    }, 330);
+    }, COMPACT_TRANSITION_MS);
   }
 
   function clearChartPickerCloseTimer() {
@@ -160,7 +167,7 @@ export default function ChartPane({
     chartPickerCloseTimerRef.current = setTimeout(() => {
       setChartPickerClosing(false);
       chartPickerCloseTimerRef.current = null;
-    }, 460);
+    }, PICKER_CLOSE_MS);
   }
 
   function toggleChartPicker() {
@@ -175,10 +182,6 @@ export default function ChartPane({
     return () => {
       clearChartPickerCloseTimer();
       clearCompactTransitionTimer();
-      if (chartPickerEnsureVisibleTimerRef.current) {
-        clearTimeout(chartPickerEnsureVisibleTimerRef.current);
-        chartPickerEnsureVisibleTimerRef.current = null;
-      }
     };
   }, []);
 
@@ -219,42 +222,33 @@ export default function ChartPane({
   useEffect(() => {
     if (!chartPickerOpen || typeof window === "undefined") return;
 
-    if (chartPickerEnsureVisibleTimerRef.current) {
-      clearTimeout(chartPickerEnsureVisibleTimerRef.current);
-    }
+    // Do not move the page while the dropdown itself is unfolding.
+    // Waiting until that motion finishes avoids two simultaneous animations
+    // competing for frames on iOS Safari.
+    const timer = window.setTimeout(() => {
+      window.requestAnimationFrame(() => {
+        const popover = chartPickerPopoverRef.current;
+        if (!popover) return;
 
-    // Wait until the inline dropdown has mounted and Safari has settled its
-    // visual viewport after zoom / browser chrome changes.
-    chartPickerEnsureVisibleTimerRef.current = setTimeout(() => {
-      const popover = chartPickerPopoverRef.current;
-      if (!popover) return;
+        const rect = popover.getBoundingClientRect();
+        const visualViewport = window.visualViewport;
+        const viewportTop = visualViewport?.offsetTop ?? 0;
+        const viewportHeight = visualViewport?.height ?? window.innerHeight;
+        const viewportBottom = viewportTop + viewportHeight;
+        const overflow = rect.bottom + PICKER_BOTTOM_GAP - viewportBottom;
 
-      const rect = popover.getBoundingClientRect();
-      const visualViewport = window.visualViewport;
-      const viewportTop = visualViewport?.offsetTop ?? 0;
-      const viewportHeight = visualViewport?.height ?? window.innerHeight;
-      const viewportBottom = viewportTop + viewportHeight;
+        if (overflow <= 1) return;
 
-      // Keep a little breathing room under the opened picker.
-      const desiredBottomGap = 24;
-      const overflow = rect.bottom + desiredBottomGap - viewportBottom;
-
-      if (overflow > 1) {
         window.scrollBy({
           top: overflow,
           behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
             ? "auto"
             : "smooth",
         });
-      }
-    }, 40);
+      });
+    }, PICKER_SCROLL_DELAY_MS);
 
-    return () => {
-      if (chartPickerEnsureVisibleTimerRef.current) {
-        clearTimeout(chartPickerEnsureVisibleTimerRef.current);
-        chartPickerEnsureVisibleTimerRef.current = null;
-      }
-    };
+    return () => window.clearTimeout(timer);
   }, [chartPickerOpen]);
 
   useEffect(() => {
@@ -277,8 +271,6 @@ export default function ChartPane({
       document.removeEventListener("pointerdown", handlePointerDown);
     };
   }, [chartPickerOpen]);
-
-
 
   useDialogFocus(chartPickerOpen, chartPickerPopoverRef, closeChartPicker, false);
 
@@ -435,20 +427,20 @@ export default function ChartPane({
                     aria-hidden={chartPickerClosing ? "true" : "false"}
                   >
                     <div
-                      id={"rym-chart-picker-popover-" + side}
-                      ref={chartPickerPopoverRef}
                       className={
-                        "rym-chart-picker-popover rym-chart-picker-popover--unified " +
+                        "rym-chart-picker-reveal " +
                         (chartPickerClosing ? "is-closing" : "is-opening")
                       }
-                      role="dialog"
-                      tabIndex={-1}
-                      aria-label={language === "ko" ? "차트와 주차 선택" : "Choose chart and week"}
                     >
+                      <div
+                        id={"rym-chart-picker-popover-" + side}
+                        ref={chartPickerPopoverRef}
+                        className="rym-chart-picker-popover rym-chart-picker-popover--unified"
+                        role="dialog"
+                        tabIndex={-1}
+                        aria-label={language === "ko" ? "차트와 주차 선택" : "Choose chart and week"}
+                      >
                       <div className="rym-chart-picker-section">
-                        <p className="rym-chart-picker-section-label">
-                          {language === "ko" ? "차트 유형" : "Chart type"}
-                        </p>
                         <div className="rym-chart-kind-switch">
                           {(["song", "album"] as ChartKind[]).map((kind) => {
                             const disabled = !availableKinds[kind];
@@ -471,9 +463,6 @@ export default function ChartPane({
                       </div>
 
                       <div className="rym-chart-picker-section">
-                        <p className="rym-chart-picker-section-label">
-                          {language === "ko" ? "기간" : "Period"}
-                        </p>
                         <div className="rym-chart-period-list">
                           {periodOptions.map(({ label, item }) => {
                             const active = item.sourceUrl === chartUrl;
@@ -510,6 +499,7 @@ export default function ChartPane({
                           />
                         </div>
                       )}
+                      </div>
                     </div>
                   </div>
                 )}
