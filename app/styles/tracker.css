@@ -4964,6 +4964,10 @@ body:has(.rym-app) { display: block; min-height: 100vh; min-height: 100dvh; }
   min-width: 0 !important;
 }
 
+.rym-app .rym-song-title-row {
+  overflow: visible !important;
+}
+
 .rym-app .rym-title-copy-wrap {
   position: relative !important;
   display: inline-grid !important;
@@ -4971,7 +4975,8 @@ body:has(.rym-app) { display: block; min-height: 100vh; min-height: 100dvh; }
   align-items: center !important;
   justify-items: start !important;
   flex: 0 0 auto !important;
-  min-width: 27px !important;
+  width: 46px !important;
+  min-width: 46px !important;
   height: 27px !important;
   margin-left: 1px !important;
 }
@@ -4998,8 +5003,8 @@ body:has(.rym-app) { display: block; min-height: 100vh; min-height: 100dvh; }
   box-shadow: none !important;
   cursor: pointer !important;
   outline: 0 !important;
-  opacity: 1 !important;
-  transform: none !important;
+  opacity: 1;
+  transform: none;
   transition:
     color .14s ease,
     opacity .14s ease !important;
@@ -5027,6 +5032,7 @@ body:has(.rym-app) { display: block; min-height: 100vh; min-height: 100dvh; }
 .rym-app .rym-copy-status {
   display: inline-flex !important;
   align-items: center !important;
+  width: max-content !important;
   min-width: max-content !important;
   margin-left: 0 !important;
   color: #5c7fa9 !important;
@@ -5035,8 +5041,8 @@ body:has(.rym-app) { display: block; min-height: 100vh; min-height: 100dvh; }
   line-height: 1 !important;
   white-space: nowrap !important;
   pointer-events: none !important;
-  opacity: 0 !important;
-  transform: translateY(1px) !important;
+  opacity: 0;
+  transform: translateY(1px);
 }
 
 /* 3-second sequence:
@@ -5091,4 +5097,1840 @@ body:has(.rym-app) { display: block; min-height: 100vh; min-height: 100dvh; }
 /* Compact/sub-chart intentionally has no copy control. */
 .rym-app .rym-song--compact .rym-title-copy-wrap {
   display: none !important;
+}
+
+/* =========================================================
+   FINAL — compact sub-chart single divider + persistent scroll shadow
+   Shadow is anchored to the fixed controls area, NOT the scrolling list
+   and NOT the 1px divider itself.
+   ========================================================= */
+
+/* 1) Remove every previous experimental shadow layer. */
+.rym-app .rym-pane--compact .rym-compact-list-divider::before,
+.rym-app .rym-pane--compact .rym-compact-list-divider::after,
+.rym-app .rym-pane--compact:not(.rym-pane--collapsed) .rym-song-list::before,
+.rym-app .rym-pane--compact:not(.rym-pane--collapsed) .rym-song-list::after {
+  content: none !important;
+  display: none !important;
+}
+
+.rym-app .rym-pane--compact:not(.rym-pane--collapsed) .rym-song-list {
+  box-shadow: none !important;
+}
+
+/* 2) Keep exactly one real divider line. */
+.rym-app .rym-pane--compact .rym-compact-list-divider {
+  position: relative !important;
+  z-index: 20 !important;
+  flex: 0 0 1px !important;
+  width: auto !important;
+  height: 1px !important;
+  min-height: 1px !important;
+  margin-bottom: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: #d7dce3 !important;
+  box-shadow: none !important;
+  filter: none !important;
+  opacity: 1 !important;
+  pointer-events: none !important;
+}
+
+/* 3) Controls are fixed above the scrolling list.
+      Their ::after is allowed to extend downward over the list. */
+.rym-app .rym-pane--compact .rym-chart-controls {
+  position: relative !important;
+  z-index: 60 !important;
+  overflow: visible !important;
+}
+
+.rym-app .rym-pane--compact .rym-chart-controls::after {
+  content: "" !important;
+  display: block !important;
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 16px !important;
+  z-index: 999 !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
+  background: linear-gradient(
+    to bottom,
+    rgba(24, 38, 56, .085) 0%,
+    rgba(24, 38, 56, .045) 30%,
+    rgba(24, 38, 56, .020) 58%,
+    rgba(24, 38, 56, 0) 100%
+  ) !important;
+  transition: opacity .22s ease !important;
+  will-change: opacity !important;
+}
+
+/* 4) When the list has actually scrolled, ChartPane.tsx adds
+      .is-scrolled to the divider. :has() lets the fixed controls react to it.
+      The gradient is drawn BELOW the divider position, so it stays visible
+      while the song cards continue scrolling underneath. */
+.rym-app
+  .rym-pane--compact
+  .rym-compact-expand-body:has(> .rym-compact-list-divider.is-scrolled)
+  > .rym-chart-controls::after {
+  opacity: 1 !important;
+}
+
+/* Desktop:
+   compact controls have no bottom margin in the structural layout,
+   divider sits .72rem below controls. */
+@media (min-width: 1024px) {
+  .rym-app .rym-pane--compact .rym-compact-list-divider {
+    margin-top: .72rem !important;
+    margin-left: -.85rem !important;
+    margin-right: -.85rem !important;
+  }
+
+  .rym-app
+    .rym-pane--compact
+    .rym-compact-expand-body:has(> .rym-compact-list-divider.is-scrolled)
+    > .rym-chart-controls::after {
+    left: -.85rem !important;
+    right: -.85rem !important;
+    top: calc(100% + .72rem + 1px) !important;
+  }
+
+  .rym-app .rym-pane--compact:not(.rym-pane--collapsed) .rym-song-list {
+    margin-top: 0 !important;
+    padding-top: .72rem !important;
+    border-top: 0 !important;
+    border-bottom: 0 !important;
+  }
+}
+
+/* Mobile / tablet:
+   generic controls keep their 10px bottom margin,
+   then divider has .65rem top margin. */
+@media (max-width: 1023px) {
+  .rym-app .rym-pane--compact .rym-compact-list-divider {
+    margin-top: .65rem !important;
+    margin-left: -.75rem !important;
+    margin-right: -.75rem !important;
+  }
+
+  .rym-app
+    .rym-pane--compact
+    .rym-compact-expand-body:has(> .rym-compact-list-divider.is-scrolled)
+    > .rym-chart-controls::after {
+    left: -.75rem !important;
+    right: -.75rem !important;
+    top: calc(100% + 10px + .65rem + 1px) !important;
+  }
+
+  .rym-app .rym-pane--compact:not(.rym-pane--collapsed) .rym-song-list {
+    margin-top: 0 !important;
+    padding-top: .65rem !important;
+    border-top: 0 !important;
+    border-bottom: 0 !important;
+  }
+}
+
+
+/* =========================================================
+   MOBILE SURGERY 01
+   ========================================================= */
+
+/* 1) Mobile compact-chart header spacing stays identical open/closed. */
+@media (max-width: 1023px) {
+  .rym-app .rym-pane--compact,
+  .rym-app .rym-pane--compact.rym-pane--collapsed {
+    padding: .75rem !important;
+  }
+
+  .rym-app .rym-pane--compact .rym-pane-heading,
+  .rym-app .rym-pane--compact.rym-pane--collapsed .rym-pane-heading {
+    margin: 0 !important;
+  }
+
+  .rym-app .rym-pane--compact .rym-pane-heading--toggle,
+  .rym-app .rym-pane--compact.rym-pane--collapsed .rym-pane-heading--toggle {
+    padding: 0 .05rem .05rem !important;
+  }
+}
+
+/* 3) Common: song / album buttons have no shadow in any state. */
+.rym-chart-picker-portal .rym-chart-kind-button,
+.rym-chart-picker-portal .rym-chart-kind-button.is-active,
+.rym-app .rym-chart-kind-button,
+.rym-app .rym-chart-kind-button.is-active {
+  box-shadow: none !important;
+}
+
+/* 4) Mobile sub-information bar: both lines centered. */
+@media (max-width: 1023px) {
+  .rym-app .rym-subbar-inner {
+    align-items: center !important;
+    text-align: center !important;
+  }
+
+  .rym-app .rym-context-copy,
+  .rym-app .rym-subbar-description,
+  .rym-app .rym-subbar-count {
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    text-align: center !important;
+  }
+}
+
+/* =========================================================
+   MOBILE SURGERY 01.1
+   Desktop compact-header parity + chart-picker open motion
+   ========================================================= */
+
+/* Desktop: compact/sub-chart header keeps exactly the same spacing
+   whether the pane is expanded or collapsed. */
+@media (min-width: 1024px) {
+  .rym-app .rym-pane--compact,
+  .rym-app .rym-pane--compact.rym-pane--collapsed {
+    padding: .85rem !important;
+  }
+
+  .rym-app .rym-pane--compact .rym-pane-heading,
+  .rym-app .rym-pane--compact.rym-pane--collapsed .rym-pane-heading {
+    margin: 0 !important;
+  }
+
+  .rym-app .rym-pane--compact .rym-pane-heading--toggle,
+  .rym-app .rym-pane--compact.rym-pane--collapsed .rym-pane-heading--toggle {
+    padding: 0 .05rem .05rem !important;
+  }
+}
+
+/* Common: chart picker opens downward and closes upward with the same 0.33s motion. */
+.rym-chart-picker-portal .rym-chart-picker-popover--unified {
+  transform-origin: top center !important;
+  will-change: transform, opacity !important;
+}
+
+.rym-chart-picker-portal .rym-chart-picker-popover--unified.is-opening {
+  animation: rym-chart-picker-open .33s cubic-bezier(.22, .72, .24, 1) both !important;
+}
+
+.rym-chart-picker-portal .rym-chart-picker-popover--unified.is-closing {
+  pointer-events: none !important;
+  animation: rym-chart-picker-close .33s cubic-bezier(.40, 0, .60, .28) both !important;
+}
+
+@keyframes rym-chart-picker-open {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px) scaleY(.975);
+  }
+  55% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+  }
+}
+
+@keyframes rym-chart-picker-close {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scaleY(1);
+  }
+  45% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-8px) scaleY(.975);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rym-chart-picker-portal .rym-chart-picker-popover--unified.is-opening,
+  .rym-chart-picker-portal .rym-chart-picker-popover--unified.is-closing {
+    animation-duration: .01ms !important;
+  }
+}
+
+/* =========================================================
+   COMPACT PANE + PICKER MOTION — refined final pass
+   ========================================================= */
+
+/*
+  Header spacing parity:
+  the persistent heading uses the exact same box model whether the
+  compact pane is open or closed. The body gap equals the pane's
+  bottom padding, so the closed card and the open card read identically.
+*/
+.rym-app .rym-pane--compact,
+.rym-app .rym-pane--compact.rym-pane--collapsed,
+.rym-app .rym-pane--compact.rym-pane--opening,
+.rym-app .rym-pane--compact.rym-pane--closing {
+  padding-top: .85rem !important;
+  padding-right: .85rem !important;
+  padding-bottom: .85rem !important;
+  padding-left: .85rem !important;
+}
+
+.rym-app .rym-pane--compact .rym-pane-heading,
+.rym-app .rym-pane--compact.rym-pane--collapsed .rym-pane-heading,
+.rym-app .rym-pane--compact.rym-pane--opening .rym-pane-heading,
+.rym-app .rym-pane--compact.rym-pane--closing .rym-pane-heading {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.rym-app .rym-pane--compact .rym-pane-heading--toggle,
+.rym-app .rym-pane--compact.rym-pane--collapsed .rym-pane-heading--toggle,
+.rym-app .rym-pane--compact.rym-pane--opening .rym-pane-heading--toggle,
+.rym-app .rym-pane--compact.rym-pane--closing .rym-pane-heading--toggle {
+  margin: 0 !important;
+  padding: 0 .05rem !important;
+}
+
+.rym-app .rym-pane--compact .rym-compact-expand-body {
+  margin-top: .85rem !important;
+}
+
+/*
+  Compact pane reveal:
+  no bounce, no exaggerated scaling. A small vertical travel, opacity,
+  and clipping make the content feel attached to the fixed heading.
+*/
+.rym-app .rym-pane--compact .rym-compact-expand-body.is-opening {
+  transform-origin: top center !important;
+  animation: rym-compact-body-open .33s cubic-bezier(.16, 1, .3, 1) both !important;
+  will-change: opacity, transform, clip-path !important;
+}
+
+.rym-app .rym-pane--compact .rym-compact-expand-body.is-closing {
+  transform-origin: top center !important;
+  pointer-events: none !important;
+  animation: rym-compact-body-close .33s cubic-bezier(.4, 0, .2, 1) both !important;
+  will-change: opacity, transform, clip-path !important;
+}
+
+@keyframes rym-compact-body-open {
+  0% {
+    opacity: 0;
+    transform: translateY(-7px) scale(.994);
+    clip-path: inset(0 0 14% 0 round 10px);
+  }
+  45% {
+    opacity: .82;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    clip-path: inset(0 0 0 0 round 10px);
+  }
+}
+
+@keyframes rym-compact-body-close {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    clip-path: inset(0 0 0 0 round 10px);
+  }
+  55% {
+    opacity: .72;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-7px) scale(.994);
+    clip-path: inset(0 0 14% 0 round 10px);
+  }
+}
+
+/* Chevron motion is softened to match the pane transition. */
+.rym-app .rym-pane-heading-chevron {
+  transition:
+    transform .33s cubic-bezier(.16, 1, .3, 1),
+    border-color .2s ease !important;
+}
+
+/*
+  Chart picker motion:
+  replace the earlier scaleY-style motion with a restrained
+  translate + tiny uniform scale + fade.
+*/
+.rym-chart-picker-portal .rym-chart-picker-popover--unified.is-opening {
+  transform-origin: top center !important;
+  animation: rym-chart-picker-open-refined .33s cubic-bezier(.16, 1, .3, 1) both !important;
+}
+
+.rym-chart-picker-portal .rym-chart-picker-popover--unified.is-closing {
+  transform-origin: top center !important;
+  pointer-events: none !important;
+  animation: rym-chart-picker-close-refined .33s cubic-bezier(.4, 0, .2, 1) both !important;
+}
+
+@keyframes rym-chart-picker-open-refined {
+  0% {
+    opacity: 0;
+    transform: translateY(-6px) scale(.988);
+  }
+  42% {
+    opacity: .86;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes rym-chart-picker-close-refined {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  58% {
+    opacity: .72;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-5px) scale(.99);
+  }
+}
+
+@media (max-width: 1023px) {
+  .rym-app .rym-pane--compact,
+  .rym-app .rym-pane--compact.rym-pane--collapsed,
+  .rym-app .rym-pane--compact.rym-pane--opening,
+  .rym-app .rym-pane--compact.rym-pane--closing {
+    padding-top: .75rem !important;
+    padding-right: .75rem !important;
+    padding-bottom: .75rem !important;
+    padding-left: .75rem !important;
+  }
+
+  .rym-app .rym-pane--compact .rym-compact-expand-body {
+    margin-top: .75rem !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rym-app .rym-pane--compact .rym-compact-expand-body.is-opening,
+  .rym-app .rym-pane--compact .rym-compact-expand-body.is-closing,
+  .rym-chart-picker-portal .rym-chart-picker-popover--unified.is-opening,
+  .rym-chart-picker-portal .rym-chart-picker-popover--unified.is-closing {
+    animation-duration: .01ms !important;
+  }
+}
+
+/* =========================================================
+   COMPACT PANE MOTION — AUTHORITATIVE FIX
+   - identical compact header in every state
+   - the CARD itself grows/shrinks downward
+   - content reveals without scaling text
+   - dropdowns unfold downward without scaling text
+   ========================================================= */
+
+/* ---------- 1. EXACT SAME HEADER, OPEN OR CLOSED ---------- */
+
+.rym-app .rym-pane--compact {
+  --rym-compact-pad: 14px;
+  --rym-compact-header-h: 54px;
+  --rym-compact-closed-h: 84px; /* 54 + 14*2 + 2px border */
+  box-sizing: border-box !important;
+}
+
+/* Same outer padding in every state. */
+.rym-app .rym-pane--compact,
+.rym-app .rym-pane--compact.rym-pane--collapsed,
+.rym-app .rym-pane--compact.rym-pane--opening,
+.rym-app .rym-pane--compact.rym-pane--closing {
+  padding: var(--rym-compact-pad) !important;
+}
+
+/* The header box itself is literally the same fixed height in every state. */
+.rym-app .rym-pane--compact .rym-pane-heading,
+.rym-app .rym-pane--compact .rym-pane-heading--toggle,
+.rym-app .rym-pane--compact.rym-pane--collapsed .rym-pane-heading,
+.rym-app .rym-pane--compact.rym-pane--opening .rym-pane-heading,
+.rym-app .rym-pane--compact.rym-pane--closing .rym-pane-heading {
+  box-sizing: border-box !important;
+  width: 100% !important;
+  height: var(--rym-compact-header-h) !important;
+  min-height: var(--rym-compact-header-h) !important;
+  max-height: var(--rym-compact-header-h) !important;
+  margin: 0 !important;
+  padding: 0 1px !important;
+  flex: 0 0 var(--rym-compact-header-h) !important;
+}
+
+/* Main header content cannot flex/shrink differently when the body appears. */
+.rym-app .rym-pane--compact .rym-pane-heading-main {
+  height: 100% !important;
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  flex: 1 1 auto !important;
+}
+
+/* Top badges: exact metrics in both states. */
+.rym-app .rym-pane--compact .rym-pane-caption,
+.rym-app .rym-pane--compact .rym-pane-heading--toggle .rym-pane-caption {
+  height: 20px !important;
+  min-height: 20px !important;
+  margin: 0 0 5px 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 6px !important;
+}
+
+.rym-app .rym-pane--compact .rym-role-badge {
+  min-height: 20px !important;
+  padding: 2px 7px !important;
+  font-size: 10px !important;
+  line-height: 1 !important;
+}
+
+.rym-app .rym-pane--compact .rym-count-pill {
+  min-height: 20px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 2px 9px !important;
+  font-size: 11px !important;
+  line-height: 1 !important;
+}
+
+/* Title row: fixed dimensions and fixed typography. */
+.rym-app .rym-pane--compact .rym-pane-title-row {
+  height: 24px !important;
+  min-height: 24px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+}
+
+.rym-app .rym-pane--compact .rym-pane-title-row .rym-chart-title {
+  min-width: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 18px !important;
+  line-height: 24px !important;
+  font-weight: 720 !important;
+  letter-spacing: -.015em !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.rym-app .rym-pane--compact .rym-pane-heading-week {
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 11px !important;
+  line-height: 24px !important;
+  font-weight: 650 !important;
+  white-space: nowrap !important;
+}
+
+/* Chevron also occupies the same geometry in every state. */
+.rym-app .rym-pane--compact .rym-pane-heading-chevron {
+  width: 8px !important;
+  height: 8px !important;
+  flex: 0 0 8px !important;
+  margin: 0 3px 0 2px !important;
+  transition: transform .33s cubic-bezier(.2, .75, .25, 1) !important;
+}
+
+
+/* ---------- 2. THE CARD ITSELF GROWS DOWNWARD ---------- */
+
+/*
+  Desktop has a known expanded height, so the outer white card itself
+  interpolates from the exact collapsed height to viewport height.
+*/
+@media (min-width: 1024px) {
+  .rym-app .rym-pane--compact {
+    height: calc(100dvh - 32px) !important;
+    max-height: calc(100dvh - 32px) !important;
+    min-height: var(--rym-compact-closed-h) !important;
+    overflow: hidden !important;
+    transition:
+      height .33s cubic-bezier(.2, .75, .25, 1),
+      max-height .33s cubic-bezier(.2, .75, .25, 1) !important;
+  }
+
+  .rym-app .rym-pane--compact.rym-pane--collapsed,
+  .rym-app .rym-pane--compact.rym-pane--closing {
+    height: var(--rym-compact-closed-h) !important;
+    max-height: var(--rym-compact-closed-h) !important;
+  }
+
+  .rym-app .rym-pane--compact.rym-pane--opening,
+  .rym-app .rym-pane--compact:not(.rym-pane--collapsed):not(.rym-pane--closing) {
+    height: calc(100dvh - 32px) !important;
+    max-height: calc(100dvh - 32px) !important;
+  }
+}
+
+/*
+  The inner body unfolds vertically. No scale() anywhere:
+  text and controls remain the exact same size throughout the motion.
+*/
+.rym-app .rym-pane--compact .rym-compact-expand-body {
+  --rym-compact-body-max: calc(100dvh - 116px);
+  margin-top: 12px !important;
+  min-height: 0 !important;
+  max-height: var(--rym-compact-body-max) !important;
+  overflow: hidden !important;
+  transform: none !important;
+  clip-path: none !important;
+  opacity: 1;
+}
+
+.rym-app .rym-pane--compact .rym-compact-expand-body.is-opening {
+  animation: rym-compact-unfold .33s cubic-bezier(.2, .75, .25, 1) both !important;
+  will-change: max-height, opacity !important;
+}
+
+.rym-app .rym-pane--compact .rym-compact-expand-body.is-closing {
+  pointer-events: none !important;
+  animation: rym-compact-fold .33s cubic-bezier(.4, 0, .2, 1) both !important;
+  will-change: max-height, opacity !important;
+}
+
+@keyframes rym-compact-unfold {
+  0% {
+    max-height: 0;
+    opacity: 0;
+  }
+  22% {
+    opacity: .18;
+  }
+  52% {
+    opacity: .72;
+  }
+  100% {
+    max-height: var(--rym-compact-body-max);
+    opacity: 1;
+  }
+}
+
+@keyframes rym-compact-fold {
+  0% {
+    max-height: var(--rym-compact-body-max);
+    opacity: 1;
+  }
+  42% {
+    opacity: .68;
+  }
+  78% {
+    opacity: .14;
+  }
+  100% {
+    max-height: 0;
+    opacity: 0;
+  }
+}
+
+
+/* ---------- 3. MOBILE: SAME HEADER, NATURAL AUTO-GROW CARD ---------- */
+
+@media (max-width: 1023px) {
+  .rym-app .rym-pane--compact {
+    --rym-compact-pad: 12px;
+    --rym-compact-header-h: 50px;
+    --rym-compact-closed-h: 76px;
+    height: auto !important;
+    min-height: var(--rym-compact-closed-h) !important;
+    max-height: none !important;
+    overflow: hidden !important;
+  }
+
+  .rym-app .rym-pane--compact.rym-pane--collapsed,
+  .rym-app .rym-pane--compact.rym-pane--closing {
+    max-height: var(--rym-compact-closed-h) !important;
+  }
+
+  .rym-app .rym-pane--compact .rym-pane-caption,
+  .rym-app .rym-pane--compact .rym-pane-heading--toggle .rym-pane-caption {
+    height: 19px !important;
+    min-height: 19px !important;
+    margin-bottom: 4px !important;
+  }
+
+  .rym-app .rym-pane--compact .rym-role-badge {
+    min-height: 19px !important;
+    font-size: 9.5px !important;
+  }
+
+  .rym-app .rym-pane--compact .rym-count-pill {
+    min-height: 19px !important;
+    font-size: 10.5px !important;
+  }
+
+  .rym-app .rym-pane--compact .rym-pane-title-row {
+    height: 23px !important;
+    min-height: 23px !important;
+  }
+
+  .rym-app .rym-pane--compact .rym-pane-title-row .rym-chart-title {
+    font-size: 15px !important;
+    line-height: 23px !important;
+  }
+
+  .rym-app .rym-pane--compact .rym-pane-heading-week {
+    font-size: 10.5px !important;
+    line-height: 23px !important;
+  }
+
+  .rym-app .rym-pane--compact .rym-compact-expand-body {
+    --rym-compact-body-max: calc(36dvh + 150px);
+    margin-top: 10px !important;
+  }
+}
+
+
+/* ---------- 4. DROPDOWN: TRUE DOWNWARD UNFOLD, NO TEXT SCALING ---------- */
+
+.rym-chart-picker-portal .rym-chart-picker-popover--unified {
+  transform: none !important;
+  transform-origin: top center !important;
+  will-change: clip-path, opacity !important;
+}
+
+.rym-chart-picker-portal .rym-chart-picker-popover--unified.is-opening {
+  animation: rym-picker-unfold .33s cubic-bezier(.2, .75, .25, 1) both !important;
+}
+
+.rym-chart-picker-portal .rym-chart-picker-popover--unified.is-closing {
+  pointer-events: none !important;
+  animation: rym-picker-fold .33s cubic-bezier(.4, 0, .2, 1) both !important;
+}
+
+@keyframes rym-picker-unfold {
+  0% {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0 round 10px);
+  }
+  22% {
+    opacity: .22;
+  }
+  58% {
+    opacity: .82;
+  }
+  100% {
+    opacity: 1;
+    clip-path: inset(0 0 0 0 round 10px);
+  }
+}
+
+@keyframes rym-picker-fold {
+  0% {
+    opacity: 1;
+    clip-path: inset(0 0 0 0 round 10px);
+  }
+  46% {
+    opacity: .72;
+  }
+  78% {
+    opacity: .16;
+  }
+  100% {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0 round 10px);
+  }
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  .rym-app .rym-pane--compact,
+  .rym-app .rym-pane--compact .rym-compact-expand-body,
+  .rym-chart-picker-portal .rym-chart-picker-popover--unified {
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+  }
+}
+
+/* =========================================================
+   MOBILE COMPACT PANE — REAL DOWNWARD UNFOLD FIX
+   Uses CSS Grid 0fr -> 1fr so the box physically grows.
+   No guessed max-height, no text scaling, no instant snap.
+   ========================================================= */
+
+@media (max-width: 1023px) {
+  /* During closing, DO NOT clamp the card to collapsed height immediately.
+     Keep it auto-sized until the 0.33s closing animation finishes. */
+  .rym-app .rym-pane--compact.rym-pane--opening,
+  .rym-app .rym-pane--compact.rym-pane--closing {
+    height: auto !important;
+    max-height: none !important;
+    overflow: hidden !important;
+  }
+
+  .rym-app .rym-pane--compact.rym-pane--collapsed {
+    max-height: var(--rym-compact-closed-h) !important;
+  }
+
+  /* Outer reveal shell. Its row height is what physically opens/closes. */
+  .rym-app .rym-pane--compact .rym-compact-expand-body {
+    display: grid !important;
+    grid-template-rows: 1fr;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: hidden !important;
+    flex: 0 0 auto !important;
+    margin-top: 10px !important;
+    margin-bottom: 0 !important;
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+  }
+
+  /* Everything that visually belongs to the expanding area lives here.
+     min-height:0 is required for 0fr -> 1fr interpolation to work. */
+  .rym-app .rym-pane--compact .rym-compact-expand-inner {
+    min-height: 0 !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* Opening: the actual white card grows downward while its content
+     is progressively revealed. */
+  .rym-app .rym-pane--compact .rym-compact-expand-body.is-opening {
+    animation: rym-mobile-compact-unfold .33s cubic-bezier(.2, .72, .24, 1) both !important;
+    will-change: grid-template-rows, margin-top, opacity !important;
+  }
+
+  /* Closing: exact reverse. Body remains mounted for the full 0.33s. */
+  .rym-app .rym-pane--compact .rym-compact-expand-body.is-closing {
+    pointer-events: none !important;
+    animation: rym-mobile-compact-fold .33s cubic-bezier(.4, 0, .2, 1) both !important;
+    will-change: grid-template-rows, margin-top, opacity !important;
+  }
+
+  @keyframes rym-mobile-compact-unfold {
+    0% {
+      grid-template-rows: 0fr;
+      margin-top: 0;
+      opacity: 0;
+    }
+    28% {
+      opacity: .28;
+    }
+    62% {
+      opacity: .82;
+    }
+    100% {
+      grid-template-rows: 1fr;
+      margin-top: 10px;
+      opacity: 1;
+    }
+  }
+
+  @keyframes rym-mobile-compact-fold {
+    0% {
+      grid-template-rows: 1fr;
+      margin-top: 10px;
+      opacity: 1;
+    }
+    38% {
+      opacity: .78;
+    }
+    72% {
+      opacity: .22;
+    }
+    100% {
+      grid-template-rows: 0fr;
+      margin-top: 0;
+      opacity: 0;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rym-app .rym-pane--compact .rym-compact-expand-body.is-opening,
+  .rym-app .rym-pane--compact .rym-compact-expand-body.is-closing {
+    animation-duration: .01ms !important;
+  }
+}
+
+/* =========================================================
+   MOTION PASS — SLIDE/UNFOLD ONLY, NO FADE
+   Applies to desktop + mobile:
+   - compact/sub-chart open/close
+   - chart filter/dropdown open/close
+   ========================================================= */
+
+/* ---------- Compact/sub-chart: never fade ---------- */
+.rym-app .rym-pane--compact .rym-compact-expand-body,
+.rym-app .rym-pane--compact .rym-compact-expand-body.is-opening,
+.rym-app .rym-pane--compact .rym-compact-expand-body.is-closing {
+  opacity: 1 !important;
+}
+
+/* Desktop: only vertical unfold/fold. */
+@media (min-width: 1024px) {
+  .rym-app .rym-pane--compact .rym-compact-expand-body.is-opening {
+    animation: rym-compact-slide-only-open .33s cubic-bezier(.2, .72, .24, 1) both !important;
+  }
+
+  .rym-app .rym-pane--compact .rym-compact-expand-body.is-closing {
+    animation: rym-compact-slide-only-close .33s cubic-bezier(.4, 0, .2, 1) both !important;
+  }
+
+  @keyframes rym-compact-slide-only-open {
+    from {
+      max-height: 0;
+    }
+    to {
+      max-height: var(--rym-compact-body-max);
+    }
+  }
+
+  @keyframes rym-compact-slide-only-close {
+    from {
+      max-height: var(--rym-compact-body-max);
+    }
+    to {
+      max-height: 0;
+    }
+  }
+}
+
+/* Mobile/tablet: keep the real 0fr -> 1fr physical unfold,
+   but remove all opacity changes. */
+@media (max-width: 1023px) {
+  .rym-app .rym-pane--compact .rym-compact-expand-body.is-opening {
+    animation: rym-mobile-compact-slide-only-open .33s cubic-bezier(.2, .72, .24, 1) both !important;
+  }
+
+  .rym-app .rym-pane--compact .rym-compact-expand-body.is-closing {
+    animation: rym-mobile-compact-slide-only-close .33s cubic-bezier(.4, 0, .2, 1) both !important;
+  }
+
+  @keyframes rym-mobile-compact-slide-only-open {
+    from {
+      grid-template-rows: 0fr;
+      margin-top: 0;
+    }
+    to {
+      grid-template-rows: 1fr;
+      margin-top: 10px;
+    }
+  }
+
+  @keyframes rym-mobile-compact-slide-only-close {
+    from {
+      grid-template-rows: 1fr;
+      margin-top: 10px;
+    }
+    to {
+      grid-template-rows: 0fr;
+      margin-top: 0;
+    }
+  }
+}
+
+/* ---------- Chart picker/dropdown: reveal only, never fade ---------- */
+.rym-chart-picker-portal .rym-chart-picker-popover--unified,
+.rym-chart-picker-portal .rym-chart-picker-popover--unified.is-opening,
+.rym-chart-picker-portal .rym-chart-picker-popover--unified.is-closing {
+  opacity: 1 !important;
+}
+
+.rym-chart-picker-portal .rym-chart-picker-popover--unified.is-opening {
+  animation: rym-picker-slide-only-open .33s cubic-bezier(.2, .72, .24, 1) both !important;
+}
+
+.rym-chart-picker-portal .rym-chart-picker-popover--unified.is-closing {
+  pointer-events: none !important;
+  animation: rym-picker-slide-only-close .33s cubic-bezier(.4, 0, .2, 1) both !important;
+}
+
+@keyframes rym-picker-slide-only-open {
+  from {
+    clip-path: inset(0 0 100% 0 round 10px);
+  }
+  to {
+    clip-path: inset(0 0 0 0 round 10px);
+  }
+}
+
+@keyframes rym-picker-slide-only-close {
+  from {
+    clip-path: inset(0 0 0 0 round 10px);
+  }
+  to {
+    clip-path: inset(0 0 100% 0 round 10px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rym-app .rym-pane--compact .rym-compact-expand-body.is-opening,
+  .rym-app .rym-pane--compact .rym-compact-expand-body.is-closing,
+  .rym-chart-picker-portal .rym-chart-picker-popover--unified.is-opening,
+  .rym-chart-picker-portal .rym-chart-picker-popover--unified.is-closing {
+    animation-duration: .01ms !important;
+  }
+}
+
+/* =========================================================
+   INLINE CHART PICKER — PORTAL-FREE / ZOOM-STABLE FINAL
+   The dropdown now lives inside the trigger field itself.
+   No fixed positioning, no visualViewport math, no portal coordinates.
+   ========================================================= */
+
+/* Main-chart selector uses the exact measured compact/sub-chart selector width.
+   The measurement uses layout width only; mobile remains full-width. */
+@media (min-width: 1024px) {
+  .rym-app .rym-pane:not(.rym-pane--compact) .rym-chart-picker-field--unified {
+    width: var(--rym-sub-picker-width, 360px) !important;
+    max-width: var(--rym-sub-picker-width, 360px) !important;
+    min-width: 0 !important;
+    flex: 0 0 var(--rym-sub-picker-width, 360px) !important;
+  }
+
+  .rym-app .rym-pane:not(.rym-pane--compact) .rym-chart-picker-trigger--unified,
+  .rym-app .rym-pane--compact .rym-chart-picker-field--unified,
+  .rym-app .rym-pane--compact .rym-chart-picker-trigger--unified {
+    width: 100% !important;
+    max-width: none !important;
+  }
+}
+
+@media (max-width: 1023px) {
+  .rym-app .rym-chart-picker-field--unified,
+  .rym-app .rym-chart-picker-trigger--unified {
+    width: 100% !important;
+    max-width: none !important;
+  }
+}
+
+/* The field itself is the positioning anchor. */
+.rym-app .rym-chart-picker-field--unified {
+  position: relative !important;
+  overflow: visible !important;
+  z-index: 200 !important;
+}
+
+/* Allow the anchored dropdown to extend over the song list.
+   The list keeps its own scrolling behavior. */
+.rym-app .rym-pane--picker-open,
+.rym-app .rym-pane--picker-open .rym-chart-controls,
+.rym-app .rym-pane--picker-open .rym-chart-control-row,
+.rym-app .rym-pane--picker-open .rym-compact-expand-body,
+.rym-app .rym-pane--picker-open .rym-compact-expand-inner {
+  overflow: visible !important;
+}
+
+/* One connected control while opening, open, or closing.
+   The class remains until the close animation has fully finished. */
+.rym-app .rym-chart-picker-trigger--unified.is-visually-open {
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  border-bottom-color: transparent !important;
+  box-shadow: none !important;
+  transition:
+    background-color .16s ease,
+    border-color .16s ease,
+    color .16s ease !important;
+}
+
+/* Outer shell is positioned directly from the button's own layout box.
+   Safari zoom cannot offset it because no viewport coordinates are involved. */
+.rym-app .rym-chart-picker-shell--inline {
+  position: absolute !important;
+  z-index: 10050 !important;
+  top: calc(100% - 1px) !important;
+  left: 0 !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: min(520px, calc(100dvh - 9rem)) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  isolation: isolate !important;
+  transform-origin: top center !important;
+  pointer-events: none !important;
+}
+
+/* The actual white panel scrolls internally if its contents are tall. */
+.rym-app
+  .rym-chart-picker-shell--inline
+  > .rym-chart-picker-popover--unified {
+  position: relative !important;
+  inset: auto !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  max-height: min(520px, calc(100dvh - 9rem)) !important;
+  box-sizing: border-box !important;
+
+  margin: 0 !important;
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+  border-top-color: #b8c1cc !important;
+  border-bottom-left-radius: 14px !important;
+  border-bottom-right-radius: 14px !important;
+
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+
+  z-index: 1 !important;
+  pointer-events: auto !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+  transform-origin: top center !important;
+  will-change: clip-path !important;
+}
+
+/* Shadow lives outside the clipped panel, so it remains visible during unfold. */
+.rym-app .rym-chart-picker-shell--inline::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 0 !important;
+  border-radius: 0 0 14px 14px !important;
+  background: transparent !important;
+  box-shadow:
+    0 14px 30px rgba(24, 38, 56, .16),
+    0 4px 10px rgba(24, 38, 56, .09) !important;
+  transform-origin: top center !important;
+  pointer-events: none !important;
+}
+
+/* No fade: the panel simply unfolds downward from the button. */
+.rym-app
+  .rym-chart-picker-shell--inline
+  > .rym-chart-picker-popover--unified.is-opening {
+  animation: rym-inline-picker-open .33s cubic-bezier(.2, .72, .24, 1) both !important;
+}
+
+.rym-app
+  .rym-chart-picker-shell--inline
+  > .rym-chart-picker-popover--unified.is-closing {
+  pointer-events: none !important;
+  animation: rym-inline-picker-close .33s cubic-bezier(.4, 0, .2, 1) both !important;
+}
+
+/* The shadow follows the same physical opening/closing motion. */
+.rym-app .rym-chart-picker-shell--inline.is-opening::before {
+  animation: rym-inline-picker-shadow-open .33s cubic-bezier(.2, .72, .24, 1) both !important;
+}
+
+.rym-app .rym-chart-picker-shell--inline.is-closing::before {
+  animation: rym-inline-picker-shadow-close .33s cubic-bezier(.4, 0, .2, 1) both !important;
+}
+
+@keyframes rym-inline-picker-open {
+  from {
+    clip-path: inset(0 0 100% 0 round 0 0 14px 14px);
+  }
+  to {
+    clip-path: inset(0 0 0 0 round 0 0 14px 14px);
+  }
+}
+
+@keyframes rym-inline-picker-close {
+  from {
+    clip-path: inset(0 0 0 0 round 0 0 14px 14px);
+  }
+  to {
+    clip-path: inset(0 0 100% 0 round 0 0 14px 14px);
+  }
+}
+
+@keyframes rym-inline-picker-shadow-open {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes rym-inline-picker-shadow-close {
+  from {
+    transform: scaleY(1);
+  }
+  to {
+    transform: scaleY(0);
+  }
+}
+
+/* Keep song/album choice buttons flat on both desktop and mobile. */
+.rym-app .rym-chart-kind-button,
+.rym-app .rym-chart-kind-button.is-active {
+  box-shadow: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rym-app
+    .rym-chart-picker-shell--inline
+    > .rym-chart-picker-popover--unified.is-opening,
+  .rym-app
+    .rym-chart-picker-shell--inline
+    > .rym-chart-picker-popover--unified.is-closing,
+  .rym-app .rym-chart-picker-shell--inline.is-opening::before,
+  .rym-app .rym-chart-picker-shell--inline.is-closing::before {
+    animation-duration: .01ms !important;
+  }
+}
+
+/* =========================================================
+   INLINE PICKER — INTERNAL UI RESTORE
+   Restore the exact pre-restructure picker visuals.
+   This changes ONLY the contents inside the picker.
+   Positioning / zoom-stable inline anchoring remains untouched.
+   ========================================================= */
+
+.rym-app .rym-chart-picker-shell--inline,
+.rym-app .rym-chart-picker-shell--inline *,
+.rym-app .rym-chart-picker-shell--inline *::before,
+.rym-app .rym-chart-picker-shell--inline *::after {
+  box-sizing: border-box !important;
+}
+
+.rym-app
+  .rym-chart-picker-shell--inline
+  > .rym-chart-picker-popover--unified {
+  padding: 15px !important;
+  background: #fff !important;
+  border: 1px solid #d9dfe6 !important;
+  border-top-color: #b8c1cc !important;
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+  border-bottom-left-radius: 14px !important;
+  border-bottom-right-radius: 14px !important;
+  color: #20252c !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif !important;
+  font-size: 1rem !important;
+  line-height: 1.45 !important;
+}
+
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-chart-picker-section + .rym-chart-picker-section {
+  margin-top: 15px !important;
+  padding-top: 14px !important;
+  border-top: 1px solid #e7ebf1 !important;
+}
+
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-chart-picker-section-label {
+  margin: 0 0 8px !important;
+  color: #68717d !important;
+  font-size: 11px !important;
+  font-weight: 650 !important;
+  line-height: 1.45 !important;
+}
+
+/* Chart type: restore the flat segmented control. */
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-chart-kind-switch {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 4px !important;
+  padding: 3px !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: #edf0f5 !important;
+  box-shadow: none !important;
+}
+
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-chart-kind-button {
+  min-height: 36px !important;
+  padding: 0 10px !important;
+  border: 0 !important;
+  border-radius: 6px !important;
+  background: transparent !important;
+  color: #687281 !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  box-shadow: none !important;
+}
+
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-chart-kind-button.is-active {
+  background: #fff !important;
+  color: #294a7b !important;
+  box-shadow: none !important;
+}
+
+/* Period/year selector. */
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-chart-period-list {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 7px !important;
+}
+
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-chart-period-button {
+  min-height: 36px !important;
+  padding: 7px 11px !important;
+  border: 1px solid #d9dfe6 !important;
+  border-radius: 7px !important;
+  background: #fff !important;
+  color: #5d697b !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  box-shadow: none !important;
+}
+
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-chart-period-button.is-active {
+  border-color: transparent !important;
+  background: #2f5591 !important;
+  color: #fff !important;
+  box-shadow:
+    0 2px 4px rgba(49, 95, 150, .23),
+    0 1px 2px rgba(49, 95, 150, .13) !important;
+}
+
+/* Calendar header. */
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-calendar-heading {
+  display: grid !important;
+  grid-template-columns: 36px 1fr 36px !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin-bottom: 10px !important;
+}
+
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-calendar-month {
+  margin: 0 !important;
+  color: #20252c !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  text-align: center !important;
+}
+
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-icon-button {
+  display: grid !important;
+  place-items: center !important;
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  min-height: 36px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: #f1f4f8 !important;
+  color: #567095 !important;
+  box-shadow: none !important;
+}
+
+/* Week rows: restore the old rounded-rectangle design. */
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-calendar-weeks {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 6px !important;
+}
+
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-calendar-week-button {
+  width: 100% !important;
+  min-height: 51px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  padding: 9px 11px !important;
+  border: 1px solid #e1e5ec !important;
+  border-radius: 7px !important;
+  background: #fff !important;
+  color: #40516a !important;
+  text-align: left !important;
+  box-shadow: none !important;
+}
+
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-calendar-week-button:not(:disabled):not(.is-selected):hover {
+  background: #f7f9fb !important;
+}
+
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-calendar-week-button.is-selected {
+  border: 1px solid #9eb9d9 !important;
+  border-radius: 7px !important;
+  background: #e5effd !important;
+  color: #2e568d !important;
+  box-shadow: none !important;
+}
+
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-calendar-week-button:disabled {
+  opacity: .55 !important;
+}
+
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-calendar-week-copy {
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 3px !important;
+}
+
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-calendar-week-copy strong {
+  color: inherit !important;
+  font-size: 12px !important;
+  font-weight: 650 !important;
+  line-height: 1.4 !important;
+}
+
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-calendar-week-copy > span {
+  color: #738299 !important;
+  font-size: 11px !important;
+  line-height: 1.4 !important;
+}
+
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-calendar-week-indicator {
+  width: 6px !important;
+  height: 6px !important;
+  flex: 0 0 6px !important;
+  border-radius: 50% !important;
+  background: #6588b9 !important;
+}
+
+/* Tracking-start message: same slot size, dashed boundary, rectangular. */
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-calendar-week-button--tracking-start {
+  width: 100% !important;
+  min-height: 51px !important;
+  height: auto !important;
+  padding: 9px 11px !important;
+  border: 1px dashed #cbd4de !important;
+  border-radius: 8px !important;
+  background: #f7f9fb !important;
+  color: #7a8595 !important;
+  box-shadow: none !important;
+}
+
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-calendar-week-button--tracking-start
+  .rym-calendar-week-copy {
+  width: 100% !important;
+  min-height: 0 !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-calendar-week-button--tracking-start strong {
+  font-size: 12px !important;
+  font-weight: 650 !important;
+  line-height: 1.35 !important;
+  text-align: center !important;
+}
+
+/* Keep the week/calendar section spacing from the pre-restructure UI. */
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-chart-picker-week-section {
+  margin-top: 15px !important;
+  padding-top: 14px !important;
+  border-top: 1px solid #e7ebf1 !important;
+}
+
+/* Internal panel itself never owns the shadow; outer inline shell does. */
+.rym-app
+  .rym-chart-picker-shell--inline
+  > .rym-chart-picker-popover--unified {
+  box-shadow: none !important;
+}
+
+/* =========================================================
+   INLINE PICKER CLOSE SEQUENCE — SHADOW FIRST
+   Close order:
+   1) shadow fades out for .12s
+   2) dropdown folds upward for .33s
+   The trigger stays visually connected until both finish.
+   ========================================================= */
+
+/* The panel waits until the shadow has disappeared, then folds shut. */
+.rym-app
+  .rym-chart-picker-shell--inline
+  > .rym-chart-picker-popover--unified.is-closing {
+  pointer-events: none !important;
+  animation:
+    rym-inline-picker-close .33s cubic-bezier(.4, 0, .2, 1) .12s both !important;
+}
+
+/* Shadow does not scale or float while closing.
+   It simply disappears first. */
+.rym-app .rym-chart-picker-shell--inline.is-closing::before {
+  animation:
+    rym-inline-picker-shadow-fade-first .12s ease-out both !important;
+}
+
+@keyframes rym-inline-picker-shadow-fade-first {
+  from {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+  to {
+    opacity: 0;
+    transform: scaleY(1);
+  }
+}
+
+/* Opening behavior remains the existing slide-only motion. */
+.rym-app .rym-chart-picker-shell--inline.is-opening::before {
+  opacity: 1 !important;
+}
+
+/* Keep reduced-motion state effectively instant. */
+@media (prefers-reduced-motion: reduce) {
+  .rym-app
+    .rym-chart-picker-shell--inline
+    > .rym-chart-picker-popover--unified.is-closing,
+  .rym-app .rym-chart-picker-shell--inline.is-closing::before {
+    animation-duration: .01ms !important;
+    animation-delay: 0s !important;
+  }
+}
+
+/* =========================================================
+   PICKER TRIGGER RADIUS — SMOOTH RETURN AFTER CLOSE
+   The trigger stays square while the dropdown is closing.
+   Once the dropdown is fully gone, the bottom corners round back
+   over .18s instead of snapping instantly.
+   ========================================================= */
+
+.rym-app .rym-chart-picker-trigger--unified {
+  transition:
+    border-bottom-left-radius .18s cubic-bezier(.2, .75, .25, 1),
+    border-bottom-right-radius .18s cubic-bezier(.2, .75, .25, 1),
+    background-color .16s ease,
+    border-color .16s ease,
+    color .16s ease !important;
+}
+
+/* While open or closing, hold the seam completely square. */
+.rym-app .rym-chart-picker-trigger--unified.is-visually-open {
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+/* Reduced motion: restore immediately. */
+@media (prefers-reduced-motion: reduce) {
+  .rym-app .rym-chart-picker-trigger--unified {
+    transition-duration: .01ms !important;
+  }
+}
+
+/* =========================================================
+   OPEN CHART PICKER — TOP LAYER FIX
+   When either chart picker is open/closing, that entire pane is raised
+   above the other chart pane and all chart cards.
+   ========================================================= */
+
+.rym-app .rym-chart-grid {
+  position: relative !important;
+  overflow: visible !important;
+}
+
+/* Normal panes keep their ordinary paint order. */
+.rym-app .rym-chart-grid > .rym-pane {
+  z-index: 1;
+}
+
+/* The pane that owns an open/closing picker becomes the top chart layer. */
+.rym-app .rym-chart-grid > .rym-pane.rym-pane--picker-open {
+  z-index: 100000 !important;
+}
+
+/* Keep the anchor and dropdown above everything inside that raised pane. */
+.rym-app
+  .rym-pane--picker-open
+  .rym-chart-picker-field--unified {
+  z-index: 100001 !important;
+}
+
+.rym-app
+  .rym-pane--picker-open
+  .rym-chart-picker-shell--inline {
+  z-index: 100002 !important;
+}
+
+/* Prevent neighboring chart controls/cards from creating a competing layer. */
+.rym-app
+  .rym-chart-grid
+  > .rym-pane:not(.rym-pane--picker-open)
+  .rym-chart-controls,
+.rym-app
+  .rym-chart-grid
+  > .rym-pane:not(.rym-pane--picker-open)
+  .rym-song-list {
+  z-index: auto !important;
+}
+
+/* =========================================================
+   CHART PICKER — BORDERLESS + EXACT TRIGGER WIDTH
+   Desktop + mobile
+   ========================================================= */
+
+/* The dropdown shell uses the trigger field's exact border-box width. */
+.rym-app .rym-chart-picker-field--unified {
+  box-sizing: border-box !important;
+}
+
+.rym-app .rym-chart-picker-shell--inline {
+  left: 0 !important;
+  right: auto !important;
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* The actual panel fills the shell exactly and has no outer stroke. */
+.rym-app
+  .rym-chart-picker-shell--inline
+  > .rym-chart-picker-popover--unified {
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+
+  border: 0 !important;
+  outline: 0 !important;
+}
+
+/* Keep the connected silhouette clean with no 1px seam/stroke. */
+.rym-app .rym-chart-picker-trigger--unified.is-visually-open {
+  border-bottom-color: transparent !important;
+}
+
+/* Shadow still belongs to the outer shell, not the panel border. */
+.rym-app .rym-chart-picker-shell--inline::before {
+  inset: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* Prevent internal width rules from making the picker visually wider
+   than the trigger at any viewport size. */
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-chart-picker-section,
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-chart-kind-switch,
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-chart-period-list,
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-chart-picker-week-section,
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-calendar-weeks {
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* =========================================================
+   CHART PICKER — COMPACT INTERNAL LAYOUT
+   Remove "차트 유형 / 기간" labels and reclaim their vertical space.
+   ========================================================= */
+
+/* Hide the two section labels entirely. */
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-chart-picker-section-label {
+  display: none !important;
+}
+
+/* Reduce overall panel padding. */
+.rym-app
+  .rym-chart-picker-shell--inline
+  > .rym-chart-picker-popover--unified {
+  padding: 10px !important;
+}
+
+/* Tighten spacing between chart type, period, and calendar sections. */
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-chart-picker-section + .rym-chart-picker-section {
+  margin-top: 10px !important;
+  padding-top: 10px !important;
+}
+
+/* The week/calendar section also uses the tighter spacing. */
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-chart-picker-week-section {
+  margin-top: 10px !important;
+  padding-top: 10px !important;
+}
+
+/* Slightly tighten the controls themselves without changing their visual style. */
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-chart-kind-switch {
+  margin: 0 !important;
+}
+
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-chart-period-list {
+  gap: 6px !important;
+  margin: 0 !important;
+}
+
+/* Keep calendar content compact so more weeks fit before internal scrolling. */
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-calendar-heading {
+  margin-bottom: 8px !important;
+}
+
+.rym-app
+  .rym-chart-picker-shell--inline
+  .rym-calendar-weeks {
+  gap: 5px !important;
+}
+
+/* =========================================================
+   DESKTOP COMPACT CHART — SCROLL VIEWPORT RESTORE
+   The new .rym-compact-expand-inner wrapper must itself participate
+   in the flex layout. Without this, the song list loses its bounded
+   height and overflow-y:auto has nothing to scroll against.
+   ========================================================= */
+
+@media (min-width: 1024px) {
+  /* Outer compact pane remains a fixed-height flex column. */
+  .rym-app .rym-pane--compact:not(.rym-pane--collapsed):not(.rym-pane--opening):not(.rym-pane--closing) {
+    display: flex !important;
+    flex-direction: column !important;
+    height: calc(100dvh - 32px) !important;
+    max-height: calc(100dvh - 32px) !important;
+    min-height: 0 !important;
+  }
+
+  /* Expanded body occupies all remaining height below the heading. */
+  .rym-app
+    .rym-pane--compact:not(.rym-pane--collapsed):not(.rym-pane--opening):not(.rym-pane--closing)
+    .rym-compact-expand-body {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    margin-bottom: -.85rem !important;
+    overflow: hidden !important;
+  }
+
+  /* Critical fix: the newly introduced inner wrapper is also a bounded
+     flex column, so the list can become the actual scroll viewport. */
+  .rym-app
+    .rym-pane--compact:not(.rym-pane--collapsed):not(.rym-pane--opening):not(.rym-pane--closing)
+    .rym-compact-expand-inner {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    overflow: hidden !important;
+  }
+
+  .rym-app
+    .rym-pane--compact:not(.rym-pane--collapsed):not(.rym-pane--opening):not(.rym-pane--closing)
+    .rym-chart-controls,
+  .rym-app
+    .rym-pane--compact:not(.rym-pane--collapsed):not(.rym-pane--opening):not(.rym-pane--closing)
+    .rym-compact-list-divider {
+    flex: 0 0 auto !important;
+  }
+
+  /* This is the only vertically scrolling area in the desktop sub-chart. */
+  .rym-app
+    .rym-pane--compact:not(.rym-pane--collapsed):not(.rym-pane--opening):not(.rym-pane--closing)
+    .rym-song-list {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    height: 0 !important;
+    max-height: none !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior-y: contain !important;
+    touch-action: pan-y !important;
+  }
+
+  /* Picker may visually extend over the list while it is open,
+     but the list itself must remain a working scroll viewport. */
+  .rym-app
+    .rym-pane--compact.rym-pane--picker-open:not(.rym-pane--opening):not(.rym-pane--closing)
+    .rym-compact-expand-body,
+  .rym-app
+    .rym-pane--compact.rym-pane--picker-open:not(.rym-pane--opening):not(.rym-pane--closing)
+    .rym-compact-expand-inner {
+    overflow: visible !important;
+  }
+
+  .rym-app
+    .rym-pane--compact.rym-pane--picker-open:not(.rym-pane--opening):not(.rym-pane--closing)
+    .rym-song-list {
+    overflow-y: auto !important;
+  }
+}
+
+/* Mobile horizontal margin — 1.5x previous 12px => 18px */
+@media (max-width: 700px) {
+  .rym-app .rym-topbar-inner,
+  .rym-app .rym-subbar-inner {
+    padding-inline: 1.125rem !important;
+  }
+
+  .rym-app .rym-workspace {
+    padding-inline: 1.125rem !important;
+  }
 }

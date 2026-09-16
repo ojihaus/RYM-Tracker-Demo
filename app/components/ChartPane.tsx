@@ -1,5 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useRef, useState } from "react";
 import { chartKind, chartPeriodLabel, formatChartTitle, rymWeekMeta, songKey, type ChartGroup, type ChartKind, type Snapshot, type Song, type ComparedSong, type MovementFilter, type Language } from "../lib/chartModel";
 import { useDialogFocus, useSmallViewport } from "../hooks/useBrowserUI";
 import { errorMessage } from "../lib/chartClient";
@@ -86,88 +85,202 @@ export default function ChartPane({
       : visibleSongs.length;
 
   const [chartPickerOpen, setChartPickerOpen] = useState(false);
+  const [chartPickerClosing, setChartPickerClosing] = useState(false);
+  const chartPickerCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const chartPickerEnsureVisibleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [compactListScrolled, setCompactListScrolled] = useState(false);
   const smallViewport = useSmallViewport();
   const [collapsedChoice, setCollapsedChoice] = useState<boolean | null>(null);
   const compactCollapsed = compact && (collapsedChoice ?? smallViewport);
+  const [compactTransition, setCompactTransition] = useState<"opening" | "closing" | null>(null);
+  const compactTransitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [pickerKind, setPickerKind] = useState<ChartKind>(
     chart ? chartKind(chart) : "song"
   );
   const chartPickerRef = useRef<HTMLDivElement>(null);
   const chartPickerButtonRef = useRef<HTMLButtonElement>(null);
   const chartPickerPopoverRef = useRef<HTMLDivElement>(null);
-  const [chartPickerFloatingStyle, setChartPickerFloatingStyle] =
-    useState<CSSProperties>({});
+
+  function clearCompactTransitionTimer() {
+    if (compactTransitionTimerRef.current) {
+      clearTimeout(compactTransitionTimerRef.current);
+      compactTransitionTimerRef.current = null;
+    }
+  }
+
+  function toggleCompactPane() {
+    if (!compact) return;
+
+    clearCompactTransitionTimer();
+    closeChartPicker();
+
+    const isVisuallyOpen =
+      !compactCollapsed && compactTransition !== "closing";
+
+    if (isVisuallyOpen) {
+      // Keep the body mounted while the closing motion finishes.
+      setCompactTransition("closing");
+      compactTransitionTimerRef.current = setTimeout(() => {
+        setCollapsedChoice(true);
+        setCompactTransition(null);
+        compactTransitionTimerRef.current = null;
+      }, 330);
+      return;
+    }
+
+    // Mount first, then reveal downward.
+    setCollapsedChoice(false);
+    setCompactTransition("opening");
+    compactTransitionTimerRef.current = setTimeout(() => {
+      setCompactTransition(null);
+      compactTransitionTimerRef.current = null;
+    }, 330);
+  }
+
+  function clearChartPickerCloseTimer() {
+    if (chartPickerCloseTimerRef.current) {
+      clearTimeout(chartPickerCloseTimerRef.current);
+      chartPickerCloseTimerRef.current = null;
+    }
+  }
+
+  function openChartPicker() {
+    clearChartPickerCloseTimer();
+    setChartPickerClosing(false);
+    setChartPickerOpen(true);
+  }
+
+  function closeChartPicker() {
+    if (!chartPickerOpen && !chartPickerClosing) return;
+
+    clearChartPickerCloseTimer();
+    setChartPickerOpen(false);
+    setChartPickerClosing(true);
+
+    chartPickerCloseTimerRef.current = setTimeout(() => {
+      setChartPickerClosing(false);
+      chartPickerCloseTimerRef.current = null;
+    }, 460);
+  }
+
+  function toggleChartPicker() {
+    if (chartPickerOpen) {
+      closeChartPicker();
+    } else {
+      openChartPicker();
+    }
+  }
+
+  useEffect(() => {
+    return () => {
+      clearChartPickerCloseTimer();
+      clearCompactTransitionTimer();
+      if (chartPickerEnsureVisibleTimerRef.current) {
+        clearTimeout(chartPickerEnsureVisibleTimerRef.current);
+        chartPickerEnsureVisibleTimerRef.current = null;
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (chart) setPickerKind(chartKind(chart));
   }, [chart]);
 
   useEffect(() => {
-    if (!chartPickerOpen) return;
+    if (!compact || typeof window === "undefined") return;
 
-    function updatePickerPosition() {
-      const button = chartPickerButtonRef.current;
-      if (!button) return;
+    const button = chartPickerButtonRef.current;
+    if (!button) return;
 
-      const rect = button.getBoundingClientRect();
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
-      const edge = 12;
-      const gap = 8;
-      const width = Math.min(360, viewportWidth - edge * 2);
-      const maxHeight = Math.min(520, viewportHeight - edge * 2);
+    const updateSharedPickerWidth = () => {
+      // offsetWidth is a layout measurement, so Safari page zoom does not
+      // introduce the visual-viewport coordinate drift that fixed portals do.
+      const width = button.offsetWidth;
+      if (width > 0) {
+        document.documentElement.style.setProperty(
+          "--rym-sub-picker-width",
+          `${width}px`
+        );
+      }
+    };
 
-      let left = rect.left;
-      left = Math.max(edge, Math.min(left, viewportWidth - width - edge));
+    updateSharedPickerWidth();
 
-      const visualViewport = window.visualViewport;
-      const topEdge = (visualViewport?.offsetTop ?? 0) + edge;
-      const bottomEdge = (visualViewport?.offsetTop ?? 0) + (visualViewport?.height ?? viewportHeight) - edge;
-      const spaceBelow = bottomEdge - rect.bottom - gap;
-      const spaceAbove = rect.top - gap - topEdge;
-      const openAbove = spaceBelow < 240 && spaceAbove > spaceBelow;
-      const height = Math.min(maxHeight, Math.max(0, openAbove ? spaceAbove : spaceBelow));
-      setChartPickerFloatingStyle({ position: "fixed", left, width,
-        top: Math.max(topEdge, Math.min(openAbove ? rect.top - gap - height : rect.bottom + gap, bottomEdge - height)), maxHeight: height });
+    if (typeof ResizeObserver !== "undefined") {
+      const observer = new ResizeObserver(updateSharedPickerWidth);
+      observer.observe(button);
+      return () => observer.disconnect();
     }
+
+    window.addEventListener("resize", updateSharedPickerWidth);
+    return () => window.removeEventListener("resize", updateSharedPickerWidth);
+  }, [compact, compactCollapsed]);
+
+  useEffect(() => {
+    if (!chartPickerOpen || typeof window === "undefined") return;
+
+    if (chartPickerEnsureVisibleTimerRef.current) {
+      clearTimeout(chartPickerEnsureVisibleTimerRef.current);
+    }
+
+    // Wait until the inline dropdown has mounted and Safari has settled its
+    // visual viewport after zoom / browser chrome changes.
+    chartPickerEnsureVisibleTimerRef.current = setTimeout(() => {
+      const popover = chartPickerPopoverRef.current;
+      if (!popover) return;
+
+      const rect = popover.getBoundingClientRect();
+      const visualViewport = window.visualViewport;
+      const viewportTop = visualViewport?.offsetTop ?? 0;
+      const viewportHeight = visualViewport?.height ?? window.innerHeight;
+      const viewportBottom = viewportTop + viewportHeight;
+
+      // Keep a little breathing room under the opened picker.
+      const desiredBottomGap = 24;
+      const overflow = rect.bottom + desiredBottomGap - viewportBottom;
+
+      if (overflow > 1) {
+        window.scrollBy({
+          top: overflow,
+          behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+            ? "auto"
+            : "smooth",
+        });
+      }
+    }, 40);
+
+    return () => {
+      if (chartPickerEnsureVisibleTimerRef.current) {
+        clearTimeout(chartPickerEnsureVisibleTimerRef.current);
+        chartPickerEnsureVisibleTimerRef.current = null;
+      }
+    };
+  }, [chartPickerOpen]);
+
+  useEffect(() => {
+    if (!chartPickerOpen) return;
 
     function handlePointerDown(event: PointerEvent) {
       const target = event.target;
       if (!(target instanceof Node)) return;
 
-      const insideTrigger = chartPickerRef.current?.contains(target);
-      const insidePopover = chartPickerPopoverRef.current?.contains(target);
-
-      if (!insideTrigger && !insidePopover) {
-        setChartPickerOpen(false);
+      // Trigger and dropdown now share one DOM anchor. No viewport-coordinate
+      // calculations are needed; a click outside that anchor closes it.
+      if (!chartPickerRef.current?.contains(target)) {
+        closeChartPicker();
       }
     }
 
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") setChartPickerOpen(false);
-    }
-
-    updatePickerPosition();
-
-    window.addEventListener("resize", updatePickerPosition);
-    window.visualViewport?.addEventListener("resize", updatePickerPosition);
-    window.visualViewport?.addEventListener("scroll", updatePickerPosition);
-    window.addEventListener("scroll", updatePickerPosition, true);
     document.addEventListener("pointerdown", handlePointerDown);
-    document.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      window.removeEventListener("resize", updatePickerPosition);
-      window.visualViewport?.removeEventListener("resize", updatePickerPosition);
-      window.visualViewport?.removeEventListener("scroll", updatePickerPosition);
-      window.removeEventListener("scroll", updatePickerPosition, true);
       document.removeEventListener("pointerdown", handlePointerDown);
-      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [chartPickerOpen]);
 
-  useDialogFocus(chartPickerOpen, chartPickerPopoverRef, () => setChartPickerOpen(false), false);
+
+
+  useDialogFocus(chartPickerOpen, chartPickerPopoverRef, closeChartPicker, false);
 
   const availableKinds: Record<ChartKind, boolean> = {
     song: charts.some((item) => chartKind(item) === "song"),
@@ -215,7 +328,11 @@ export default function ChartPane({
       className={
         "rym-pane" +
         (compact ? " rym-pane--compact" : "") +
-        (compact && compactCollapsed ? " rym-pane--collapsed" : "")
+        (compact && compactCollapsed && compactTransition !== "opening"
+          ? " rym-pane--collapsed"
+          : "") +
+        (compactTransition ? ` rym-pane--${compactTransition}` : "") +
+        (chartPickerOpen || chartPickerClosing ? " rym-pane--picker-open" : "")
       }
       id={side === "RIGHT" ? "rym-main-chart" : "rym-reference-chart"}
       aria-label={language === "ko" ? (compact ? "기준 차트" : "대상 차트") : side + " chart"}
@@ -224,11 +341,14 @@ export default function ChartPane({
         <button
           type="button"
           className="rym-pane-heading rym-pane-heading--toggle"
-          aria-expanded={!compactCollapsed}
-          onClick={() => {
-            setCollapsedChoice(!compactCollapsed);
-            setChartPickerOpen(false);
-          }}
+          aria-expanded={
+            compactTransition === "closing"
+              ? false
+              : compactTransition === "opening"
+              ? true
+              : !compactCollapsed
+          }
+          onClick={toggleCompactPane}
         >
           <span className="rym-pane-heading-main">
             <span className="rym-pane-caption">
@@ -247,7 +367,12 @@ export default function ChartPane({
           <span
             className={
               "rym-pane-heading-chevron" +
-              (!compactCollapsed ? " is-open" : "")
+              (
+                compactTransition === "opening" ||
+                (!compactCollapsed && compactTransition !== "closing")
+                  ? " is-open"
+                  : ""
+              )
             }
             aria-hidden="true"
           />
@@ -262,8 +387,17 @@ export default function ChartPane({
         </div>
       )}
 
-      {(!compact || !compactCollapsed) && (
-        <div className={compact ? "rym-compact-expand-body" : undefined}>
+      {(!compact || !compactCollapsed || compactTransition === "closing") && (
+        <div
+          className={
+            compact
+              ? "rym-compact-expand-body" +
+                (compactTransition ? ` is-${compactTransition}` : "")
+              : undefined
+          }
+          aria-hidden={compact && compactTransition === "closing" ? true : undefined}
+        >
+          <div className={compact ? "rym-compact-expand-inner" : undefined}>
           <div className="rym-chart-controls">
             <div className="rym-chart-control-row">
               <div className="rym-chart-picker-field rym-chart-picker-field--unified" ref={chartPickerRef}>
@@ -271,11 +405,14 @@ export default function ChartPane({
                   id={"rym-chart-picker-" + side}
                   ref={chartPickerButtonRef}
                   type="button"
-                  className="rym-chart-picker-trigger rym-chart-picker-trigger--unified"
+                  className={
+                    "rym-chart-picker-trigger rym-chart-picker-trigger--unified" +
+                    (chartPickerOpen || chartPickerClosing ? " is-visually-open" : "")
+                  }
                   aria-haspopup="dialog"
                   aria-expanded={chartPickerOpen}
                   aria-controls={"rym-chart-picker-popover-" + side}
-                  onClick={() => setChartPickerOpen((current) => !current)}
+                  onClick={toggleChartPicker}
                 >
                   <span className="rym-chart-picker-summary-title">
                     {selectedChartKind === "album" ? (language === "ko" ? "앨범" : "Albums") : (language === "ko" ? "곡" : "Songs")}
@@ -289,16 +426,24 @@ export default function ChartPane({
                   <span className="rym-chart-picker-caret" aria-hidden="true" />
                 </button>
 
-                {chartPickerOpen && typeof document !== "undefined" && createPortal(
-                  <div className="rym-app rym-chart-picker-portal" aria-hidden="false">
+                {(chartPickerOpen || chartPickerClosing) && (
+                  <div
+                    className={
+                      "rym-chart-picker-shell rym-chart-picker-shell--inline " +
+                      (chartPickerClosing ? "is-closing" : "is-opening")
+                    }
+                    aria-hidden={chartPickerClosing ? "true" : "false"}
+                  >
                     <div
                       id={"rym-chart-picker-popover-" + side}
                       ref={chartPickerPopoverRef}
-                      className="rym-chart-picker-popover rym-chart-picker-popover--unified"
+                      className={
+                        "rym-chart-picker-popover rym-chart-picker-popover--unified " +
+                        (chartPickerClosing ? "is-closing" : "is-opening")
+                      }
                       role="dialog"
                       tabIndex={-1}
                       aria-label={language === "ko" ? "차트와 주차 선택" : "Choose chart and week"}
-                      style={chartPickerFloatingStyle}
                     >
                       <div className="rym-chart-picker-section">
                         <p className="rym-chart-picker-section-label">
@@ -358,7 +503,7 @@ export default function ChartPane({
                             selectedKey={snapshotKeyValue}
                             onSelect={(value) => {
                               onSnapshotChange(value);
-                              setChartPickerOpen(false);
+                              closeChartPicker();
                             }}
                             compact={compact}
                             language={language}
@@ -366,8 +511,7 @@ export default function ChartPane({
                         </div>
                       )}
                     </div>
-                  </div>,
-                  document.body
+                  </div>
                 )}
               </div>
             </div>
@@ -412,6 +556,7 @@ export default function ChartPane({
             {!snapshot?.is_metadata && visibleSongs.length === 0 && !showOut && (
               <div className="rym-filter-empty">{language === "ko" ? "이 조건에 맞는 항목이 없습니다." : "No items match this view."}</div>
             )}
+          </div>
           </div>
         </div>
       )}

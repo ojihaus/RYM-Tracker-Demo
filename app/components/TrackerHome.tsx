@@ -456,7 +456,13 @@ export default function Home() {
           <div className="rym-context-copy">
             <span className="rym-subbar-description">{language === "ko" ? "저장된 RYM 차트의 시점별 순위 변화를 비교합니다." : "Compare ranking changes across saved RYM chart dates."}</span>
           </div>
-          {loaded && <span className="rym-subbar-count">{charts.length}{language === "ko" ? "개 차트" : " charts"} · {snapshots.length}{language === "ko" ? "개 기록" : " records"}</span>}
+          {loaded && (
+            <span className="rym-subbar-count">
+              {language === "ko"
+                ? `${charts.length}개 차트 · ${snapshots.length}회 아카이빙`
+                : `${charts.length} Charts · ${snapshots.length} Archives`}
+            </span>
+          )}
         </div>
       </div>
       <div className="rym-workspace" aria-busy={busy}>
