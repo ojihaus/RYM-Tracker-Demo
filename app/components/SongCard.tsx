@@ -100,6 +100,39 @@ export default function SongCard({ song, compact = false, comparedSong = null, o
 
   return (
     <article className={"rym-song" + (compact ? " rym-song--compact" : "") + (out ? " rym-song--out" : "") + (!compact && spotifyActive ? " rym-song--playing" : "") + highlight}>
+      {!compact && (
+        <div className="rym-mobile-song-heading">
+          <div className="rym-mobile-song-rank">
+            <span className="rym-rank-number" aria-label={(language === "ko" ? "순위 " : "Rank ") + song.rank}>{song.rank}</span>
+            {out
+              ? <span className="rym-status rym-status--out">{language === "ko" ? "이탈" : "OUT"}</span>
+              : comparedSong && movement(comparedSong, language)}
+          </div>
+          <div className="rym-mobile-song-copy">
+            <div className="rym-song-title-row">
+              <h3 className="rym-song-title">{song.title}</h3>
+              <span className={"rym-title-copy-wrap" + (titleCopied ? " is-copied" : "")}>
+                <button
+                  type="button"
+                  className="rym-title-copy-button"
+                  onClick={copyTitle}
+                  aria-label={language === "ko" ? `${song.title} 제목 복사` : `Copy title ${song.title}`}
+                  title={language === "ko" ? "제목 복사" : "Copy title"}
+                >
+                  <svg className="rym-title-copy-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <rect x="8" y="8" width="10" height="10" rx="2" />
+                    <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
+                  </svg>
+                </button>
+                <span className="rym-copy-status" role="status" aria-live="polite">
+                  {language === "ko" ? "복사됨" : "Copied"}
+                </span>
+              </span>
+            </div>
+            <p className="rym-mobile-song-artists">{song.artists?.join(", ")}</p>
+          </div>
+        </div>
+      )}
       <div className="rym-rank">
         <span className="rym-rank-number" aria-label={(language === "ko" ? "순위 " : "Rank ") + song.rank}>{song.rank}</span>
         {!compact && (out
